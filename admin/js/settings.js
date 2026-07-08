@@ -95,4 +95,67 @@
         });
     });
 
+    // ── Testar conexão Asaas ──────────────────────────────────────────────────
+
+    $('#wpaip-asaas-test-btn').on('click', function () {
+        const $btn    = $(this);
+        const $result = $('#wpaip-asaas-test-result');
+        const hasSaved = $('.wpaip-badge--ok', $btn.closest('.wpaip-api-row')).length > 0;
+        const apiKey  = $.trim($('#wpaip-asaas-key').val());
+
+        if (!apiKey && !hasSaved) {
+            $result.attr('class', 'wpaip-test-result fail').text('⚠ Configure a chave Asaas primeiro.');
+            return;
+        }
+
+        $btn.prop('disabled', true).text(cfg.strings.testing);
+        $result.attr('class', 'wpaip-test-result').text('');
+
+        $.post(cfg.ajax_url, {
+            action: 'wpaip_test_asaas',
+            nonce:  cfg.nonce,
+        })
+        .done(function (res) {
+            if (res.success) {
+                $result.attr('class', 'wpaip-test-result ok').text('✓ ' + (res.data.message || 'Conexão OK'));
+            } else {
+                $result.attr('class', 'wpaip-test-result fail').text('✗ ' + (res.data.message || 'Falha'));
+            }
+        })
+        .fail(function () {
+            $result.attr('class', 'wpaip-test-result fail').text(cfg.strings.fail);
+        })
+        .always(function () {
+            $btn.prop('disabled', false).text('Testar');
+        });
+    });
+
+    // ── Limpar cache Asaas ────────────────────────────────────────────────────
+
+    $('#wpaip-asaas-clear-cache').on('click', function () {
+        const $btn    = $(this);
+        const $result = $('#wpaip-asaas-cache-result');
+
+        $btn.prop('disabled', true).text('Limpando…');
+        $result.css('color', '#888').text('');
+
+        $.post(cfg.ajax_url, {
+            action: 'wpaip_clear_asaas_cache',
+            nonce:  cfg.nonce,
+        })
+        .done(function (res) {
+            if (res.success) {
+                $result.css('color', 'green').text('✓ ' + (res.data.message || 'Cache limpo!'));
+            } else {
+                $result.css('color', 'red').text('✗ ' + (res.data.message || 'Erro.'));
+            }
+        })
+        .fail(function () {
+            $result.css('color', 'red').text('✗ Falha na requisição.');
+        })
+        .always(function () {
+            $btn.prop('disabled', false).text('🗑️ Limpar meu cache Asaas');
+        });
+    });
+
 }(jQuery));

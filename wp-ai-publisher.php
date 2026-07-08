@@ -35,6 +35,8 @@ spl_autoload_register( function ( string $class ): void {
 // ── Includes manuais (não PSR-4) ──────────────────────────────────────────────
 require_once WPAIP_PLUGIN_DIR . 'includes/class-security.php';
 require_once WPAIP_PLUGIN_DIR . 'includes/class-settings.php';
+require_once WPAIP_PLUGIN_DIR . 'includes/class-asaas.php';
+require_once WPAIP_PLUGIN_DIR . 'includes/class-paywall.php';
 require_once WPAIP_PLUGIN_DIR . 'includes/class-llm.php';
 require_once WPAIP_PLUGIN_DIR . 'includes/class-image.php';
 require_once WPAIP_PLUGIN_DIR . 'includes/class-media.php';
@@ -55,6 +57,7 @@ function wpaip_uninstall(): void {
 // ── Boot ──────────────────────────────────────────────────────────────────────
 add_action( 'plugins_loaded', function (): void {
     WPAIP_Settings::init();
+    WPAIP_Paywall::init();
     WPAIP_Metabox::init();
     WPAIP_Cron::init();
 } );

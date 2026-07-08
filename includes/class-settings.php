@@ -18,6 +18,10 @@ class WPAIP_Settings {
         add_action( 'wp_ajax_wpaip_test_api_key',   [ __CLASS__, 'ajax_test_api_key'   ] );
         // AJAX: listar modelos do Hugging Face
         add_action( 'wp_ajax_wpaip_list_hf_models', [ __CLASS__, 'ajax_list_hf_models' ] );
+        // AJAX: testar conexão Asaas
+        add_action( 'wp_ajax_wpaip_test_asaas',     [ __CLASS__, 'ajax_test_asaas'     ] );
+        // AJAX: limpar cache Asaas do usuário atual
+        add_action( 'wp_ajax_wpaip_clear_asaas_cache', [ __CLASS__, 'ajax_clear_asaas_cache' ] );
     }
 
     // ── Menu Admin ────────────────────────────────────────────────────────────
@@ -82,6 +86,26 @@ class WPAIP_Settings {
             }
         }
 
+        // Asaas API key (criptografada como as demais)
+        if ( ! empty( $input['asaas_api_key'] ) ) {
+            $raw = sanitize_text_field( $input['asaas_api_key'] );
+            if ( $raw !== str_repeat( '*', strlen( $raw ) ) && $raw !== '••••••••••••••••' ) {
+                $clean['asaas_api_key'] = WPAIP_Security::encrypt( $raw );
+            } else {
+                $clean['asaas_api_key'] = $saved['asaas_api_key'] ?? '';
+            }
+        } else {
+            $clean['asaas_api_key'] = $saved['asaas_api_key'] ?? '';
+        }
+
+        // Demais opções Asaas
+        $clean['asaas_environment']  = in_array( $input['asaas_environment'] ?? '', [ 'sandbox', 'production' ], true )
+            ? $input['asaas_environment']
+            : 'sandbox';
+        $clean['asaas_payment_link'] = esc_url_raw( $input['asaas_payment_link'] ?? '' );
+        $clean['asaas_cache_hours']  = max( 1, (int) ( $input['asaas_cache_hours'] ?? 24 ) );
+        $clean['asaas_bypass_admins'] = ! empty( $input['asaas_bypass_admins'] ) ? '1' : '0';
+
         // Provider padrão para texto e imagem
         $clean['default_llm']   = sanitize_text_field( $input['default_llm']   ?? 'openai' );
         $clean['default_image'] = sanitize_text_field( $input['default_image'] ?? 'pollinations' );
@@ -133,6 +157,12 @@ class WPAIP_Settings {
             'deepseek_model'          => 'deepseek-chat',
             'huggingface_image_model' => 'black-forest-labs/FLUX.1-schnell',
             'system_prompt'           => 'Você é um redator especialista em SEO e marketing de conteúdo. Escreva em português do Brasil com linguagem clara, objetiva e envolvente.',
+            // Asaas
+            'asaas_api_key'           => '',
+            'asaas_environment'       => 'sandbox',
+            'asaas_payment_link'      => '',
+            'asaas_cache_hours'       => 24,
+            'asaas_bypass_admins'     => '1',
         ];
     }
 
@@ -206,6 +236,27 @@ class WPAIP_Settings {
         ], $data );
 
         wp_send_json_success( [ 'models' => $models ] );
+    }
+
+    // ── AJAX: Testar conexão Asaas ───────────────────────────────────────────
+
+    public static function ajax_test_asaas(): void {
+        WPAIP_Security::check_ajax( 'manage_options', 'settings' );
+        $result = WPAIP_Asaas::test_connection();
+        if ( $result['success'] ) {
+            wp_send_json_success( $result );
+        } else {
+            wp_send_json_error( $result );
+        }
+    }
+
+    // ── AJAX: Limpar cache Asaas ─────────────────────────────────────────────
+
+    public static function ajax_clear_asaas_cache(): void {
+        WPAIP_Security::check_ajax( 'manage_options', 'settings' );
+        $user_id = (int) ( $_POST['user_id'] ?? get_current_user_id() );
+        WPAIP_Asaas::clear_cache( $user_id );
+        wp_send_json_success( [ 'message' => 'Cache limpo para o usuário #' . $user_id ] );
     }
 
     // ── AJAX: Testar API Key ──────────────────────────────────────────────────

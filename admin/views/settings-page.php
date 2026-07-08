@@ -247,6 +247,118 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
             </div>
         </div>
 
+        <!-- ── Asaas — Controle de Acesso ── -->
+        <div class="wpaip-card" style="border-top: 3px solid #7c3aed;">
+            <div class="wpaip-card-header" style="background: linear-gradient(135deg, rgba(124,58,237,.06) 0%, rgba(236,72,153,.04) 100%);">
+                <h2 style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.2em;">🔒</span>
+                    <?php _e( 'Asaas — Controle de Acesso', 'wp-ai-publisher' ); ?>
+                </h2>
+                <p class="wpaip-card-desc">
+                    <?php _e( 'Restrinja o uso do plugin a usuários com assinatura ou cobrança ativa no Asaas. Deixe a chave em branco para desabilitar o paywall.', 'wp-ai-publisher' ); ?>
+                </p>
+            </div>
+            <div class="wpaip-card-body">
+
+                <!-- Chave API -->
+                <div class="wpaip-api-row">
+                    <div class="wpaip-api-label">
+                        <span class="wpaip-api-icon">💳</span>
+                        <div>
+                            <strong><?php _e( 'Chave de API Asaas', 'wp-ai-publisher' ); ?></strong>
+                            <?php $has_asaas = ! empty( WPAIP_Security::decrypt( WPAIP_Settings::get( 'asaas_api_key' ) ) ); ?>
+                            <?php if ( $has_asaas ) : ?>
+                                <span class="wpaip-badge wpaip-badge--ok"><?php _e( 'Configurada', 'wp-ai-publisher' ); ?></span>
+                            <?php else : ?>
+                                <span class="wpaip-badge wpaip-badge--empty"><?php _e( 'Não configurada', 'wp-ai-publisher' ); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="wpaip-api-input-group">
+                        <input
+                            type="password"
+                            id="wpaip-asaas-key"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_api_key]"
+                            class="wpaip-input"
+                            placeholder="<?php echo esc_attr( $has_asaas ? '••••••••••••••••' : '$aact_...' ); ?>"
+                            autocomplete="new-password"
+                        >
+                        <button type="button" id="wpaip-asaas-test-btn" class="button">
+                            <?php _e( 'Testar', 'wp-ai-publisher' ); ?>
+                        </button>
+                        <span class="wpaip-test-result" id="wpaip-asaas-test-result"></span>
+                    </div>
+                </div>
+
+                <div class="wpaip-grid-2" style="margin-top:20px;">
+
+                    <!-- Ambiente -->
+                    <div class="wpaip-field">
+                        <label for="wpaip-asaas-env"><?php _e( 'Ambiente', 'wp-ai-publisher' ); ?></label>
+                        <select id="wpaip-asaas-env" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_environment]" class="wpaip-select">
+                            <option value="sandbox"    <?php selected( WPAIP_Settings::get( 'asaas_environment', 'sandbox' ), 'sandbox'    ); ?>>🧪 Sandbox (testes)</option>
+                            <option value="production" <?php selected( WPAIP_Settings::get( 'asaas_environment', 'sandbox' ), 'production' ); ?>>🚀 Produção</option>
+                        </select>
+                        <span class="wpaip-field-hint">Use Sandbox para testes e Produção para o site real.</span>
+                    </div>
+
+                    <!-- Cache -->
+                    <div class="wpaip-field">
+                        <label for="wpaip-asaas-cache"><?php _e( 'Cache de verificação (horas)', 'wp-ai-publisher' ); ?></label>
+                        <input
+                            type="number"
+                            id="wpaip-asaas-cache"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_cache_hours]"
+                            class="wpaip-input"
+                            value="<?php echo esc_attr( WPAIP_Settings::get( 'asaas_cache_hours', 24 ) ); ?>"
+                            min="1" max="168" step="1"
+                        >
+                        <span class="wpaip-field-hint">Evita chamadas excessivas à API. Padrão: 24h.</span>
+                    </div>
+
+                    <!-- Link de pagamento -->
+                    <div class="wpaip-field" style="grid-column: 1 / -1;">
+                        <label for="wpaip-asaas-link"><?php _e( 'Link de assinatura (redirecionamento)', 'wp-ai-publisher' ); ?></label>
+                        <input
+                            type="url"
+                            id="wpaip-asaas-link"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_payment_link]"
+                            class="wpaip-input"
+                            value="<?php echo esc_url( WPAIP_Settings::get( 'asaas_payment_link', '' ) ); ?>"
+                            placeholder="https://www.asaas.com/c/seu-link"
+                        >
+                        <span class="wpaip-field-hint">URL exibida no botão "Assinar agora" da página de bloqueio.</span>
+                    </div>
+
+                    <!-- Bypass admins -->
+                    <div class="wpaip-field" style="grid-column: 1 / -1;">
+                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                            <input
+                                type="checkbox"
+                                name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_bypass_admins]"
+                                value="1"
+                                <?php checked( WPAIP_Settings::get( 'asaas_bypass_admins', '1' ), '1' ); ?>
+                                style="width:18px; height:18px; accent-color:#7c3aed; cursor:pointer;"
+                            >
+                            <span><?php _e( 'Isentar administradores da verificação (recomendado)', 'wp-ai-publisher' ); ?></span>
+                        </label>
+                        <span class="wpaip-field-hint" style="margin-left:28px;">Usuários com permissão <code>manage_options</code> nunca serão bloqueados.</span>
+                    </div>
+
+                </div>
+
+                <!-- Limpar cache manual -->
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,.06); display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <button type="button" id="wpaip-asaas-clear-cache" class="button">
+                        🗑️ <?php _e( 'Limpar meu cache Asaas', 'wp-ai-publisher' ); ?>
+                    </button>
+                    <span id="wpaip-asaas-cache-result" style="font-size:12px; color:#666;"></span>
+                    <span style="font-size:12px; color:#999;"><?php _e( 'Força re-verificação do seu status de pagamento na próxima visita.', 'wp-ai-publisher' ); ?></span>
+                </div>
+
+            </div>
+        </div>
+
         <?php submit_button( __( 'Salvar Configurações', 'wp-ai-publisher' ) ); ?>
     </form>
 </div>
