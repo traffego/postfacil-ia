@@ -1,0 +1,272 @@
+<?php
+/**
+ * Geração de imagens via APIs de IA.
+ * Suporta: DALL-E 3 (OpenAI), Gemini Imagen, Stable Diffusion (via API compatible).
+ */
+defined( 'ABSPATH' ) || exit;
+
+class WPAIP_Image {
+
+    /**
+     * Gera uma imagem e retorna a URL temporária.
+     *
+     * @param string $prompt    Descrição da imagem (já sanitizada).
+     * @param string $provider  'dalle3' | 'gemini' (padrão do settings)
+     * @param array  $options   [ 'size' => '1792x1024', 'quality' => 'hd' ]
+     * @return array { success: bool, url: string, message: string }
+     */
+    public static function generate( string $prompt, string $provider = '', array $options = [] ): array {
+        if ( empty( $provider ) ) {
+            $provider = WPAIP_Settings::get( 'default_image', 'pollinations' );
+        }
+
+        $prompt = WPAIP_Security::prepare_prompt( $prompt, 1000 );
+
+        switch ( $provider ) {
+            case 'dalle3':
+                return self::call_dalle3( $prompt, $options );
+            case 'gemini':
+                return self::call_gemini_imagen( $prompt, $options );
+            case 'pollinations':
+                return self::call_pollinations( $prompt, $options );
+            case 'huggingface':
+                return self::call_huggingface( $prompt, $options );
+            default:
+                return [ 'success' => false, 'url' => '', 'message' => 'Provider de imagem desconhecido: ' . $provider ];
+        }
+    }
+
+    // ── AJAX Handlers ─────────────────────────────────────────────────────────
+
+    public static function register_ajax(): void {
+        add_action( 'wp_ajax_wpaip_generate_featured_image', [ __CLASS__, 'ajax_generate_featured' ] );
+        add_action( 'wp_ajax_wpaip_generate_inline_image',   [ __CLASS__, 'ajax_generate_inline'   ] );
+    }
+
+    /**
+     * Gera imagem de capa e seta como featured image do post.
+     */
+    public static function ajax_generate_featured(): void {
+        WPAIP_Security::check_ajax( 'edit_posts' );
+
+        $post_id  = (int) ( $_POST['post_id']  ?? 0 );
+        $prompt   = sanitize_textarea_field( $_POST['prompt']   ?? '' );
+        $provider = sanitize_text_field(     $_POST['provider'] ?? '' );
+
+        if ( ! $post_id || empty( $prompt ) ) {
+            wp_send_json_error( [ 'message' => 'post_id e prompt são obrigatórios.' ] );
+        }
+
+        // Gera imagem
+        $result = self::generate( $prompt, $provider );
+        if ( ! $result['success'] ) {
+            wp_send_json_error( [ 'message' => $result['message'] ] );
+        }
+
+        // Faz upload para biblioteca WP e seta como featured image
+        $attachment_id = WPAIP_Media::upload_from_url( $result['url'], $post_id, $prompt );
+        if ( is_wp_error( $attachment_id ) ) {
+            wp_send_json_error( [ 'message' => $attachment_id->get_error_message() ] );
+        }
+
+        set_post_thumbnail( $post_id, $attachment_id );
+
+        $thumb_url = wp_get_attachment_image_url( $attachment_id, 'medium' );
+
+        wp_send_json_success( [
+            'attachment_id' => $attachment_id,
+            'thumb_url'     => $thumb_url,
+            'message'       => 'Imagem de capa definida com sucesso.',
+        ] );
+    }
+
+    /**
+     * Gera imagem ilustrativa para inserir no corpo do post.
+     */
+    public static function ajax_generate_inline(): void {
+        WPAIP_Security::check_ajax( 'edit_posts' );
+
+        $post_id  = (int) ( $_POST['post_id']  ?? 0 );
+        $prompt   = sanitize_textarea_field( $_POST['prompt']   ?? '' );
+        $provider = sanitize_text_field(     $_POST['provider'] ?? '' );
+
+        if ( empty( $prompt ) ) {
+            wp_send_json_error( [ 'message' => 'Prompt vazio.' ] );
+        }
+
+        $result = self::generate( $prompt, $provider );
+        if ( ! $result['success'] ) {
+            wp_send_json_error( [ 'message' => $result['message'] ] );
+        }
+
+        $attachment_id = WPAIP_Media::upload_from_url( $result['url'], $post_id ?: null, $prompt );
+        if ( is_wp_error( $attachment_id ) ) {
+            wp_send_json_error( [ 'message' => $attachment_id->get_error_message() ] );
+        }
+
+        $full_url = wp_get_attachment_image_url( $attachment_id, 'large' );
+
+        wp_send_json_success( [
+            'attachment_id' => $attachment_id,
+            'url'           => $full_url,
+            'html'          => sprintf(
+                '<img src="%s" alt="%s" class="aligncenter size-large wp-image-%d" />',
+                esc_url( $full_url ),
+                esc_attr( $prompt ),
+                $attachment_id
+            ),
+        ] );
+    }
+
+    // ── DALL-E 3 ──────────────────────────────────────────────────────────────
+
+    private static function call_dalle3( string $prompt, array $opts ): array {
+        $api_key = WPAIP_Settings::get_api_key( 'openai' );
+        if ( empty( $api_key ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => 'API key OpenAI não configurada.' ];
+        }
+
+        $body = wp_json_encode( [
+            'model'   => 'dall-e-3',
+            'prompt'  => $prompt,
+            'n'       => 1,
+            'size'    => $opts['size']    ?? '1792x1024',
+            'quality' => $opts['quality'] ?? 'standard',
+        ] );
+
+        $response = wp_remote_post( 'https://api.openai.com/v1/images/generations', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $api_key,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => $body,
+            'timeout' => 90,
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => $response->get_error_message() ];
+        }
+
+        $code = wp_remote_retrieve_response_code( $response );
+        $data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+        if ( $code !== 200 ) {
+            $msg = $data['error']['message'] ?? ( 'Erro HTTP ' . $code );
+            return [ 'success' => false, 'url' => '', 'message' => $msg ];
+        }
+
+        $url = $data['data'][0]['url'] ?? '';
+        if ( empty( $url ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => 'URL de imagem não retornada pelo DALL-E.' ];
+        }
+
+        return [ 'success' => true, 'url' => $url, 'message' => '' ];
+    }
+
+    // ── Gemini Imagen ─────────────────────────────────────────────────────────
+
+    private static function call_gemini_imagen( string $prompt, array $opts ): array {
+        $api_key = WPAIP_Settings::get_api_key( 'gemini' );
+        if ( empty( $api_key ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => 'API key Gemini não configurada.' ];
+        }
+
+        $model = $opts['model'] ?? 'imagen-4.0-generate-001';
+        $url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:predict?key={$api_key}";
+
+        $body = wp_json_encode( [
+            'instances'  => [ [ 'prompt' => $prompt ] ],
+            'parameters' => [
+                'sampleCount'  => 1,
+                'aspectRatio'  => $opts['aspect_ratio'] ?? '16:9',
+            ],
+        ] );
+
+        $response = wp_remote_post( $url, [
+            'headers' => [ 'Content-Type' => 'application/json' ],
+            'body'    => $body,
+            'timeout' => 90,
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => $response->get_error_message() ];
+        }
+
+        $code = wp_remote_retrieve_response_code( $response );
+        $data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+        if ( $code !== 200 ) {
+            $msg = $data['error']['message'] ?? ( 'Erro HTTP ' . $code );
+            return [ 'success' => false, 'url' => '', 'message' => $msg ];
+        }
+
+        // Gemini retorna base64; salvar como arquivo temporário
+        $b64 = $data['predictions'][0]['bytesBase64Encoded'] ?? '';
+        if ( empty( $b64 ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => 'Imagem não retornada pelo Gemini Imagen.' ];
+        }
+
+        // Salvar em temp e retornar caminho como "url" (WPAIP_Media sabe lidar)
+        $tmp  = sys_get_temp_dir() . '/wpaip_gemini_' . uniqid() . '.png';
+        file_put_contents( $tmp, base64_decode( $b64 ) );
+
+        return [ 'success' => true, 'url' => $tmp, 'is_local' => true, 'message' => '' ];
+    }
+
+    private static function call_pollinations( string $prompt, array $opts ): array {
+        $width  = $opts['width'] ?? 1024;
+        $height = $opts['height'] ?? 576;
+        $url    = 'https://image.pollinations.ai/prompt/' . urlencode( $prompt ) . "?width={$width}&height={$height}&nologo=true&private=true";
+
+        return [ 'success' => true, 'url' => $url, 'message' => '' ];
+    }
+
+    private static function call_huggingface( string $prompt, array $opts ): array {
+        $api_key = WPAIP_Settings::get_api_key( 'huggingface' );
+        if ( empty( $api_key ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => 'API key Hugging Face não configurada.' ];
+        }
+
+        // Modelo configurado pelo usuário nas configurações do plugin (padrão: FLUX.1-schnell)
+        $model = $opts['model'] ?? WPAIP_Settings::get( 'huggingface_image_model', 'black-forest-labs/FLUX.1-schnell' );
+        $url   = "https://router.huggingface.co/hf-inference/models/{$model}";
+
+        $body = wp_json_encode( [ 'inputs' => $prompt ] );
+
+        $response = wp_remote_post( $url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $api_key,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => $body,
+            'timeout' => 90,
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => $response->get_error_message() ];
+        }
+
+        $code = wp_remote_retrieve_response_code( $response );
+        $body_response = wp_remote_retrieve_body( $response );
+
+        if ( $code !== 200 ) {
+            $json = json_decode( $body_response, true );
+            $msg  = $json['error'] ?? $json['error']['message'] ?? ( 'Erro HTTP ' . $code );
+            // Se o modelo estiver carregando (comum no Hugging Face free tier)
+            if ( isset( $json['estimated_time'] ) ) {
+                $msg = sprintf( 'O modelo está carregando nos servidores do Hugging Face. Tempo estimado: %d segundos. Tente novamente em breve.', (int) $json['estimated_time'] );
+            }
+            return [ 'success' => false, 'url' => '', 'message' => $msg ];
+        }
+
+        if ( empty( $body_response ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => 'Imagem vazia retornada pelo Hugging Face.' ];
+        }
+
+        // Hugging Face retorna os bytes da imagem diretamente. Salvar como arquivo temporário local
+        $tmp  = sys_get_temp_dir() . '/wpaip_hf_' . uniqid() . '.png';
+        file_put_contents( $tmp, $body_response );
+
+        return [ 'success' => true, 'url' => $tmp, 'is_local' => true, 'message' => '' ];
+    }
+}

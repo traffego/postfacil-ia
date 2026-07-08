@@ -1,0 +1,24 @@
+# Dependências
+node_modules/
+vendor/
+
+# Ambiente
+.env
+.env.*
+
+# Dados sensíveis
+data/auth_info/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build
+*.zip
