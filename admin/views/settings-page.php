@@ -12,7 +12,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
 
     <?php if ( $saved ) : ?>
         <div class="notice notice-success is-dismissible">
-            <p><?php _e( '✓ Configurações salvas com sucesso.', 'wp-ai-publisher' ); ?></p>
+            <p><?php _e( 'Configurações salvas com sucesso.', 'wp-ai-publisher' ); ?></p>
         </div>
     <?php endif; ?>
 
@@ -31,7 +31,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
         <div class="wpaip-card-body" id="wpaip-tutorial-body" style="display: none;">
             <div class="wpaip-grid-2">
                 <div style="padding: 12px; border: 1px solid #f0f0f0; border-radius: 6px; background: #fafafa;">
-                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">🤖 OpenAI</h3>
+                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">OpenAI</h3>
                     <p style="font-size: 0.78rem; line-height: 1.4; color: #666; margin-bottom: 0;">
                         1. Acesse <a href="https://platform.openai.com/" target="_blank">platform.openai.com</a>.<br>
                         2. Vá até <strong>API Keys</strong> no menu.<br>
@@ -40,7 +40,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                     </p>
                 </div>
                 <div style="padding: 12px; border: 1px solid #f0f0f0; border-radius: 6px; background: #fafafa;">
-                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">✨ Google Gemini</h3>
+                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">Google Gemini</h3>
                     <p style="font-size: 0.78rem; line-height: 1.4; color: #666; margin-bottom: 0;">
                         1. Acesse <a href="https://aistudio.google.com/" target="_blank">aistudio.google.com</a>.<br>
                         2. Clique em <strong>Get API key</strong>.<br>
@@ -49,7 +49,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                     </p>
                 </div>
                 <div style="padding: 12px; border: 1px solid #f0f0f0; border-radius: 6px; background: #fafafa;">
-                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">🧠 Anthropic</h3>
+                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">Anthropic</h3>
                     <p style="font-size: 0.78rem; line-height: 1.4; color: #666; margin-bottom: 0;">
                         1. Acesse <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a>.<br>
                         2. Clique na aba <strong>API Keys</strong>.<br>
@@ -58,7 +58,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                     </p>
                 </div>
                 <div style="padding: 12px; border: 1px solid #f0f0f0; border-radius: 6px; background: #fafafa;">
-                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">🔍 DeepSeek</h3>
+                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">DeepSeek</h3>
                     <p style="font-size: 0.78rem; line-height: 1.4; color: #666; margin-bottom: 0;">
                         1. Acesse <a href="https://platform.deepseek.com/" target="_blank">platform.deepseek.com</a>.<br>
                         2. Vá até <strong>API Keys</strong>.<br>
@@ -67,7 +67,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                     </p>
                 </div>
                 <div style="padding: 12px; border: 1px solid #f0f0f0; border-radius: 6px; background: #fafafa;">
-                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">🤗 Hugging Face</h3>
+                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">Hugging Face</h3>
                     <p style="font-size: 0.78rem; line-height: 1.4; color: #666; margin-bottom: 0;">
                         1. Acesse <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a>.<br>
                         2. Crie uma conta grátis (sem cartão).<br>
@@ -92,11 +92,11 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
 
                 <?php
                 $providers_meta = [
-                    'openai'      => [ 'label' => 'OpenAI',     'placeholder' => 'sk-...',       'icon' => '🤖' ],
-                    'gemini'      => [ 'label' => 'Google Gemini', 'placeholder' => 'AIza...',    'icon' => '✨' ],
-                    'anthropic'   => [ 'label' => 'Anthropic',  'placeholder' => 'sk-ant-...',   'icon' => '🧠' ],
-                    'deepseek'    => [ 'label' => 'DeepSeek',   'placeholder' => 'sk-...',       'icon' => '🔍' ],
-                    'huggingface' => [ 'label' => 'Hugging Face (Imagens Grátis)', 'placeholder' => 'hf_...', 'icon' => '🤗' ],
+                    'openai'      => [ 'label' => 'OpenAI',     'placeholder' => 'sk-...',       'icon' => '' ],
+                    'gemini'      => [ 'label' => 'Google Gemini', 'placeholder' => 'AIza...',    'icon' => '' ],
+                    'anthropic'   => [ 'label' => 'Anthropic',  'placeholder' => 'sk-ant-...',   'icon' => '' ],
+                    'deepseek'    => [ 'label' => 'DeepSeek',   'placeholder' => 'sk-...',       'icon' => '' ],
+                    'huggingface' => [ 'label' => 'Hugging Face (Imagens Grátis)', 'placeholder' => 'hf_...', 'icon' => '' ],
                 ];
 
                 foreach ( $providers_meta as $key => $meta ) :
@@ -104,7 +104,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                 ?>
                 <div class="wpaip-api-row">
                     <div class="wpaip-api-label">
-                        <span class="wpaip-api-icon"><?php echo $meta['icon']; ?></span>
+                        <?php if ( ! empty( $meta['icon'] ) ) : ?><span class="wpaip-api-icon"><?php echo $meta['icon']; ?></span><?php endif; ?>
                         <div>
                             <strong><?php echo esc_html( $meta['label'] ); ?></strong>
                             <?php if ( $has_key ) : ?>
@@ -196,7 +196,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
 
                 <!-- ── Hugging Face Modelo de Imagem ── -->
                 <div class="wpaip-field" style="grid-column: 1 / -1;">
-                    <label for="wpaip-hf-model">🤗 Hugging Face — Modelo de Imagem</label>
+                    <label for="wpaip-hf-model">Hugging Face — Modelo de Imagem</label>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <select
                             id="wpaip-hf-model"
@@ -220,7 +220,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                             <?php endforeach; ?>
                         </select>
                         <button type="button" id="wpaip-hf-load-models" class="button">
-                            🔄 Carregar da API
+                            Carregar da API
                         </button>
                         <span id="wpaip-hf-models-status" style="font-size:11px; color:#888;"></span>
                     </div>
@@ -251,7 +251,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
         <div class="wpaip-card" style="border-top: 3px solid #7c3aed;">
             <div class="wpaip-card-header" style="background: linear-gradient(135deg, rgba(124,58,237,.06) 0%, rgba(236,72,153,.04) 100%);">
                 <h2 style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:1.2em;">🔒</span>
+                    <span class="dashicons dashicons-lock" style="color:#7c3aed;"></span>
                     <?php _e( 'Asaas — Controle de Acesso', 'wp-ai-publisher' ); ?>
                 </h2>
                 <p class="wpaip-card-desc">
@@ -263,7 +263,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                 <!-- Chave API -->
                 <div class="wpaip-api-row">
                     <div class="wpaip-api-label">
-                        <span class="wpaip-api-icon">💳</span>
+                        <span class="wpaip-api-icon"><span class="dashicons dashicons-cart" style="font-size:18px;"></span></span>
                         <div>
                             <strong><?php _e( 'Chave de API Asaas', 'wp-ai-publisher' ); ?></strong>
                             <?php $has_asaas = ! empty( WPAIP_Security::decrypt( WPAIP_Settings::get( 'asaas_api_key' ) ) ); ?>
@@ -296,8 +296,8 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                     <div class="wpaip-field">
                         <label for="wpaip-asaas-env"><?php _e( 'Ambiente', 'wp-ai-publisher' ); ?></label>
                         <select id="wpaip-asaas-env" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_environment]" class="wpaip-select">
-                            <option value="sandbox"    <?php selected( WPAIP_Settings::get( 'asaas_environment', 'sandbox' ), 'sandbox'    ); ?>>🧪 Sandbox (testes)</option>
-                            <option value="production" <?php selected( WPAIP_Settings::get( 'asaas_environment', 'sandbox' ), 'production' ); ?>>🚀 Produção</option>
+                            <option value="sandbox"    <?php selected( WPAIP_Settings::get( 'asaas_environment', 'sandbox' ), 'sandbox'    ); ?>>Sandbox (testes)</option>
+                            <option value="production" <?php selected( WPAIP_Settings::get( 'asaas_environment', 'sandbox' ), 'production' ); ?>>Produção</option>
                         </select>
                         <span class="wpaip-field-hint">Use Sandbox para testes e Produção para o site real.</span>
                     </div>
@@ -350,7 +350,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                 <!-- Limpar cache manual -->
                 <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,.06); display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                     <button type="button" id="wpaip-asaas-clear-cache" class="button">
-                        🗑️ <?php _e( 'Limpar meu cache Asaas', 'wp-ai-publisher' ); ?>
+                        <?php _e( 'Limpar meu cache Asaas', 'wp-ai-publisher' ); ?>
                     </button>
                     <span id="wpaip-asaas-cache-result" style="font-size:12px; color:#666;"></span>
                     <span style="font-size:12px; color:#999;"><?php _e( 'Força re-verificação do seu status de pagamento na próxima visita.', 'wp-ai-publisher' ); ?></span>

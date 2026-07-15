@@ -94,22 +94,57 @@
         }
     }
 
+    function setPostTitle(title) {
+        if (isGuten) {
+            // Gutenberg: atualiza via store
+            if (typeof wp !== 'undefined' && wp.data) {
+                wp.data.dispatch('core/editor').editPost({ title: title });
+            }
+        } else {
+            // Editor Clássico: campo #title
+            const $titleField = $('#title');
+            if ($titleField.length) {
+                $titleField.val(title).trigger('change');
+                // Força atualização do slug preview
+                if (typeof wp !== 'undefined' && wp.title) {
+                    wp.title.set(title);
+                }
+            }
+        }
+    }
+
     // ── Filtro de modelos por provider ─────────────────────────────────────────
 
-    function filterModels(provider) {
+    // init=true → respeita o selected definido pelo PHP (não sobrescreve)
+    // init=false (troca de provider) → seleciona o primeiro visível
+    function filterModels(provider, init) {
+        var $first = null;
+        var hasPreSelected = false;
+
         $('#wpaip-llm-model option').each(function () {
             const show = $(this).data('provider') === provider;
             $(this).toggle(show);
-            if (show) $(this).prop('selected', true);
+
+            if (show) {
+                if (!$first) $first = $(this);
+                // defaultSelected = atributo "selected" vindo do PHP
+                if (this.defaultSelected) hasPreSelected = true;
+            }
         });
+
+        // Na inicialização, só força seleção se PHP não definiu nenhum padrão
+        // Na troca de provider, sempre seleciona o primeiro visível
+        if (!init || !hasPreSelected) {
+            if ($first) $first.prop('selected', true);
+        }
     }
 
     $('#wpaip-llm-provider').on('change', function () {
-        filterModels($(this).val());
+        filterModels($(this).val(), false);
     });
 
-    // Inicializa
-    filterModels($('#wpaip-llm-provider').val());
+    // Inicializa respeitando o padrão salvo
+    filterModels($('#wpaip-llm-provider').val(), true);
 
     // ── Geração de Texto ───────────────────────────────────────────────────────
 
@@ -142,6 +177,12 @@
         .done(function (res) {
             if (res.success && res.data.text) {
                 insertTextInEditor(res.data.text);
+
+                // Insere título se vier na resposta (modo draft)
+                if (res.data.title) {
+                    setPostTitle(res.data.title);
+                }
+
                 setStatus($status, 'success', cfg.strings.success);
             } else {
                 setStatus($status, 'error', cfg.strings.error + (res.data.message || 'Erro desconhecido'));

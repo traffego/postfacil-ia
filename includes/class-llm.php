@@ -69,11 +69,27 @@ class WPAIP_LLM {
 
         $result = self::generate( $final_prompt, $provider, [ 'model' => $model ] );
 
-        if ( $result['success'] ) {
-            wp_send_json_success( [ 'text' => $result['text'] ] );
-        } else {
+        if ( ! $result['success'] ) {
             wp_send_json_error( [ 'message' => $result['message'] ] );
         }
+
+        // Modo draft: tenta extrair título do JSON retornado
+        $title = '';
+        $text  = $result['text'];
+
+        if ( $mode === 'draft' ) {
+            // Remove possível bloco de código markdown: ```json ... ```
+            $clean = preg_replace( '/^```(?:json)?\s*/i', '', trim( $text ) );
+            $clean = preg_replace( '/\s*```$/i', '', $clean );
+            $decoded = json_decode( $clean, true );
+
+            if ( is_array( $decoded ) && isset( $decoded['content'] ) ) {
+                $title = sanitize_text_field( $decoded['title'] ?? '' );
+                $text  = $decoded['content'];
+            }
+        }
+
+        wp_send_json_success( [ 'text' => $text, 'title' => $title ] );
     }
 
     // ── Prompt builder ────────────────────────────────────────────────────────
@@ -86,7 +102,11 @@ class WPAIP_LLM {
                 return "Resuma o seguinte texto de forma clara e concisa. Retorne apenas o resumo:\n\n{$input}";
             case 'draft':
             default:
-                return "Crie um artigo de blog completo e bem estruturado sobre o seguinte tema. Use subtítulos H2 e H3, parágrafos envolventes e linguagem acessível. Retorne o conteúdo em HTML semântico:\n\n{$input}";
+                return 'Crie um artigo de blog completo e bem estruturado sobre o seguinte tema. '
+                     . 'Use subtítulos H2 e H3, parágrafos envolventes e linguagem acessível. '
+                     . 'Retorne SOMENTE um objeto JSON válido (sem markdown, sem texto extra) com duas chaves: '
+                     . '"title" (string com o título do artigo) e "content" (string com o artigo em HTML semântico). '
+                     . "Tema:\n\n{$input}";
         }
     }
 
