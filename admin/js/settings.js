@@ -16,7 +16,7 @@
         const hasSaved  = $btn.closest('.wpaip-api-row').find('.wpaip-badge--ok').length > 0;
 
         if (!api_key && !hasSaved) {
-            $result.attr('class', 'wpaip-test-result fail').text('⚠ Digite uma API key para testar.');
+            $result.attr('class', 'wpaip-test-result fail').text('Digite uma API key para testar.');
             return;
         }
 
@@ -48,12 +48,12 @@
 
     $('input[type="password"].wpaip-input').each(function () {
         const $input = $(this);
-        const $toggle = $('<button type="button" class="button" style="margin-left:4px; padding: 4px 8px; font-size:11px;">👁</button>');
+        const $toggle = $('<button type="button" class="button" style="margin-left:4px; padding: 4px 8px; font-size:11px;">Mostrar</button>');
         $input.after($toggle);
         $toggle.on('click', function () {
             const type = $input.attr('type') === 'password' ? 'text' : 'password';
             $input.attr('type', type);
-            $toggle.text(type === 'password' ? '👁' : '🙈');
+            $toggle.text(type === 'password' ? 'Mostrar' : 'Ocultar');
         });
     });
 
@@ -82,7 +82,7 @@
                         $select.append('<option value="' + m.id + '"' + isSelected + '>' + m.id + likesStr + '</option>');
                     }
                 });
-                $status.css('color', 'green').text('✓ Modelos carregados');
+                $status.css('color', 'green').text('Modelos carregados');
             } else {
                 $status.css('color', 'red').text(res.data.message || cfg.strings.models_error);
             }
@@ -104,7 +104,7 @@
         const apiKey  = $.trim($('#wpaip-asaas-key').val());
 
         if (!apiKey && !hasSaved) {
-            $result.attr('class', 'wpaip-test-result fail').text('⚠ Configure a chave Asaas primeiro.');
+            $result.attr('class', 'wpaip-test-result fail').text('Configure a chave Asaas primeiro.');
             return;
         }
 
@@ -117,9 +117,9 @@
         })
         .done(function (res) {
             if (res.success) {
-                $result.attr('class', 'wpaip-test-result ok').text('✓ ' + (res.data.message || 'Conexão OK'));
+                $result.attr('class', 'wpaip-test-result ok').text(res.data.message || 'Conexão OK');
             } else {
-                $result.attr('class', 'wpaip-test-result fail').text('✗ ' + (res.data.message || 'Falha'));
+                $result.attr('class', 'wpaip-test-result fail').text(res.data.message || 'Falha');
             }
         })
         .fail(function () {
@@ -145,16 +145,16 @@
         })
         .done(function (res) {
             if (res.success) {
-                $result.css('color', 'green').text('✓ ' + (res.data.message || 'Cache limpo!'));
+                $result.css('color', 'green').text(res.data.message || 'Cache limpo!');
             } else {
-                $result.css('color', 'red').text('✗ ' + (res.data.message || 'Erro.'));
+                $result.css('color', 'red').text(res.data.message || 'Erro.');
             }
         })
         .fail(function () {
-            $result.css('color', 'red').text('✗ Falha na requisição.');
+            $result.css('color', 'red').text('Falha na requisição.');
         })
         .always(function () {
-            $btn.prop('disabled', false).text('🗑️ Limpar meu cache Asaas');
+            $btn.prop('disabled', false).text('Limpar meu cache Asaas');
         });
     });
 

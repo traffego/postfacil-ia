@@ -194,8 +194,8 @@ class WPAIP_Settings {
             'nonce'    => WPAIP_Security::create_nonce( 'settings' ),
             'strings'  => [
                 'testing'       => __( 'Testando…', 'wp-ai-publisher' ),
-                'success'       => __( '✓ Conexão OK', 'wp-ai-publisher' ),
-                'fail'          => __( '✗ Falha na conexão', 'wp-ai-publisher' ),
+                'success'       => __( 'Conexão OK', 'wp-ai-publisher' ),
+                'fail'          => __( 'Falha na conexão', 'wp-ai-publisher' ),
                 'loading_models'=> __( 'Buscando modelos…', 'wp-ai-publisher' ),
                 'models_error'  => __( 'Erro ao buscar modelos. Configure a chave do HF primeiro.', 'wp-ai-publisher' ),
             ],
