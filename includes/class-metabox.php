@@ -24,7 +24,7 @@ class WPAIP_Metabox {
         foreach ( $post_types as $pt ) {
             add_meta_box(
                 'wpaip-panel',
-                __( '🤖 AI Publisher', 'wp-ai-publisher' ),
+                __( 'POST FÁCIL I.A.', 'wp-ai-publisher' ),
                 [ __CLASS__, 'render_metabox' ],
                 $pt,
                 'side',
