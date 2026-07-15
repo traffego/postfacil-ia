@@ -115,27 +115,45 @@
 
     // ── Filtro de modelos por provider ─────────────────────────────────────────
 
-    // init=true → respeita o selected definido pelo PHP (não sobrescreve)
-    // init=false (troca de provider) → seleciona o primeiro visível
+    // Guarda todos os options ao carregar (antes de qualquer manipulação)
+    var allModelOptions = [];
+    $('#wpaip-llm-model option').each(function () {
+        allModelOptions.push({
+            node:            this.cloneNode(true),
+            provider:        $(this).data('provider'),
+            defaultSelected: this.defaultSelected,
+            value:           this.value
+        });
+    });
+
     function filterModels(provider, init) {
-        var $first = null;
-        var hasPreSelected = false;
+        var $select   = $('#wpaip-llm-model');
+        var savedVal  = null;
 
-        $('#wpaip-llm-model option').each(function () {
-            const show = $(this).data('provider') === provider;
-            $(this).toggle(show);
+        // Encontra o valor padrão do PHP para este provider (init) ou o 1º disponível
+        if (init) {
+            allModelOptions.forEach(function (opt) {
+                if (opt.provider === provider && opt.defaultSelected && !savedVal) {
+                    savedVal = opt.value;
+                }
+            });
+        }
 
-            if (show) {
-                if (!$first) $first = $(this);
-                // defaultSelected = atributo "selected" vindo do PHP
-                if (this.defaultSelected) hasPreSelected = true;
+        // Limpa e reinsere apenas os options do provider selecionado
+        $select.empty();
+        allModelOptions.forEach(function (opt) {
+            if (opt.provider === provider) {
+                $select.append(opt.node.cloneNode(true));
             }
         });
 
-        // Na inicialização, só força seleção se PHP não definiu nenhum padrão
-        // Na troca de provider, sempre seleciona o primeiro visível
-        if (!init || !hasPreSelected) {
-            if ($first) $first.prop('selected', true);
+        // Define o valor: padrão do PHP (init) ou primeiro da lista (troca)
+        if (savedVal) {
+            $select.val(savedVal);
+        }
+        // Se val() não bateu (ex: modelo removido), seleciona o primeiro
+        if (!$select.val()) {
+            $select.find('option:first').prop('selected', true);
         }
     }
 
