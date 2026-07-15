@@ -10,9 +10,9 @@
         const $panel = $('#wpaip-panel-root');
         if (!$panel.length) return;
 
-        const $trigger = $('<button type="button" id="wpaip-floating-trigger" title="AI Publisher"><span class="dashicons dashicons-superhero"></span></button>');
+        const $trigger = $('<button type="button" id="wpaip-floating-trigger" title="POST FÁCIL I.A."><span class="dashicons dashicons-superhero"></span></button>');
         const $modal = $('<div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;"></div>');
-        const $header = $('<div class="wpaip-modal-header"><h3>🤖 AI Publisher</h3><button type="button" class="wpaip-modal-close">&times;</button></div>');
+        const $header = $('<div class="wpaip-modal-header"><h3>POST FÁCIL I.A.</h3><button type="button" class="wpaip-modal-close">&times;</button></div>');
         
         $modal.append($header).append($panel);
         $('body').append($trigger).append($modal);
