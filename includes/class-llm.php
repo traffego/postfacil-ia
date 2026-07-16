@@ -361,10 +361,12 @@ class WPAIP_LLM {
                 return "Resuma o seguinte texto de forma clara e concisa. Retorne apenas o resumo:{$ref_block}\n\n{$input}";
             case 'draft':
             default:
-                $h2_count = max( 1, (int) ceil( $paragraphs / 2 ) );
-                return "Crie um artigo de blog longo, completo e muito bem estruturado sobre o seguinte tema. "
-                     . "O artigo deve ter: título em H1, introdução envolvente, exatamente {$h2_count} seções H2 "
-                     . "(cada seção com pelo menos 2 parágrafos ricos), totalizando aproximadamente {$paragraphs} parágrafos no corpo do texto, e uma conclusão. "
+                $h2_count = max( 1, (int) round( $paragraphs / 3 ) );
+                return "Crie um artigo de blog sobre o tema abaixo. "
+                     . "REGRA OBRIGATÓRIA DE TAMANHO: o artigo deve ter EXATAMENTE {$paragraphs} parágrafos de texto no corpo (não conte H1, H2, H3 como parágrafos). "
+                     . "Use {$h2_count} seção(ões) H2. Cada parágrafo deve ser rico e bem desenvolvido. "
+                     . "Inclua: título em H1, introdução (1 parágrafo), seções H2 com parágrafos, e conclusão (1 parágrafo). "
+                     . "Total de parágrafos <p>: {$paragraphs}. NÃO escreva mais nem menos. "
                      . 'Use linguagem clara, acessível e otimizada para SEO. '
                      . 'Retorne SOMENTE o HTML do artigo (sem markdown, sem ```html, sem texto extra fora do HTML). '
                      . "Tema:\n\n{$input}{$ref_block}";

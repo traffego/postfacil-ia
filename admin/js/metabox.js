@@ -21,7 +21,7 @@
         $('.wpaip-para-btn').removeClass('is-active');
         $(this).addClass('is-active');
         $('#wpaip-paragraphs').val(val);
-        // Reseta o botão + para o estado original
+        $('#wpaip-btn-draft').data('paragraphs', val);
         var $more = $('#wpaip-para-more');
         if ($more.data('extra')) {
             $more.text('+').removeData('extra').removeClass('is-active');
@@ -29,13 +29,13 @@
     });
 
     $(document).on('click', '#wpaip-para-more', function () {
-        var $more    = $(this);
-        var current  = parseInt($('#wpaip-paragraphs').val(), 10) || 5;
-        var next     = current + 1;
-        if (next > 20) next = 20;
+        var $more   = $(this);
+        var current = parseInt($('#wpaip-paragraphs').val(), 10) || 5;
+        var next    = Math.min(current + 1, 20);
         $('.wpaip-para-btn').removeClass('is-active');
         $more.addClass('is-active').text(next).data('extra', true);
         $('#wpaip-paragraphs').val(next);
+        $('#wpaip-btn-draft').data('paragraphs', next);
     });
     // Move o painel para o modal assim que estiver pronto
     $(function () {
@@ -306,7 +306,7 @@
             provider:   '',
             model:      '',
             mode:       mode,
-            paragraphs: parseInt($('#wpaip-paragraphs').val(), 10) || 5,
+            paragraphs: parseInt($('#wpaip-btn-draft').data('paragraphs') || $('#wpaip-paragraphs').val(), 10) || 5,
             ref_urls:   refUrls,
             ref_texts:  refTexts,
         })
