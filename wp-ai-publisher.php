@@ -3,7 +3,7 @@
  * Plugin Name: WP AI Publisher
  * Plugin URI:  https://github.com/
  * Description: Automação inteligente de criação e agendamento de posts com texto e imagens gerados por IA.
- * Version:     1.0.1
+ * Version:     1.0.2
  * Author:      Jônathas Quintanilha (Garré)
  * License:     GPL-2.0-or-later
  * Text Domain: wp-ai-publisher
@@ -14,7 +14,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // ── Constantes ───────────────────────────────────────────────────────────────
-define( 'WPAIP_VERSION',   '1.0.1' );
+define( 'WPAIP_VERSION',   '1.0.2' );
 define( 'WPAIP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WPAIP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WPAIP_SLUG',      'wp-ai-publisher' );
