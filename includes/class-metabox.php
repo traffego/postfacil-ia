@@ -72,6 +72,11 @@ class WPAIP_Metabox {
                 'error'          => __( 'Erro: ', 'wp-ai-publisher' ),
                 'prompt_empty'   => __( 'Digite um tema ou selecione texto no editor.', 'wp-ai-publisher' ),
                 'image_prompt'   => __( 'Descreva a imagem que deseja gerar:', 'wp-ai-publisher' ),
+                'ref_invalid'    => __( 'URL inválida.', 'wp-ai-publisher' ),
+                'ref_duplicate'  => __( 'URL já adicionada.', 'wp-ai-publisher' ),
+                'ref_fetching'   => __( 'Buscando referências…', 'wp-ai-publisher' ),
+                'ref_fetch_ok'   => __( 'Referências carregadas!', 'wp-ai-publisher' ),
+                'ref_fetch_fail' => __( 'Falha ao buscar referências.', 'wp-ai-publisher' ),
             ],
         ] );
     }
@@ -131,6 +136,24 @@ class WPAIP_Metabox {
                         <?php endforeach; ?>
                     </select>
                 </div>
+
+                <!-- ── Referências Externas ── -->
+                <div class="wpaip-section-title"><?php _e( 'Referências', 'wp-ai-publisher' ); ?></div>
+
+                <div class="wpaip-field">
+                    <label class="wpaip-label" for="wpaip-ref-input">
+                        <?php _e( 'Adicionar URL de referência', 'wp-ai-publisher' ); ?>
+                    </label>
+                    <div class="wpaip-ref-input-row">
+                        <input type="url" id="wpaip-ref-input" class="wpaip-input"
+                            placeholder="<?php esc_attr_e( 'https://exemplo.com/artigo', 'wp-ai-publisher' ); ?>" />
+                        <button type="button" id="wpaip-btn-ref-add" class="wpaip-btn wpaip-btn--secondary wpaip-btn--icon" title="<?php esc_attr_e( 'Adicionar', 'wp-ai-publisher' ); ?>">+</button>
+                    </div>
+                </div>
+
+                <ul id="wpaip-ref-list" class="wpaip-ref-list"></ul>
+
+                <div id="wpaip-ref-status" class="wpaip-status" style="display:none;"></div>
 
                 <!-- ── Geração de Texto ── -->
                 <div class="wpaip-section-title"><?php _e( 'Texto', 'wp-ai-publisher' ); ?></div>

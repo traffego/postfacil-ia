@@ -164,6 +164,99 @@
     // Inicializa respeitando o padrão salvo
     filterModels($('#wpaip-llm-provider').val(), true);
 
+    // ── Referências Externas ───────────────────────────────────────────────────
+
+    var references = []; // { url, text }
+
+    function isValidUrl(str) {
+        try { return /^https?:\/\/.+/.test(str); } catch (e) { return false; }
+    }
+
+    function renderRefList() {
+        var $list = $('#wpaip-ref-list');
+        $list.empty();
+        if (!references.length) return;
+
+        references.forEach(function (ref, idx) {
+            var loaded   = ref.text ? ' wpaip-ref--loaded' : '';
+            var icon     = ref.text ? '✓' : '○';
+            var title    = ref.url.replace(/^https?:\/\//, '').substring(0, 42);
+            var $item = $(
+                '<li class="wpaip-ref-item' + loaded + '" data-idx="' + idx + '">' +
+                    '<span class="wpaip-ref-icon">' + icon + '</span>' +
+                    '<span class="wpaip-ref-url" title="' + ref.url + '">' + title + '</span>' +
+                    '<button type="button" class="wpaip-ref-remove" title="Remover">×</button>' +
+                '</li>'
+            );
+            $list.append($item);
+        });
+    }
+
+    $('#wpaip-btn-ref-add').on('click', function () {
+        var url = $.trim($('#wpaip-ref-input').val());
+        var $st = $('#wpaip-ref-status');
+
+        if (!isValidUrl(url)) {
+            setStatus($st, 'error', cfg.strings.ref_invalid);
+            return;
+        }
+        if (references.some(function (r) { return r.url === url; })) {
+            setStatus($st, 'error', cfg.strings.ref_duplicate);
+            return;
+        }
+
+        references.push({ url: url, text: '' });
+        renderRefList();
+        $('#wpaip-ref-input').val('');
+        $st.hide();
+    });
+
+    // Adicionar com Enter
+    $('#wpaip-ref-input').on('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); $('#wpaip-btn-ref-add').trigger('click'); }
+    });
+
+    // Remover item
+    $('#wpaip-ref-list').on('click', '.wpaip-ref-remove', function () {
+        var idx = parseInt($(this).closest('.wpaip-ref-item').data('idx'), 10);
+        references.splice(idx, 1);
+        renderRefList();
+    });
+
+    /**
+     * Busca o conteúdo das URLs adicionadas via AJAX (PHP faz o fetch).
+     * Retorna uma Promise que resolve com array de textos.
+     */
+    function fetchReferences() {
+        var urls = references.map(function (r) { return r.url; });
+        if (!urls.length) return $.Deferred().resolve([]).promise();
+
+        var $st = $('#wpaip-ref-status');
+        setStatus($st, 'loading', cfg.strings.ref_fetching);
+
+        return $.post(cfg.ajax_url, {
+            action: 'wpaip_fetch_references',
+            nonce:  cfg.nonce,
+            urls:   urls,
+        }).then(function (res) {
+            if (res.success && res.data.references) {
+                res.data.references.forEach(function (r, idx) {
+                    if (references[idx]) {
+                        references[idx].text = r.text || '';
+                    }
+                });
+                renderRefList();
+                setStatus($st, 'success', cfg.strings.ref_fetch_ok);
+            } else {
+                setStatus($st, 'error', cfg.strings.ref_fetch_fail);
+            }
+            return references.map(function (r) { return r.text; }).filter(Boolean);
+        }, function () {
+            setStatus($st, 'error', cfg.strings.ref_fetch_fail);
+            return [];
+        });
+    }
+
     // ── Geração de Texto ───────────────────────────────────────────────────────
 
     $('.wpaip-btn[data-mode]').on('click', function () {
@@ -184,13 +277,17 @@
         disableBtns(true);
         setStatus($status, 'loading', cfg.strings.generating);
 
-        $.post(cfg.ajax_url, {
-            action:   'wpaip_generate_text',
-            nonce:    cfg.nonce,
-            prompt:   prompt,
-            provider: $('#wpaip-llm-provider').val(),
-            model:    $('#wpaip-llm-model').val(),
-            mode:     mode,
+        // Primeiro busca referências (se houver), depois gera
+        fetchReferences().then(function (refTexts) {
+            return $.post(cfg.ajax_url, {
+                action:      'wpaip_generate_text',
+                nonce:       cfg.nonce,
+                prompt:      prompt,
+                provider:    $('#wpaip-llm-provider').val(),
+                model:       $('#wpaip-llm-model').val(),
+                mode:        mode,
+                references:  refTexts,
+            });
         })
         .done(function (res) {
             if (res.success && res.data.text) {

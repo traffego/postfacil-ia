@@ -477,3 +477,120 @@
 .wpaip-dark-theme .wpaip-notice--warn a {
     color: #a5b4fc !important;
 }
+
+/* ── Referências Externas ── */
+
+.wpaip-ref-input-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.wpaip-ref-input-row .wpaip-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.wpaip-btn--icon {
+    flex: 0 0 30px;
+    width: 30px;
+    padding: 5px 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+}
+
+.wpaip-ref-list {
+    list-style: none;
+    margin: 0 0 6px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.wpaip-ref-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 4px 7px;
+    font-size: 11px;
+    animation: wpaip-ref-in 0.15s ease;
+}
+
+@keyframes wpaip-ref-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.wpaip-ref-item.wpaip-ref--loaded {
+    border-color: #a7f3d0;
+    background: #ecfdf5;
+}
+
+.wpaip-ref-icon {
+    font-size: 10px;
+    color: #999;
+    flex-shrink: 0;
+}
+
+.wpaip-ref-item.wpaip-ref--loaded .wpaip-ref-icon {
+    color: #059669;
+}
+
+.wpaip-ref-url {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #444;
+}
+
+.wpaip-ref-remove {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #999;
+    line-height: 1;
+    padding: 0 2px;
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+.wpaip-ref-remove:hover { color: #dc2626; }
+
+/* Dark theme — referências */
+.wpaip-dark-theme .wpaip-ref-item {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.wpaip-dark-theme .wpaip-ref-item.wpaip-ref--loaded {
+    background: #064e3b !important;
+    border-color: #047857 !important;
+}
+
+.wpaip-dark-theme .wpaip-ref-url {
+    color: #d1d5db !important;
+}
+
+.wpaip-dark-theme .wpaip-ref-icon {
+    color: #6b7280 !important;
+}
+
+.wpaip-dark-theme .wpaip-ref-item.wpaip-ref--loaded .wpaip-ref-icon {
+    color: #34d399 !important;
+}
+
+.wpaip-dark-theme .wpaip-ref-remove {
+    color: #6b7280 !important;
+}
+
+.wpaip-dark-theme .wpaip-ref-remove:hover {
+    color: #f87171 !important;
+}

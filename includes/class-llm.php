@@ -49,23 +49,89 @@ class WPAIP_LLM {
     // ── AJAX Handler ──────────────────────────────────────────────────────────
 
     public static function register_ajax(): void {
-        add_action( 'wp_ajax_wpaip_generate_text', [ __CLASS__, 'ajax_generate_text' ] );
+        add_action( 'wp_ajax_wpaip_generate_text',    [ __CLASS__, 'ajax_generate_text'    ] );
+        add_action( 'wp_ajax_wpaip_fetch_references', [ __CLASS__, 'ajax_fetch_references' ] );
+    }
+
+    // ── AJAX: Fetch References ─────────────────────────────────────────────────
+
+    public static function ajax_fetch_references(): void {
+        WPAIP_Security::check_ajax( 'edit_posts' );
+
+        $urls = isset( $_POST['urls'] ) && is_array( $_POST['urls'] )
+            ? array_map( 'esc_url_raw', $_POST['urls'] )
+            : [];
+
+        if ( empty( $urls ) ) {
+            wp_send_json_error( [ 'message' => 'Nenhuma URL enviada.' ] );
+        }
+
+        $results = [];
+        foreach ( $urls as $url ) {
+            if ( empty( $url ) || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+                continue;
+            }
+
+            $response = wp_remote_get( $url, [
+                'timeout'    => 20,
+                'user-agent' => 'Mozilla/5.0 (compatible; WP-AI-Publisher/1.0)',
+            ] );
+
+            if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+                $results[] = [
+                    'url'     => $url,
+                    'success' => false,
+                    'text'    => '',
+                ];
+                continue;
+            }
+
+            $html = wp_remote_retrieve_body( $response );
+
+            // Remove scripts, styles e SVG
+            $html = preg_replace( '/<(script|style|svg|noscript)[^>]*>.*?<\/\1>/si', '', $html );
+
+            // Tenta pegar apenas o <body>
+            if ( preg_match( '/<body[^>]*>(.*?)<\/body>/si', $html, $match ) ) {
+                $html = $match[1];
+            }
+
+            $text = wp_strip_all_tags( $html );
+            $text = preg_replace( '/\s{2,}/', ' ', $text );
+            $text = trim( $text );
+
+            // Limita a 3000 caracteres por referência para não explodir o contexto
+            if ( mb_strlen( $text ) > 3000 ) {
+                $text = mb_substr( $text, 0, 3000 ) . '…';
+            }
+
+            $results[] = [
+                'url'     => $url,
+                'success' => ! empty( $text ),
+                'text'    => $text,
+            ];
+        }
+
+        wp_send_json_success( [ 'references' => $results ] );
     }
 
     public static function ajax_generate_text(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
 
-        $prompt   = sanitize_textarea_field( $_POST['prompt']   ?? '' );
-        $provider = sanitize_text_field(     $_POST['provider'] ?? '' );
-        $model    = sanitize_text_field(     $_POST['model']    ?? '' );
-        $mode     = sanitize_text_field(     $_POST['mode']     ?? 'draft' ); // draft | expand | summarize
+        $prompt     = sanitize_textarea_field( $_POST['prompt']   ?? '' );
+        $provider   = sanitize_text_field(     $_POST['provider'] ?? '' );
+        $model      = sanitize_text_field(     $_POST['model']    ?? '' );
+        $mode       = sanitize_text_field(     $_POST['mode']     ?? 'draft' ); // draft | expand | summarize
+        $references = isset( $_POST['references'] ) && is_array( $_POST['references'] )
+            ? array_map( 'sanitize_textarea_field', $_POST['references'] )
+            : [];
 
         if ( empty( $prompt ) ) {
             wp_send_json_error( [ 'message' => 'Prompt vazio.' ] );
         }
 
         // Monta prompt baseado no modo
-        $final_prompt = self::build_prompt( $prompt, $mode );
+        $final_prompt = self::build_prompt( $prompt, $mode, $references );
 
         $result = self::generate( $final_prompt, $provider, [ 'model' => $model ] );
 
@@ -94,19 +160,30 @@ class WPAIP_LLM {
 
     // ── Prompt builder ────────────────────────────────────────────────────────
 
-    private static function build_prompt( string $input, string $mode ): string {
+    private static function build_prompt( string $input, string $mode, array $references = [] ): string {
+        // Monta bloco de contexto com referências, se houver
+        $ref_block = '';
+        if ( ! empty( $references ) ) {
+            $ref_block  = "\n\n---\nCONTEXTO DE REFERÊNCIAS (use como base de pesquisa, não copie literalmente):\n";
+            foreach ( $references as $i => $text ) {
+                $n          = $i + 1;
+                $ref_block .= "\n[Referência {$n}]:\n{$text}\n";
+            }
+            $ref_block .= "---\n";
+        }
+
         switch ( $mode ) {
             case 'expand':
-                return "Expanda o seguinte trecho, mantendo o estilo e tom. Retorne apenas o texto expandido, sem comentários:\n\n{$input}";
+                return "Expanda o seguinte trecho, mantendo o estilo e tom. Retorne apenas o texto expandido, sem comentários:{$ref_block}\n\n{$input}";
             case 'summarize':
-                return "Resuma o seguinte texto de forma clara e concisa. Retorne apenas o resumo:\n\n{$input}";
+                return "Resuma o seguinte texto de forma clara e concisa. Retorne apenas o resumo:{$ref_block}\n\n{$input}";
             case 'draft':
             default:
                 return 'Crie um artigo de blog completo e bem estruturado sobre o seguinte tema. '
                      . 'Use subtítulos H2 e H3, parágrafos envolventes e linguagem acessível. '
                      . 'Retorne SOMENTE um objeto JSON válido (sem markdown, sem texto extra) com duas chaves: '
                      . '"title" (string com o título do artigo) e "content" (string com o artigo em HTML semântico). '
-                     . "Tema:\n\n{$input}";
+                     . "Tema:\n\n{$input}{$ref_block}";
         }
     }
 
