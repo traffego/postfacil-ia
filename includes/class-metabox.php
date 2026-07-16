@@ -148,28 +148,21 @@ class WPAIP_Metabox {
                 </div>
 
                 <!-- ── Geração de Texto ── -->
-                <div class="wpaip-section-title"><?php _e( 'Texto', 'wp-ai-publisher' ); ?></div>
-
                 <div class="wpaip-field">
-                    <label class="wpaip-label" for="wpaip-prompt">
-                        <?php _e( 'Tema / Instrução', 'wp-ai-publisher' ); ?>
-                    </label>
+                    <div class="wpaip-prompt-header">
+                        <label class="wpaip-label" for="wpaip-prompt">PROMPT</label>
+                        <div class="wpaip-para-btns">
+                            <button type="button" class="wpaip-para-btn" data-val="1">1</button>
+                            <button type="button" class="wpaip-para-btn" data-val="2">2</button>
+                            <button type="button" class="wpaip-para-btn" data-val="3">3</button>
+                            <button type="button" class="wpaip-para-btn" data-val="4">4</button>
+                            <button type="button" class="wpaip-para-btn is-active" data-val="5">5</button>
+                            <button type="button" id="wpaip-para-more" class="wpaip-para-btn wpaip-para-btn--more" title="<?php esc_attr_e( 'Mais parágrafos', 'wp-ai-publisher' ); ?>">+</button>
+                        </div>
+                        <input type="hidden" id="wpaip-paragraphs" value="5">
+                    </div>
                     <textarea id="wpaip-prompt" class="wpaip-textarea" rows="3"
                         placeholder="<?php esc_attr_e( 'Ex: 5 dicas de SEO para e-commerce', 'wp-ai-publisher' ); ?>"></textarea>
-                </div>
-
-                <!-- ── Quantidade de parágrafos ── -->
-                <div class="wpaip-field wpaip-field--inline">
-                    <label class="wpaip-label"><?php _e( 'Parágrafos', 'wp-ai-publisher' ); ?></label>
-                    <div class="wpaip-para-btns">
-                        <button type="button" class="wpaip-para-btn" data-val="1">1</button>
-                        <button type="button" class="wpaip-para-btn" data-val="2">2</button>
-                        <button type="button" class="wpaip-para-btn" data-val="3">3</button>
-                        <button type="button" class="wpaip-para-btn" data-val="4">4</button>
-                        <button type="button" class="wpaip-para-btn is-active" data-val="5">5</button>
-                        <button type="button" id="wpaip-para-more" class="wpaip-para-btn wpaip-para-btn--more" title="<?php esc_attr_e( 'Mais parágrafos', 'wp-ai-publisher' ); ?>">+</button>
-                    </div>
-                    <input type="hidden" id="wpaip-paragraphs" value="5">
                 </div>
 
                 <div class="wpaip-btn-group">

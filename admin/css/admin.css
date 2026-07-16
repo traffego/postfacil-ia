@@ -291,6 +291,18 @@
     margin: 0;
 }
 
+/* Header do PROMPT com botões de parágrafos à direita */
+.wpaip-prompt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+
+.wpaip-prompt-header .wpaip-label {
+    margin: 0;
+}
+
 /* Botões redondos de parágrafos */
 .wpaip-para-btns {
     display: flex;
