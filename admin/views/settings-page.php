@@ -147,7 +147,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                 <!-- Provider -->
                 <div class="wpaip-field">
                     <label for="wpaip-default-llm"><?php _e( 'Provider', 'wp-ai-publisher' ); ?></label>
-                    <select id="wpaip-default-llm" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_llm]" class="wpaip-select" id="wpaip-llm-provider-settings">
+                    <select id="wpaip-default-llm" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_llm]" class="wpaip-select">
                         <option value="openai"    <?php selected( $opts['default_llm'], 'openai'    ); ?>>GPT (OpenAI)</option>
                         <option value="gemini"    <?php selected( $opts['default_llm'], 'gemini'    ); ?>>Gemini (Google)</option>
                         <option value="anthropic" <?php selected( $opts['default_llm'], 'anthropic' ); ?>>Claude (Anthropic)</option>
