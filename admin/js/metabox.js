@@ -6,9 +6,9 @@
     const isGuten   = cfg.is_gutenberg;
 
     // ── Modal Flutuante Dark ──────────────────────────────────────────────────
-    $(function () {
+    function initModal() {
         const $panel = $('#wpaip-panel-root');
-        if (!$panel.length) return;
+        if (!$panel.length) return false;
 
         const $trigger    = $('<button type="button" id="wpaip-floating-trigger" title="POST F\u00c1CIL I.A."><span class="dashicons dashicons-superhero"></span></button>');
         const $modal      = $('<div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;"></div>');
@@ -26,15 +26,27 @@
         // Oculta o postbox vazio (painel está no modal)
         $panel.closest('.postbox').hide();
 
-        $trigger.on('click', function () {
-            $modal.fadeToggle(200);
-        });
-
-        $closeBtn.on('click', function () {
-            $modal.fadeOut(200);
-        });
-
+        $trigger.on('click', function () { $modal.fadeToggle(200); });
+        $closeBtn.on('click', function () { $modal.fadeOut(200); });
         initSaveDot($saveDot);
+        return true;
+    }
+
+    $(function () {
+        // Tenta imediatamente
+        if (initModal()) return;
+
+        // Gutenberg renderiza metaboxes assincronamente — observa o DOM
+        var attempts = 0;
+        var observer = new MutationObserver(function () {
+            attempts++;
+            if (initModal()) {
+                observer.disconnect();
+            } else if (attempts > 200) {
+                observer.disconnect(); // desiste após ~20s
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
     });
 
     function initSaveDot($dot) {
