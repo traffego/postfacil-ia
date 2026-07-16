@@ -1,41 +1,44 @@
 /* global wpaipMetabox, tinymce, wp */
+
+// ── Click do modal — delegation no document (não depende de wpaipMetabox) ──
 (function ($) {
-    'use strict';
-
-    const cfg       = wpaipMetabox;
-    const isGuten   = cfg.is_gutenberg;
-
-    // ── Modal Flutuante Dark ──────────────────────────────────────────────────
+    $(document).on('click', '#wpaip-floating-trigger', function () {
+        $('#wpaip-floating-modal').fadeToggle(200);
+    });
+    $(document).on('click', '.wpaip-modal-close', function () {
+        $('#wpaip-floating-modal').fadeOut(200);
+    });
+    // Move o painel para o modal assim que estiver pronto
     $(function () {
-        var $trigger  = $('#wpaip-floating-trigger');
-        var $modal    = $('#wpaip-floating-modal');
-        var $closeBtn = $('.wpaip-modal-close');
-        var $saveDot  = $('#wpaip-save-dot');
-
-        // Click sempre funciona — independente do painel
-        $trigger.on('click', function () { $modal.fadeToggle(200); });
-        $closeBtn.on('click', function () { $modal.fadeOut(200); });
-        initSaveDot($saveDot);
-
-        // Move o #wpaip-panel-root para dentro do modal (com retry)
-        function tryMovePanel() {
+        function tryMove() {
             var $panel = $('#wpaip-panel-root');
-            if (!$panel.length) return false;
-            if ($modal.data('panel-moved')) return true;
-
+            var $modal = $('#wpaip-floating-modal');
+            if (!$panel.length || !$modal.length) return false;
+            if ($modal.data('moved')) return true;
             $modal.append($panel);
             $panel.closest('.postbox').hide();
-            $modal.data('panel-moved', true);
+            $modal.data('moved', true);
             return true;
         }
-
-        if (!tryMovePanel()) {
-            var attempts = 0;
-            var timer = setInterval(function () {
-                attempts++;
-                if (tryMovePanel() || attempts > 50) clearInterval(timer);
+        if (!tryMove()) {
+            var n = 0, t = setInterval(function () {
+                if (tryMove() || ++n > 50) clearInterval(t);
             }, 200);
         }
+    });
+}(jQuery));
+
+// ── Lógica principal (requer wpaipMetabox) ───────────────────────────────────
+(function ($) {
+    'use strict';
+    if (typeof wpaipMetabox === 'undefined') return;
+
+    const cfg     = wpaipMetabox;
+    const isGuten = cfg.is_gutenberg;
+
+    // Bolinha de salvar
+    $(function () {
+        initSaveDot($('#wpaip-save-dot'));
     });
 
     function initSaveDot($dot) {
