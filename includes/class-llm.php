@@ -72,11 +72,11 @@ class WPAIP_LLM {
                 continue;
             }
 
-            // Tenta buscar com cURL (Chrome UA + Referer Google + Cookie)
-            $text = self::fetch_url_curl( $url );
+            // Método primário: strpos local (rápido, sem dependência externa)
+            $text = self::fetch_url_local( $url );
 
-            // Fallback: Jina AI Reader (processa qualquer URL, até com paywall)
-            if ( empty( $text ) ) {
+            // Fallback: Jina AI Reader (para SPAs com JS pesado)
+            if ( mb_strlen( $text ) < 200 ) {
                 $text = self::fetch_url_jina( $url );
             }
 
@@ -96,10 +96,11 @@ class WPAIP_LLM {
     }
 
     /**
-     * Busca conteúdo de uma URL via cURL simulando browser Chrome.
-     * Referer Google + Cookie jar — funciona em sites como G1, UOL, etc.
+     * Método primário: cURL com UA Chrome + strpos para extração do body.
+     * Usa strpos em vez de regex para evitar pcre.backtrack_limit em HTMLs grandes (G1 tem 1.4 MB).
+     * Velocidade: ~0.1s. Sem dependência externa.
      */
-    private static function fetch_url_curl( string $url ): string {
+    private static function fetch_url_local( string $url ): string {
         if ( ! function_exists( 'curl_init' ) ) {
             return '';
         }
@@ -111,7 +112,7 @@ class WPAIP_LLM {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS      => 5,
-            CURLOPT_TIMEOUT        => 25,
+            CURLOPT_TIMEOUT        => 20,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_ENCODING       => '', // aceita gzip/deflate automaticamente
             CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
@@ -130,7 +131,6 @@ class WPAIP_LLM {
         $code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
         curl_close( $ch );
 
-        // Limpa cookie temp
         if ( file_exists( $cookie_file ) ) {
             @unlink( $cookie_file );
         }
@@ -139,44 +139,40 @@ class WPAIP_LLM {
             return '';
         }
 
-        // Remove ruído: scripts, estilos, SVG, nav, footer, header
+        // Remove scripts, estilos, SVG, nav, header, footer antes de qualquer extração
         $html = preg_replace( '/<(script|style|svg|noscript|nav|header|footer|aside)[^>]*>.*?<\/\1>/si', '', $html );
 
-        // Tenta extrair <article>, <main> ou <body> — só usa se não estiver vazio
-        // (G1 e similares têm <article> no HTML mas o conteúdo é renderizado via JS)
-        $best = '';
-        foreach ( [ 'article', 'main', 'body' ] as $tag ) {
-            if ( preg_match( '/<' . $tag . '[^>]*>(.*?)<\/' . $tag . '>/si', $html, $m ) ) {
-                $candidate = wp_strip_all_tags( $m[1] );
-                $candidate = trim( preg_replace( '/\s{2,}/', ' ', $candidate ) );
-                if ( mb_strlen( $candidate ) > 200 ) {
-                    $best = $candidate;
-                    break;
-                }
-            }
+        // Usa strpos para extrair <body> — evita pcre.backtrack_limit em HTMLs de 1MB+
+        $body_start = stripos( $html, '<body' );
+        $text       = '';
+
+        if ( $body_start !== false ) {
+            $tag_end   = strpos( $html, '>', $body_start );
+            $body_end  = strripos( $html, '</body>' );
+            $body_html = ( $body_end !== false && $body_end > $tag_end )
+                ? substr( $html, $tag_end + 1, $body_end - $tag_end - 1 )
+                : substr( $html, $tag_end + 1 );
+
+            $text = strip_tags( $body_html );
+        } else {
+            // Sem <body>: usa HTML completo
+            $text = strip_tags( $html );
         }
 
-        // Se nenhuma tag específica funcionou, usa o HTML completo como fallback
-        if ( empty( $best ) ) {
-            $best = wp_strip_all_tags( $html );
-            $best = trim( preg_replace( '/\s{2,}/', ' ', $best ) );
-        }
-
-        return $best;
+        $text = preg_replace( '/\s{2,}/', ' ', $text );
+        return trim( $text );
     }
 
     /**
-     * Busca conteúdo via Jina AI Reader (https://r.jina.ai/).
-     * Fallback útil para sites com JavaScript pesado ou paywall leve.
+     * Fallback: Jina AI Reader (r.jina.ai) — usado apenas quando fetch local retorna < 200 chars.
+     * Útil para SPAs que renderizam conteúdo 100% via JavaScript.
      */
     private static function fetch_url_jina( string $url ): string {
         if ( ! function_exists( 'curl_init' ) ) {
             return '';
         }
 
-        $jina_url = 'https://r.jina.ai/' . $url;
-
-        $ch = curl_init( $jina_url );
+        $ch = curl_init( 'https://r.jina.ai/' . $url );
         curl_setopt_array( $ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
@@ -197,28 +193,20 @@ class WPAIP_LLM {
             return '';
         }
 
-        $text = trim( $text );
-
-        // Remove menus/cabeçalhos duplicados que Jina às vezes retorna no topo
-        // Detecta o primeiro parágrafo real: linha com mais de 80 chars
+        $text  = trim( $text );
         $lines = explode( "\n", $text );
+
+        // Remove cabeçalho/menu duplicado do topo (Jina às vezes repete navegação)
         $start = 0;
-        $found_real_content = false;
         foreach ( $lines as $i => $line ) {
-            $line = trim( $line );
-            // Considera conteúdo real: linha com >80 chars OU com número (data) e contexto
-            if ( mb_strlen( $line ) > 80 ) {
-                $start              = $i;
-                $found_real_content = true;
+            if ( mb_strlen( trim( $line ) ) > 80 ) {
+                $start = max( 0, $i - 3 );
                 break;
             }
         }
 
-        if ( $found_real_content && $start > 0 ) {
-            // Mantém algumas linhas antes do conteúdo para pegar o título
-            $keep_from = max( 0, $start - 3 );
-            $lines     = array_slice( $lines, $keep_from );
-            $text      = implode( "\n", $lines );
+        if ( $start > 0 ) {
+            $text = implode( "\n", array_slice( $lines, $start ) );
         }
 
         return trim( $text );
