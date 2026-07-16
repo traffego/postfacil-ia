@@ -291,9 +291,63 @@
     margin: 0;
 }
 
-#wpaip-paragraphs {
-    width: 58px !important;
-    max-width: 58px;
+/* Botões redondos de parágrafos */
+.wpaip-para-btns {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.wpaip-para-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    color: #555;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s, box-shadow 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+    padding: 0;
+}
+
+.wpaip-para-btn:hover:not(:disabled) {
+    border-color: #7c6fcd;
+    color: #7c6fcd;
+    transform: scale(1.1);
+}
+
+.wpaip-para-btn.is-active {
+    background: #7c6fcd;
+    border-color: #6a5db5;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(124,111,205,0.45);
+    transform: scale(1.08);
+}
+
+.wpaip-para-btn--more {
+    border-style: dashed;
+    color: #aaa;
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.wpaip-para-btn--more:hover:not(:disabled) {
+    border-color: #7c6fcd;
+    border-style: solid;
+    color: #7c6fcd;
+    transform: scale(1.1);
+}
+
+.wpaip-para-btn--more.is-active {
+    border-style: solid;
 }
 
 /* ── Botões do metabox ── */

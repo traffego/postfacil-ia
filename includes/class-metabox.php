@@ -160,17 +160,16 @@ class WPAIP_Metabox {
 
                 <!-- ── Quantidade de parágrafos ── -->
                 <div class="wpaip-field wpaip-field--inline">
-                    <label class="wpaip-label" for="wpaip-paragraphs">
-                        <?php _e( 'Parágrafos', 'wp-ai-publisher' ); ?>
-                    </label>
-                    <select id="wpaip-paragraphs" class="wpaip-select wpaip-select--sm">
-                        <option value="3">3</option>
-                        <option value="5" selected>5</option>
-                        <option value="7">7</option>
-                        <option value="10">10</option>
-                        <option value="15">15</option>
-                        <option value="20">20</option>
-                    </select>
+                    <label class="wpaip-label"><?php _e( 'Parágrafos', 'wp-ai-publisher' ); ?></label>
+                    <div class="wpaip-para-btns">
+                        <button type="button" class="wpaip-para-btn" data-val="1">1</button>
+                        <button type="button" class="wpaip-para-btn" data-val="2">2</button>
+                        <button type="button" class="wpaip-para-btn" data-val="3">3</button>
+                        <button type="button" class="wpaip-para-btn" data-val="4">4</button>
+                        <button type="button" class="wpaip-para-btn is-active" data-val="5">5</button>
+                        <button type="button" id="wpaip-para-more" class="wpaip-para-btn wpaip-para-btn--more" title="<?php esc_attr_e( 'Mais parágrafos', 'wp-ai-publisher' ); ?>">+</button>
+                    </div>
+                    <input type="hidden" id="wpaip-paragraphs" value="5">
                 </div>
 
                 <div class="wpaip-btn-group">
