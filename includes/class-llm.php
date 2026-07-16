@@ -266,9 +266,60 @@ class WPAIP_LLM {
                 $text  = preg_replace( '/<h1[^>]*>.*?<\/h1>/is', '', $text, 1 );
                 $text  = trim( $text );
             }
+
+            // ── Trunca para exatamente $paragraphs parágrafos <p> ──────────────
+            $text = self::truncate_to_paragraphs( $text, $paragraphs );
         }
 
         wp_send_json_success( [ 'text' => $text, 'title' => $title ] );
+    }
+
+    /**
+     * Mantém apenas os primeiros $max parágrafos <p> do HTML,
+     * preservando headings (H2, H3) e listas que os acompanham.
+     */
+    private static function truncate_to_paragraphs( string $html, int $max ): string {
+        if ( $max <= 0 ) return $html;
+
+        // Divide o HTML em blocos de nível raiz usando DOMDocument
+        $doc = new DOMDocument( '1.0', 'UTF-8' );
+        libxml_use_internal_errors( true );
+        $doc->loadHTML( '<?xml encoding="UTF-8"><div id="__wrap">' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+        libxml_clear_errors();
+
+        $wrap  = $doc->getElementById( '__wrap' );
+        if ( ! $wrap ) return $html;
+
+        $kept  = 0;
+        $nodes = iterator_to_array( $wrap->childNodes );
+        $keep  = [];
+
+        foreach ( $nodes as $node ) {
+            if ( $node->nodeType !== XML_ELEMENT_NODE ) {
+                $keep[] = $node;
+                continue;
+            }
+            $tag = strtolower( $node->nodeName );
+
+            if ( $tag === 'p' ) {
+                if ( $kept >= $max ) break; // para aqui
+                $keep[] = $node;
+                $kept++;
+            } else {
+                // headings e listas: inclui só se ainda não atingiu o limite
+                if ( $kept < $max ) {
+                    $keep[] = $node;
+                }
+            }
+        }
+
+        // Reconstrói o HTML só com os nós mantidos
+        $out = '';
+        foreach ( $keep as $node ) {
+            $out .= $doc->saveHTML( $node );
+        }
+
+        return $out ?: $html;
     }
 
     /**
