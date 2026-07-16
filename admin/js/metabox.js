@@ -113,57 +113,6 @@
         }
     }
 
-    // ── Filtro de modelos por provider ─────────────────────────────────────────
-
-    // Guarda todos os options ao carregar (antes de qualquer manipulação)
-    var allModelOptions = [];
-    $('#wpaip-llm-model option').each(function () {
-        allModelOptions.push({
-            node:            this.cloneNode(true),
-            provider:        $(this).data('provider'),
-            defaultSelected: this.defaultSelected,
-            value:           this.value
-        });
-    });
-
-    function filterModels(provider, init) {
-        var $select   = $('#wpaip-llm-model');
-        var savedVal  = null;
-
-        // Encontra o valor padrão do PHP para este provider (init) ou o 1º disponível
-        if (init) {
-            allModelOptions.forEach(function (opt) {
-                if (opt.provider === provider && opt.defaultSelected && !savedVal) {
-                    savedVal = opt.value;
-                }
-            });
-        }
-
-        // Limpa e reinsere apenas os options do provider selecionado
-        $select.empty();
-        allModelOptions.forEach(function (opt) {
-            if (opt.provider === provider) {
-                $select.append(opt.node.cloneNode(true));
-            }
-        });
-
-        // Define o valor: padrão do PHP (init) ou primeiro da lista (troca)
-        if (savedVal) {
-            $select.val(savedVal);
-        }
-        // Se val() não bateu (ex: modelo removido), seleciona o primeiro
-        if (!$select.val()) {
-            $select.find('option:first').prop('selected', true);
-        }
-    }
-
-    $('#wpaip-llm-provider').on('change', function () {
-        filterModels($(this).val(), false);
-    });
-
-    // Inicializa respeitando o padrão salvo
-    filterModels($('#wpaip-llm-provider').val(), true);
-
     // ── Referências Externas ───────────────────────────────────────────────────
 
     var references = []; // { url, text }
@@ -223,60 +172,11 @@
         renderRefList();
     });
 
-    /**
-     * Busca o conteúdo das URLs adicionadas via AJAX (PHP faz o fetch).
-     * Retorna Promise que resolve com { urls: [], texts: [] }.
-     * urls = todas as URLs (sempre enviadas ao modelo).
-     * texts = conteúdo extraído (só quando o fetch server-side funcionou).
-     */
-    function fetchReferences() {
-        var urls = references.map(function (r) { return r.url; });
-        if (!urls.length) return $.Deferred().resolve({ urls: [], texts: [] }).promise();
-
-        var $st = $('#wpaip-ref-status');
-        setStatus($st, 'loading', cfg.strings.ref_fetching);
-
-        return $.post(cfg.ajax_url, {
-            action: 'wpaip_fetch_references',
-            nonce:  cfg.nonce,
-            urls:   urls,
-        }).then(function (res) {
-            if (res.success && res.data.references) {
-                res.data.references.forEach(function (r, idx) {
-                    if (references[idx]) {
-                        references[idx].text = r.text || '';
-                    }
-                });
-                renderRefList();
-                // Ao menos uma extraída com sucesso?
-                var anyLoaded = references.some(function (r) { return r.text; });
-                if (anyLoaded) {
-                    setStatus($st, 'success', cfg.strings.ref_fetch_ok);
-                } else {
-                    // Fetch falhou (site bloqueou), mas URLs serão usadas mesmo assim
-                    setStatus($st, 'success', cfg.strings.ref_fetch_ok);
-                }
-            } else {
-                setStatus($st, 'error', cfg.strings.ref_fetch_fail);
-            }
-            return {
-                urls:  references.map(function (r) { return r.url; }),
-                texts: references.map(function (r) { return r.text || ''; }),
-            };
-        }, function () {
-            setStatus($st, 'error', cfg.strings.ref_fetch_fail);
-            // Mesmo com falha total de AJAX, envia as URLs
-            return {
-                urls:  references.map(function (r) { return r.url; }),
-                texts: references.map(function (r) { return ''; }),
-            };
-        });
-    }
-
     // ── Geração de Texto ───────────────────────────────────────────────────────
 
     /**
      * Dispara o AJAX de geração com as referências já resolvidas.
+     * provider e model são enviados vazios: o PHP usa o padrão das configurações.
      */
     function doGenerate(prompt, mode, refUrls, refTexts, $status) {
         setStatus($status, 'loading', cfg.strings.generating);
@@ -285,8 +185,8 @@
             action:    'wpaip_generate_text',
             nonce:     cfg.nonce,
             prompt:    prompt,
-            provider:  $('#wpaip-llm-provider').val(),
-            model:     $('#wpaip-llm-model').val(),
+            provider:  '',
+            model:     '',
             mode:      mode,
             ref_urls:  refUrls,
             ref_texts: refTexts,
@@ -369,6 +269,7 @@
     });
 
     // ── Imagem de Capa ─────────────────────────────────────────────────────────
+    // provider enviado vazio: PHP usa default_image das configurações
 
     $('#wpaip-btn-featured').on('click', function () {
         const $status  = $('#wpaip-image-status');
@@ -389,7 +290,7 @@
             nonce:    cfg.nonce,
             post_id:  cfg.post_id,
             prompt:   prompt,
-            provider: $('#wpaip-image-provider').val(),
+            provider: '',
         })
         .done(function (res) {
             if (res.success) {
@@ -418,6 +319,7 @@
     });
 
     // ── Imagem Inline ──────────────────────────────────────────────────────────
+    // provider enviado vazio: PHP usa default_image das configurações
 
     $('#wpaip-btn-inline').on('click', function () {
         const $status = $('#wpaip-image-status');
@@ -433,7 +335,7 @@
             nonce:    cfg.nonce,
             post_id:  cfg.post_id,
             prompt:   prompt,
-            provider: $('#wpaip-image-provider').val(),
+            provider: '',
         })
         .done(function (res) {
             if (res.success) {

@@ -95,6 +95,30 @@
         });
     });
 
+    // ── Versão de texto dinâmica por provider ─────────────────────────────────
+
+    function updateTextModelVisibility(provider) {
+        $('.wpaip-model-group').hide();
+        $('.wpaip-model-group[data-provider="' + provider + '"]').show();
+    }
+
+    $('#wpaip-default-llm').on('change', function () {
+        updateTextModelVisibility($(this).val());
+    });
+
+    // Init
+    updateTextModelVisibility($('#wpaip-default-llm').val());
+
+    // ── Modelo HF visível só quando Hugging Face selecionado ──────────────────
+
+    $('#wpaip-default-image').on('change', function () {
+        if ($(this).val() === 'huggingface') {
+            $('#wpaip-hf-model-wrapper').show();
+        } else {
+            $('#wpaip-hf-model-wrapper').hide();
+        }
+    });
+
     // ── Testar conexão Asaas ──────────────────────────────────────────────────
 
     $('#wpaip-asaas-test-btn').on('click', function () {

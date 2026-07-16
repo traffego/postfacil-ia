@@ -136,16 +136,18 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
             </div>
         </div>
 
-        <!-- ── Padrões ── -->
+        <!-- ── Modelo de Texto ── -->
         <div class="wpaip-card">
             <div class="wpaip-card-header">
-                <h2><?php _e( 'Providers Padrão', 'wp-ai-publisher' ); ?></h2>
+                <h2><?php _e( 'Modelo de Texto', 'wp-ai-publisher' ); ?></h2>
+                <p class="wpaip-card-desc"><?php _e( 'Provider e versão usados para gerar texto no editor de posts.', 'wp-ai-publisher' ); ?></p>
             </div>
             <div class="wpaip-card-body wpaip-grid-2">
 
+                <!-- Provider -->
                 <div class="wpaip-field">
-                    <label for="wpaip-default-llm"><?php _e( 'Modelo de Texto padrão', 'wp-ai-publisher' ); ?></label>
-                    <select id="wpaip-default-llm" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_llm]" class="wpaip-select">
+                    <label for="wpaip-default-llm"><?php _e( 'Provider', 'wp-ai-publisher' ); ?></label>
+                    <select id="wpaip-default-llm" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_llm]" class="wpaip-select" id="wpaip-llm-provider-settings">
                         <option value="openai"    <?php selected( $opts['default_llm'], 'openai'    ); ?>>GPT (OpenAI)</option>
                         <option value="gemini"    <?php selected( $opts['default_llm'], 'gemini'    ); ?>>Gemini (Google)</option>
                         <option value="anthropic" <?php selected( $opts['default_llm'], 'anthropic' ); ?>>Claude (Anthropic)</option>
@@ -153,37 +155,19 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                     </select>
                 </div>
 
-                <div class="wpaip-field">
-                    <label for="wpaip-default-image"><?php _e( 'Gerador de Imagens padrão', 'wp-ai-publisher' ); ?></label>
-                    <select id="wpaip-default-image" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_image]" class="wpaip-select">
-                        <option value="pollinations" <?php selected( $opts['default_image'], 'pollinations' ); ?>>Pollinations AI (Grátis)</option>
-                        <option value="dalle3" <?php selected( $opts['default_image'], 'dalle3' ); ?>>DALL-E 3 (OpenAI)</option>
-                        <option value="gemini" <?php selected( $opts['default_image'], 'gemini' ); ?>>Imagen 4 (Gemini)</option>
-                        <option value="huggingface" <?php selected( $opts['default_image'], 'huggingface' ); ?>>Hugging Face</option>
-                    </select>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ── Modelos ── -->
-        <div class="wpaip-card">
-            <div class="wpaip-card-header">
-                <h2><?php _e( 'Versões dos Modelos', 'wp-ai-publisher' ); ?></h2>
-            </div>
-            <div class="wpaip-card-body wpaip-grid-2">
-
+                <!-- Versão por provider (ocultas dinamicamente via JS) -->
                 <?php
                 $model_opts = [
-                    'openai_model'    => [ 'label' => 'OpenAI',     'opts' => [ 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1-mini' ] ],
-                    'gemini_model'    => [ 'label' => 'Gemini',      'opts' => [ 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash' ] ],
-                    'anthropic_model' => [ 'label' => 'Claude',      'opts' => [ 'claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-3-5' ] ],
-                    'deepseek_model'  => [ 'label' => 'DeepSeek',    'opts' => [ 'deepseek-chat', 'deepseek-reasoner' ] ],
+                    'openai_model'    => [ 'label' => 'OpenAI',  'provider' => 'openai',    'opts' => [ 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1-mini' ] ],
+                    'gemini_model'    => [ 'label' => 'Gemini',  'provider' => 'gemini',    'opts' => [ 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash' ] ],
+                    'anthropic_model' => [ 'label' => 'Claude',  'provider' => 'anthropic', 'opts' => [ 'claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-3-5' ] ],
+                    'deepseek_model'  => [ 'label' => 'DeepSeek','provider' => 'deepseek',  'opts' => [ 'deepseek-chat', 'deepseek-reasoner' ] ],
                 ];
                 foreach ( $model_opts as $field => $meta ) :
+                    $is_active = ( $opts['default_llm'] === $meta['provider'] );
                 ?>
-                <div class="wpaip-field">
-                    <label><?php echo esc_html( $meta['label'] ); ?></label>
+                <div class="wpaip-field wpaip-model-group" data-provider="<?php echo esc_attr( $meta['provider'] ); ?>" style="<?php echo $is_active ? '' : 'display:none;'; ?>">
+                    <label><?php printf( __( 'Versão (%s)', 'wp-ai-publisher' ), esc_html( $meta['label'] ) ); ?></label>
                     <select name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[<?php echo esc_attr( $field ); ?>]" class="wpaip-select">
                         <?php foreach ( $meta['opts'] as $m ) : ?>
                             <option value="<?php echo esc_attr( $m ); ?>" <?php selected( $opts[ $field ] ?? '', $m ); ?>>
@@ -194,9 +178,31 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                 </div>
                 <?php endforeach; ?>
 
-                <!-- ── Hugging Face Modelo de Imagem ── -->
-                <div class="wpaip-field" style="grid-column: 1 / -1;">
-                    <label for="wpaip-hf-model">Hugging Face — Modelo de Imagem</label>
+            </div>
+        </div>
+
+        <!-- ── Modelo de Imagem ── -->
+        <div class="wpaip-card">
+            <div class="wpaip-card-header">
+                <h2><?php _e( 'Modelo de Imagem', 'wp-ai-publisher' ); ?></h2>
+                <p class="wpaip-card-desc"><?php _e( 'Provider e modelo usados para gerar imagens no editor de posts.', 'wp-ai-publisher' ); ?></p>
+            </div>
+            <div class="wpaip-card-body wpaip-grid-2">
+
+                <!-- Provider de imagem -->
+                <div class="wpaip-field">
+                    <label for="wpaip-default-image"><?php _e( 'Provider', 'wp-ai-publisher' ); ?></label>
+                    <select id="wpaip-default-image" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_image]" class="wpaip-select">
+                        <option value="pollinations" <?php selected( $opts['default_image'], 'pollinations' ); ?>>Pollinations AI (Grátis — Sem Chave)</option>
+                        <option value="dalle3"       <?php selected( $opts['default_image'], 'dalle3'       ); ?>>DALL-E 3 (OpenAI)</option>
+                        <option value="gemini"       <?php selected( $opts['default_image'], 'gemini'       ); ?>>Imagen 4 (Gemini)</option>
+                        <option value="huggingface"  <?php selected( $opts['default_image'], 'huggingface'  ); ?>>Hugging Face (Grátis — Com Chave)</option>
+                    </select>
+                </div>
+
+                <!-- Modelo Hugging Face (visível só quando HF selecionado) -->
+                <div class="wpaip-field" id="wpaip-hf-model-wrapper" style="<?php echo ( $opts['default_image'] === 'huggingface' ) ? '' : 'display:none;'; ?>">
+                    <label for="wpaip-hf-model"><?php _e( 'Modelo Hugging Face', 'wp-ai-publisher' ); ?></label>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <select
                             id="wpaip-hf-model"
@@ -204,13 +210,13 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                             class="wpaip-select"
                         >
                             <?php
-                            $saved_hf = $opts['huggingface_image_model'] ?? 'black-forest-labs/FLUX.1-schnell';
+                            $saved_hf    = $opts['huggingface_image_model'] ?? 'black-forest-labs/FLUX.1-schnell';
                             $defaults_hf = [
-                                'black-forest-labs/FLUX.1-schnell' => 'FLUX.1-schnell (rápido/grátis)',
-                                'black-forest-labs/FLUX.1-dev'     => 'FLUX.1-dev (melhor qualidade)',
+                                'black-forest-labs/FLUX.1-schnell'         => 'FLUX.1-schnell (rápido/grátis)',
+                                'black-forest-labs/FLUX.1-dev'             => 'FLUX.1-dev (melhor qualidade)',
                                 'stabilityai/stable-diffusion-xl-base-1.0' => 'Stable Diffusion XL',
-                                'stabilityai/sdxl-turbo'           => 'SDXL-Turbo (muito rápido)',
-                                'runwayml/stable-diffusion-v1-5'   => 'Stable Diffusion v1.5',
+                                'stabilityai/sdxl-turbo'                   => 'SDXL-Turbo (muito rápido)',
+                                'runwayml/stable-diffusion-v1-5'           => 'Stable Diffusion v1.5',
                             ];
                             foreach ( $defaults_hf as $val => $label ) :
                             ?>
@@ -219,13 +225,11 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <button type="button" id="wpaip-hf-load-models" class="button">
-                            Carregar da API
-                        </button>
+                        <button type="button" id="wpaip-hf-load-models" class="button">Carregar da API</button>
                         <span id="wpaip-hf-models-status" style="font-size:11px; color:#888;"></span>
                     </div>
                     <span class="wpaip-field-hint">
-                        Clique em "Carregar da API" para buscar os 30 modelos text-to-image mais populares do Hugging Face (requer chave configurada).
+                        <?php _e( 'Clique em "Carregar da API" para buscar os 30 modelos text-to-image mais populares do Hugging Face (requer chave configurada).', 'wp-ai-publisher' ); ?>
                     </span>
                 </div>
 

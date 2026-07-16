@@ -57,14 +57,11 @@ class WPAIP_Metabox {
 
         // Dados passados ao JS
         wp_localize_script( 'wpaip-metabox', 'wpaipMetabox', [
-            'ajax_url'         => admin_url( 'admin-ajax.php' ),
-            'nonce'            => WPAIP_Security::create_nonce(),
-            'post_id'          => get_the_ID(),
-            'is_gutenberg'     => self::is_gutenberg(),
-            'default_provider' => WPAIP_Settings::get( 'default_llm', 'openai' ),
-            'default_image'    => WPAIP_Settings::get( 'default_image', 'dalle3' ),
-            'providers'        => self::get_available_providers(),
-            'strings'          => [
+            'ajax_url'     => admin_url( 'admin-ajax.php' ),
+            'nonce'        => WPAIP_Security::create_nonce(),
+            'post_id'      => get_the_ID(),
+            'is_gutenberg' => self::is_gutenberg(),
+            'strings'      => [
                 'generating'     => __( 'Gerando…', 'wp-ai-publisher' ),
                 'gen_image'      => __( 'Gerando imagem…', 'wp-ai-publisher' ),
                 'uploading'      => __( 'Enviando para biblioteca…', 'wp-ai-publisher' ),
@@ -84,20 +81,11 @@ class WPAIP_Metabox {
     // ── Render HTML do Metabox ────────────────────────────────────────────────
 
     public static function render_metabox( WP_Post $post ): void {
-        $providers       = self::get_available_providers();
-        $default_llm     = WPAIP_Settings::get( 'default_llm',   'openai' );
-        $default_image   = WPAIP_Settings::get( 'default_image', 'dalle3' );
-
-        $llm_models = [
-            'openai'    => [ 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1-mini' ],
-            'gemini'    => [ 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash' ],
-            'anthropic' => [ 'claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-3-5' ],
-            'deepseek'  => [ 'deepseek-chat', 'deepseek-reasoner' ],
-        ];
+        $has_providers = self::has_any_provider();
         ?>
         <div id="wpaip-panel-root">
 
-            <?php if ( empty( $providers ) ) : ?>
+            <?php if ( ! $has_providers ) : ?>
                 <p class="wpaip-notice wpaip-notice--warn">
                     <?php printf(
                         __( 'Nenhuma API key configurada. <a href="%s">Configurar agora.</a>', 'wp-ai-publisher' ),
@@ -105,37 +93,6 @@ class WPAIP_Metabox {
                     ); ?>
                 </p>
             <?php else : ?>
-
-                <!-- ── Provider & Model ── -->
-                <div class="wpaip-field">
-                    <label class="wpaip-label" for="wpaip-llm-provider">
-                        <?php _e( 'Modelo de Texto', 'wp-ai-publisher' ); ?>
-                    </label>
-                    <select id="wpaip-llm-provider" class="wpaip-select">
-                        <?php foreach ( $providers as $key => $label ) : ?>
-                            <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $default_llm ); ?>>
-                                <?php echo esc_html( $label ); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="wpaip-field" id="wpaip-model-wrapper">
-                    <label class="wpaip-label" for="wpaip-llm-model">
-                        <?php _e( 'Versão', 'wp-ai-publisher' ); ?>
-                    </label>
-                    <select id="wpaip-llm-model" class="wpaip-select">
-                        <?php foreach ( $llm_models as $prov => $models ) : ?>
-                            <?php foreach ( $models as $m ) : ?>
-                                <option value="<?php echo esc_attr( $m ); ?>"
-                                    data-provider="<?php echo esc_attr( $prov ); ?>"
-                                    <?php selected( $m, WPAIP_Settings::get( $prov . '_model' ) ); ?>>
-                                    <?php echo esc_html( $m ); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
 
                 <!-- ── Referências Externas ── -->
                 <div class="wpaip-section-title"><?php _e( 'Referências', 'wp-ai-publisher' ); ?></div>
@@ -184,24 +141,6 @@ class WPAIP_Metabox {
                 <div class="wpaip-section-title"><?php _e( 'Imagem de Capa', 'wp-ai-publisher' ); ?></div>
 
                 <div class="wpaip-field">
-                    <label class="wpaip-label" for="wpaip-image-provider">
-                        <?php _e( 'Gerador', 'wp-ai-publisher' ); ?>
-                    </label>
-                    <select id="wpaip-image-provider" class="wpaip-select">
-                        <option value="pollinations" <?php selected( $default_image, 'pollinations' ); ?>>Pollinations AI (Grátis - Sem Chave)</option>
-                        <?php if ( ! empty( WPAIP_Settings::get_api_key( 'huggingface' ) ) ) : ?>
-                            <option value="huggingface" <?php selected( $default_image, 'huggingface' ); ?>>Hugging Face (Grátis - Com Chave)</option>
-                        <?php endif; ?>
-                        <?php if ( ! empty( WPAIP_Settings::get_api_key( 'openai' ) ) ) : ?>
-                            <option value="dalle3" <?php selected( $default_image, 'dalle3' ); ?>>DALL-E 3 (OpenAI)</option>
-                        <?php endif; ?>
-                        <?php if ( ! empty( WPAIP_Settings::get_api_key( 'gemini' ) ) ) : ?>
-                            <option value="gemini" <?php selected( $default_image, 'gemini' ); ?>>Imagen 4 (Gemini)</option>
-                        <?php endif; ?>
-                    </select>
-                </div>
-
-                <div class="wpaip-field">
                     <label class="wpaip-label" for="wpaip-image-prompt">
                         <?php _e( 'Prompt visual', 'wp-ai-publisher' ); ?>
                     </label>
@@ -233,24 +172,17 @@ class WPAIP_Metabox {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**
-     * Retorna apenas os providers que têm API key configurada.
+     * Verifica se existe ao menos um provider de texto ou imagem configurado.
      */
-    private static function get_available_providers(): array {
-        $all = [
-            'openai'    => 'GPT (OpenAI)',
-            'gemini'    => 'Gemini (Google)',
-            'anthropic' => 'Claude (Anthropic)',
-            'deepseek'  => 'DeepSeek',
-        ];
-
-        $available = [];
-        foreach ( $all as $key => $label ) {
-            if ( ! empty( WPAIP_Settings::get_api_key( $key ) ) ) {
-                $available[ $key ] = $label;
+    private static function has_any_provider(): bool {
+        $text_providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
+        foreach ( $text_providers as $p ) {
+            if ( ! empty( WPAIP_Settings::get_api_key( $p ) ) ) {
+                return true;
             }
         }
-
-        return $available;
+        // Pollinations não requer chave — sempre disponível
+        return true;
     }
 
     /**
