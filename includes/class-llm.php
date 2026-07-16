@@ -30,7 +30,7 @@ class WPAIP_LLM {
         }
 
         $system = $options['system'] ?? WPAIP_Settings::get( 'system_prompt' );
-        $prompt = WPAIP_Security::prepare_prompt( $prompt, 4000 );
+        $prompt = WPAIP_Security::prepare_prompt( $prompt, 12000 );
 
         switch ( $provider ) {
             case 'openai':
@@ -243,23 +243,61 @@ class WPAIP_LLM {
             wp_send_json_error( [ 'message' => $result['message'] ] );
         }
 
-        // Modo draft: tenta extrair título do JSON retornado
+        // Modo draft: extrai título e HTML do JSON retornado
         $title = '';
         $text  = $result['text'];
 
         if ( $mode === 'draft' ) {
-            // Remove possível bloco de código markdown: ```json ... ```
-            $clean = preg_replace( '/^```(?:json)?\s*/i', '', trim( $text ) );
-            $clean = preg_replace( '/\s*```$/i', '', $clean );
-            $decoded = json_decode( $clean, true );
-
-            if ( is_array( $decoded ) && isset( $decoded['content'] ) ) {
-                $title = sanitize_text_field( $decoded['title'] ?? '' );
-                $text  = $decoded['content'];
-            }
+            $text = self::extract_draft_content( $text, $title );
         }
 
         wp_send_json_success( [ 'text' => $text, 'title' => $title ] );
+    }
+
+    /**
+     * Extrai title e content do JSON retornado pelo modelo no modo draft.
+     * Tenta múltiplas estratégias para ser resiliente a respostas malformadas.
+     *
+     * @param string $raw   Resposta bruta do modelo.
+     * @param string $title Título extraído (passado por referência).
+     * @return string       HTML do conteúdo extraído (ou o texto bruto se tudo falhar).
+     */
+    private static function extract_draft_content( string $raw, string &$title ): string {
+        // ── Passo 1: remove code fences  ```json ... ``` ────────────────────────
+        $clean = trim( $raw );
+        $clean = preg_replace( '/^```(?:json)?\s*/i', '', $clean );
+        $clean = preg_replace( '/\s*```\s*$/i',       '', $clean );
+        $clean = trim( $clean );
+
+        // ── Passo 2: json_decode direto ─────────────────────────────────────────
+        $decoded = json_decode( $clean, true );
+
+        // ── Passo 3: busca o primeiro bloco { ... } caso haja texto extra ───────
+        if ( ! is_array( $decoded ) ) {
+            $start = strpos( $clean, '{' );
+            $end   = strrpos( $clean, '}' );
+            if ( $start !== false && $end !== false && $end > $start ) {
+                $decoded = json_decode( substr( $clean, $start, $end - $start + 1 ), true );
+            }
+        }
+
+        // ── Passo 4: json_decode funcionou → extrai campos ──────────────────────
+        if ( is_array( $decoded ) && ! empty( $decoded['content'] ) ) {
+            $title = sanitize_text_field( $decoded['title'] ?? '' );
+            return $decoded['content'];
+        }
+
+        // ── Passo 5: regex como último recurso (JSON com newlines literais) ─────
+        if ( preg_match( '/"content"\s*:\s*"((?:[^"\\\\]|\\\\.)*)/s', $clean, $m ) ) {
+            if ( preg_match( '/"title"\s*:\s*"([^"\\\\]*)"/s', $clean, $mt ) ) {
+                $title = sanitize_text_field( $mt[1] );
+            }
+            $content = json_decode( '"' . $m[1] . '"' );
+            return $content ?: $m[1];
+        }
+
+        // ── Passo 6: retorna o texto bruto se tudo falhar ────────────────────────
+        return $raw;
     }
 
     // ── Prompt builder ────────────────────────────────────────────────────────
