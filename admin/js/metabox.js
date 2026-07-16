@@ -5,28 +5,34 @@
     const cfg       = wpaipMetabox;
     const isGuten   = cfg.is_gutenberg;
 
-    // ── Botão Flutuante (scroll até o metabox) ───────────────────────────────
+    // ── Modal Flutuante Dark ──────────────────────────────────────────────────
     $(function () {
         const $panel = $('#wpaip-panel-root');
         if (!$panel.length) return;
 
-        // Botão flutuante de acesso rápido
-        const $trigger = $('<button type="button" id="wpaip-floating-trigger" title="POST F\u00c1CIL I.A."><span class="dashicons dashicons-superhero"></span></button>');
-        $('body').append($trigger);
+        const $trigger    = $('<button type="button" id="wpaip-floating-trigger" title="POST F\u00c1CIL I.A."><span class="dashicons dashicons-superhero"></span></button>');
+        const $modal      = $('<div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;"></div>');
+        const $header     = $('<div class="wpaip-modal-header"></div>');
+        const $titleGroup = $('<div class="wpaip-modal-title-group"></div>');
+        const $saveDot    = $('<button type="button" id="wpaip-save-dot" class="wpaip-save-dot wpaip-save-dot--saved" title="Salvar post"><svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4.5L10.5 1H2zm8.5 0v3.5H13L10.5 1zM5 9h6v4H5V9zm1 1v2h4v-2H6z"/></svg></button>');
+        const $title      = $('<h3>POST F\u00c1CIL I.A.</h3>');
+        const $closeBtn   = $('<button type="button" class="wpaip-modal-close">&times;</button>');
+
+        $titleGroup.append($saveDot).append($title);
+        $header.append($titleGroup).append($closeBtn);
+        $modal.append($header).append($panel);
+        $('body').append($trigger).append($modal);
+
+        // Oculta o postbox vazio (painel está no modal)
+        $panel.closest('.postbox').hide();
 
         $trigger.on('click', function () {
-            const $box = $panel.closest('.postbox');
-            if ($box.length) {
-                $('html, body').animate({ scrollTop: $box.offset().top - 60 }, 300);
-            }
+            $modal.fadeToggle(200);
         });
 
-        // Bolinha de salvar — injetada no header do postbox
-        const $saveDot = $('<button type="button" id="wpaip-save-dot" class="wpaip-save-dot wpaip-save-dot--saved" title="Salvar post"><svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4.5L10.5 1H2zm8.5 0v3.5H13L10.5 1zM5 9h6v4H5V9zm1 1v2h4v-2H6z"/></svg></button>');
-        const $boxHandle = $panel.closest('.postbox').find('.postbox-header h2, .hndle');
-        if ($boxHandle.length) {
-            $boxHandle.first().prepend($saveDot);
-        }
+        $closeBtn.on('click', function () {
+            $modal.fadeOut(200);
+        });
 
         initSaveDot($saveDot);
     });
