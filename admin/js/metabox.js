@@ -225,11 +225,13 @@
 
     /**
      * Busca o conteúdo das URLs adicionadas via AJAX (PHP faz o fetch).
-     * Retorna uma Promise que resolve com array de textos.
+     * Retorna Promise que resolve com { urls: [], texts: [] }.
+     * urls = todas as URLs (sempre enviadas ao modelo).
+     * texts = conteúdo extraído (só quando o fetch server-side funcionou).
      */
     function fetchReferences() {
         var urls = references.map(function (r) { return r.url; });
-        if (!urls.length) return $.Deferred().resolve([]).promise();
+        if (!urls.length) return $.Deferred().resolve({ urls: [], texts: [] }).promise();
 
         var $st = $('#wpaip-ref-status');
         setStatus($st, 'loading', cfg.strings.ref_fetching);
@@ -246,14 +248,28 @@
                     }
                 });
                 renderRefList();
-                setStatus($st, 'success', cfg.strings.ref_fetch_ok);
+                // Ao menos uma extraída com sucesso?
+                var anyLoaded = references.some(function (r) { return r.text; });
+                if (anyLoaded) {
+                    setStatus($st, 'success', cfg.strings.ref_fetch_ok);
+                } else {
+                    // Fetch falhou (site bloqueou), mas URLs serão usadas mesmo assim
+                    setStatus($st, 'success', cfg.strings.ref_fetch_ok);
+                }
             } else {
                 setStatus($st, 'error', cfg.strings.ref_fetch_fail);
             }
-            return references.map(function (r) { return r.text; }).filter(Boolean);
+            return {
+                urls:  references.map(function (r) { return r.url; }),
+                texts: references.map(function (r) { return r.text || ''; }),
+            };
         }, function () {
             setStatus($st, 'error', cfg.strings.ref_fetch_fail);
-            return [];
+            // Mesmo com falha total de AJAX, envia as URLs
+            return {
+                urls:  references.map(function (r) { return r.url; }),
+                texts: references.map(function (r) { return ''; }),
+            };
         });
     }
 
@@ -278,7 +294,7 @@
         setStatus($status, 'loading', cfg.strings.generating);
 
         // Primeiro busca referências (se houver), depois gera
-        fetchReferences().then(function (refTexts) {
+        fetchReferences().then(function (refData) {
             return $.post(cfg.ajax_url, {
                 action:      'wpaip_generate_text',
                 nonce:       cfg.nonce,
@@ -286,7 +302,8 @@
                 provider:    $('#wpaip-llm-provider').val(),
                 model:       $('#wpaip-llm-model').val(),
                 mode:        mode,
-                references:  refTexts,
+                ref_urls:    refData.urls,   // URLs sempre enviadas
+                ref_texts:   refData.texts,  // Conteúdo extraído (pode estar vazio)
             });
         })
         .done(function (res) {

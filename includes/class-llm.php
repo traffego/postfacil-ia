@@ -118,12 +118,19 @@ class WPAIP_LLM {
     public static function ajax_generate_text(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
 
-        $prompt     = sanitize_textarea_field( $_POST['prompt']   ?? '' );
-        $provider   = sanitize_text_field(     $_POST['provider'] ?? '' );
-        $model      = sanitize_text_field(     $_POST['model']    ?? '' );
-        $mode       = sanitize_text_field(     $_POST['mode']     ?? 'draft' ); // draft | expand | summarize
-        $references = isset( $_POST['references'] ) && is_array( $_POST['references'] )
-            ? array_map( 'sanitize_textarea_field', $_POST['references'] )
+        $prompt    = sanitize_textarea_field( $_POST['prompt']   ?? '' );
+        $provider  = sanitize_text_field(     $_POST['provider'] ?? '' );
+        $model     = sanitize_text_field(     $_POST['model']    ?? '' );
+        $mode      = sanitize_text_field(     $_POST['mode']     ?? 'draft' ); // draft | expand | summarize
+
+        // URLs sempre enviadas (mesmo quando fetch server-side falhou)
+        $ref_urls  = isset( $_POST['ref_urls'] ) && is_array( $_POST['ref_urls'] )
+            ? array_map( 'esc_url_raw', $_POST['ref_urls'] )
+            : [];
+
+        // Conteúdo extraído (pode estar vazio se o site bloqueou a requisição)
+        $ref_texts = isset( $_POST['ref_texts'] ) && is_array( $_POST['ref_texts'] )
+            ? array_map( 'sanitize_textarea_field', $_POST['ref_texts'] )
             : [];
 
         if ( empty( $prompt ) ) {
@@ -131,7 +138,7 @@ class WPAIP_LLM {
         }
 
         // Monta prompt baseado no modo
-        $final_prompt = self::build_prompt( $prompt, $mode, $references );
+        $final_prompt = self::build_prompt( $prompt, $mode, $ref_urls, $ref_texts );
 
         $result = self::generate( $final_prompt, $provider, [ 'model' => $model ] );
 
@@ -160,15 +167,34 @@ class WPAIP_LLM {
 
     // ── Prompt builder ────────────────────────────────────────────────────────
 
-    private static function build_prompt( string $input, string $mode, array $references = [] ): string {
-        // Monta bloco de contexto com referências, se houver
+    /**
+     * @param string   $input     Tema / instrução do usuário.
+     * @param string   $mode      draft | expand | summarize
+     * @param string[] $ref_urls  Lista de URLs de referência (sempre presente).
+     * @param string[] $ref_texts Conteúdo extraído de cada URL (pode estar vazio).
+     */
+    private static function build_prompt( string $input, string $mode, array $ref_urls = [], array $ref_texts = [] ): string {
+        // Monta bloco de contexto com referências
         $ref_block = '';
-        if ( ! empty( $references ) ) {
-            $ref_block  = "\n\n---\nCONTEXTO DE REFERÊNCIAS (use como base de pesquisa, não copie literalmente):\n";
-            foreach ( $references as $i => $text ) {
-                $n          = $i + 1;
-                $ref_block .= "\n[Referência {$n}]:\n{$text}\n";
+        if ( ! empty( $ref_urls ) ) {
+            $ref_block = "\n\n---\nREFERÊNCIAS (use como base principal do conteúdo):\n";
+
+            foreach ( $ref_urls as $i => $url ) {
+                $n     = $i + 1;
+                $text  = $ref_texts[ $i ] ?? '';
+
+                $ref_block .= "\n[Referência {$n}] URL: {$url}\n";
+
+                if ( ! empty( $text ) ) {
+                    // Conteúdo extraído com sucesso
+                    $ref_block .= "Conteúdo extraído desta página:\n{$text}\n";
+                } else {
+                    // Site bloqueou fetch server-side — pede ao modelo usar seu conhecimento
+                    $ref_block .= "Não foi possível extrair o conteúdo desta página automaticamente. "
+                               . "Use seu conhecimento sobre este URL e seu conteúdo para embasar o artigo.\n";
+                }
             }
+
             $ref_block .= "---\n";
         }
 
