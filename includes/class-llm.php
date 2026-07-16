@@ -243,7 +243,12 @@ class WPAIP_LLM {
         // Monta prompt baseado no modo
         $final_prompt = self::build_prompt( $prompt, $mode, $ref_urls, $ref_texts );
 
-        $result = self::generate( $final_prompt, $provider, [ 'model' => $model ] );
+        // Só passa 'model' se vier preenchido; caso vazio, cada call_* usa o valor das configurações
+        $options = [];
+        if ( ! empty( $model ) ) {
+            $options['model'] = $model;
+        }
+        $result = self::generate( $final_prompt, $provider, $options );
 
         if ( ! $result['success'] ) {
             wp_send_json_error( [ 'message' => $result['message'] ] );
@@ -357,7 +362,7 @@ class WPAIP_LLM {
     // ── OpenAI ────────────────────────────────────────────────────────────────
 
     private static function call_openai( string $key, string $prompt, string $system, array $opts ): array {
-        $model      = $opts['model'] ?? WPAIP_Settings::get( 'openai_model', 'gpt-4o' );
+        $model      = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'openai_model', 'gpt-4o' );
         $max_tokens = (int) ( $opts['max_tokens'] ?? 4000 );
 
         $body = wp_json_encode( [
@@ -386,7 +391,7 @@ class WPAIP_LLM {
     // ── Google Gemini ─────────────────────────────────────────────────────────
 
     private static function call_gemini( string $key, string $prompt, string $system, array $opts ): array {
-        $model = $opts['model'] ?? WPAIP_Settings::get( 'gemini_model', 'gemini-2.0-flash' );
+        $model = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'gemini_model', 'gemini-2.0-flash' );
         $url   = "https://generativelanguage.googleapis.com/v1/models/{$model}:generateContent?key={$key}";
 
         // Combina instrução de sistema com o prompt para evitar problemas de compatibilidade de campos no JSON do v1
@@ -411,7 +416,7 @@ class WPAIP_LLM {
     // ── Anthropic Claude ──────────────────────────────────────────────────────
 
     private static function call_anthropic( string $key, string $prompt, string $system, array $opts ): array {
-        $model      = $opts['model'] ?? WPAIP_Settings::get( 'anthropic_model', 'claude-sonnet-4-5' );
+        $model      = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'anthropic_model', 'claude-sonnet-4-5' );
         $max_tokens = (int) ( $opts['max_tokens'] ?? 4000 );
 
         $body = wp_json_encode( [
@@ -441,7 +446,7 @@ class WPAIP_LLM {
     // ── DeepSeek ──────────────────────────────────────────────────────────────
 
     private static function call_deepseek( string $key, string $prompt, string $system, array $opts ): array {
-        $model      = $opts['model'] ?? WPAIP_Settings::get( 'deepseek_model', 'deepseek-chat' );
+        $model      = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'deepseek_model', 'deepseek-chat' );
         $max_tokens = (int) ( $opts['max_tokens'] ?? 4000 );
 
         $body = wp_json_encode( [
