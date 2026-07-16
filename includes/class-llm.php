@@ -142,17 +142,27 @@ class WPAIP_LLM {
         // Remove ruído: scripts, estilos, SVG, nav, footer, header
         $html = preg_replace( '/<(script|style|svg|noscript|nav|header|footer|aside)[^>]*>.*?<\/\1>/si', '', $html );
 
-        // Tenta extrair <article> ou <main> ou <body>
+        // Tenta extrair <article>, <main> ou <body> — só usa se não estiver vazio
+        // (G1 e similares têm <article> no HTML mas o conteúdo é renderizado via JS)
+        $best = '';
         foreach ( [ 'article', 'main', 'body' ] as $tag ) {
             if ( preg_match( '/<' . $tag . '[^>]*>(.*?)<\/' . $tag . '>/si', $html, $m ) ) {
-                $html = $m[1];
-                break;
+                $candidate = wp_strip_all_tags( $m[1] );
+                $candidate = trim( preg_replace( '/\s{2,}/', ' ', $candidate ) );
+                if ( mb_strlen( $candidate ) > 200 ) {
+                    $best = $candidate;
+                    break;
+                }
             }
         }
 
-        $text = wp_strip_all_tags( $html );
-        $text = preg_replace( '/\s{2,}/', ' ', $text );
-        return trim( $text );
+        // Se nenhuma tag específica funcionou, usa o HTML completo como fallback
+        if ( empty( $best ) ) {
+            $best = wp_strip_all_tags( $html );
+            $best = trim( preg_replace( '/\s{2,}/', ' ', $best ) );
+        }
+
+        return $best;
     }
 
     /**
@@ -185,6 +195,30 @@ class WPAIP_LLM {
 
         if ( ! $text || $code !== 200 ) {
             return '';
+        }
+
+        $text = trim( $text );
+
+        // Remove menus/cabeçalhos duplicados que Jina às vezes retorna no topo
+        // Detecta o primeiro parágrafo real: linha com mais de 80 chars
+        $lines = explode( "\n", $text );
+        $start = 0;
+        $found_real_content = false;
+        foreach ( $lines as $i => $line ) {
+            $line = trim( $line );
+            // Considera conteúdo real: linha com >80 chars OU com número (data) e contexto
+            if ( mb_strlen( $line ) > 80 ) {
+                $start              = $i;
+                $found_real_content = true;
+                break;
+            }
+        }
+
+        if ( $found_real_content && $start > 0 ) {
+            // Mantém algumas linhas antes do conteúdo para pegar o título
+            $keep_from = max( 0, $start - 3 );
+            $lines     = array_slice( $lines, $keep_from );
+            $text      = implode( "\n", $lines );
         }
 
         return trim( $text );

@@ -275,10 +275,45 @@
 
     // ── Geração de Texto ───────────────────────────────────────────────────────
 
+    /**
+     * Dispara o AJAX de geração com as referências já resolvidas.
+     */
+    function doGenerate(prompt, mode, refUrls, refTexts, $status) {
+        setStatus($status, 'loading', cfg.strings.generating);
+
+        $.post(cfg.ajax_url, {
+            action:    'wpaip_generate_text',
+            nonce:     cfg.nonce,
+            prompt:    prompt,
+            provider:  $('#wpaip-llm-provider').val(),
+            model:     $('#wpaip-llm-model').val(),
+            mode:      mode,
+            ref_urls:  refUrls,
+            ref_texts: refTexts,
+        })
+        .done(function (res) {
+            if (res.success && res.data.text) {
+                insertTextInEditor(res.data.text);
+                if (res.data.title) {
+                    setPostTitle(res.data.title);
+                }
+                setStatus($status, 'success', cfg.strings.success);
+            } else {
+                setStatus($status, 'error', cfg.strings.error + (res.data.message || 'Erro desconhecido'));
+            }
+        })
+        .fail(function () {
+            setStatus($status, 'error', cfg.strings.error + 'Falha na requisição.');
+        })
+        .always(function () {
+            disableBtns(false);
+        });
+    }
+
     $('.wpaip-btn[data-mode]').on('click', function () {
-        const mode     = $(this).data('mode');
-        const $status  = $('#wpaip-text-status');
-        let prompt     = $.trim($('#wpaip-prompt').val());
+        var mode    = $(this).data('mode');
+        var $status = $('#wpaip-text-status');
+        var prompt  = $.trim($('#wpaip-prompt').val());
 
         // Para expand/summarize, pega texto selecionado se prompt vazio
         if (!prompt && (mode === 'expand' || mode === 'summarize')) {
@@ -291,40 +326,45 @@
         }
 
         disableBtns(true);
-        setStatus($status, 'loading', cfg.strings.generating);
 
-        // Primeiro busca referências (se houver), depois gera
-        fetchReferences().then(function (refData) {
-            return $.post(cfg.ajax_url, {
-                action:      'wpaip_generate_text',
-                nonce:       cfg.nonce,
-                prompt:      prompt,
-                provider:    $('#wpaip-llm-provider').val(),
-                model:       $('#wpaip-llm-model').val(),
-                mode:        mode,
-                ref_urls:    refData.urls,   // URLs sempre enviadas
-                ref_texts:   refData.texts,  // Conteúdo extraído (pode estar vazio)
-            });
+        var refUrls = references.map(function (r) { return r.url; });
+
+        // Sem referências: gera direto
+        if (!refUrls.length) {
+            doGenerate(prompt, mode, [], [], $status);
+            return;
+        }
+
+        // Com referências: busca conteúdo e sempre gera depois (mesmo se fetch falhar)
+        var $refSt = $('#wpaip-ref-status');
+        setStatus($refSt, 'loading', cfg.strings.ref_fetching);
+
+        $.post(cfg.ajax_url, {
+            action: 'wpaip_fetch_references',
+            nonce:  cfg.nonce,
+            urls:   refUrls,
         })
-        .done(function (res) {
-            if (res.success && res.data.text) {
-                insertTextInEditor(res.data.text);
+        .always(function (res) {
+            var refTexts = refUrls.map(function () { return ''; });
 
-                // Insere título se vier na resposta (modo draft)
-                if (res.data.title) {
-                    setPostTitle(res.data.title);
-                }
+            // Tenta ler o resultado mesmo se o status HTTP foi erro
+            var data = (res && res.success && res.data && res.data.references) ? res.data.references : null;
 
-                setStatus($status, 'success', cfg.strings.success);
+            if (data) {
+                data.forEach(function (r, idx) {
+                    if (references[idx]) {
+                        references[idx].text = r.text || '';
+                    }
+                    refTexts[idx] = r.text || '';
+                });
+                renderRefList();
+                setStatus($refSt, 'success', cfg.strings.ref_fetch_ok);
             } else {
-                setStatus($status, 'error', cfg.strings.error + (res.data.message || 'Erro desconhecido'));
+                setStatus($refSt, 'error', cfg.strings.ref_fetch_fail);
             }
-        })
-        .fail(function () {
-            setStatus($status, 'error', cfg.strings.error + 'Falha na requisição.');
-        })
-        .always(function () {
-            disableBtns(false);
+
+            // Gera o texto com as refs (mesmo sem conteúdo extraído, URLs são enviadas)
+            doGenerate(prompt, mode, refUrls, refTexts, $status);
         });
     });
 
