@@ -260,15 +260,11 @@ class WPAIP_LLM {
         $text  = $result['text'];
 
         if ( $mode === 'draft' ) {
-            // Extrai e remove o primeiro H1 para usar como título do post
             if ( preg_match( '/<h1[^>]*>(.*?)<\/h1>/is', $text, $m ) ) {
                 $title = wp_strip_all_tags( $m[1] );
                 $text  = preg_replace( '/<h1[^>]*>.*?<\/h1>/is', '', $text, 1 );
                 $text  = trim( $text );
             }
-
-            // ── Trunca para exatamente $paragraphs parágrafos <p> ──────────────
-            $text = self::truncate_to_paragraphs( $text, $paragraphs );
         }
 
         wp_send_json_success( [ 'text' => $text, 'title' => $title ] );
@@ -412,12 +408,21 @@ class WPAIP_LLM {
                 return "Resuma o seguinte texto de forma clara e concisa. Retorne apenas o resumo:{$ref_block}\n\n{$input}";
             case 'draft':
             default:
-                $h2_count = max( 1, (int) round( $paragraphs / 3 ) );
+                // Mapeia contagem para descritor semântico de tamanho
+                if ( $paragraphs <= 1 ) {
+                    $size_desc = 'curtíssimo: apenas 1 parágrafo de introdução, direto ao ponto, sem seções ou subtítulos';
+                } elseif ( $paragraphs <= 2 ) {
+                    $size_desc = 'curto: introdução e conclusão, 2 parágrafos no total, sem subtítulos';
+                } elseif ( $paragraphs <= 4 ) {
+                    $size_desc = "médio: {$paragraphs} parágrafos bem desenvolvidos, 1 ou 2 subtítulos H2";
+                } elseif ( $paragraphs <= 7 ) {
+                    $size_desc = "completo: {$paragraphs} parágrafos, estrutura clara com 2-3 seções H2, introdução e conclusão";
+                } else {
+                    $size_desc = "longo e detalhado: aproximadamente {$paragraphs} parágrafos, múltiplas seções H2 e H3, exemplos práticos, introdução e conclusão robusta";
+                }
+
                 return "Crie um artigo de blog sobre o tema abaixo. "
-                     . "REGRA OBRIGATÓRIA DE TAMANHO: o artigo deve ter EXATAMENTE {$paragraphs} parágrafos de texto no corpo (não conte H1, H2, H3 como parágrafos). "
-                     . "Use {$h2_count} seção(ões) H2. Cada parágrafo deve ser rico e bem desenvolvido. "
-                     . "Inclua: título em H1, introdução (1 parágrafo), seções H2 com parágrafos, e conclusão (1 parágrafo). "
-                     . "Total de parágrafos <p>: {$paragraphs}. NÃO escreva mais nem menos. "
+                     . "TAMANHO OBRIGATÓRIO: {$size_desc}. "
                      . 'Use linguagem clara, acessível e otimizada para SEO. '
                      . 'Retorne SOMENTE o HTML do artigo (sem markdown, sem ```html, sem texto extra fora do HTML). '
                      . "Tema:\n\n{$input}{$ref_block}";
