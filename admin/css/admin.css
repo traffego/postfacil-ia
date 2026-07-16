@@ -319,18 +319,29 @@
 }
 
 .wpaip-para-btn:hover:not(:disabled) {
-    border-color: #7c6fcd;
-    color: #7c6fcd;
-    transform: scale(1.1);
+    transform: scale(1.12);
+    filter: brightness(0.92);
 }
 
 .wpaip-para-btn.is-active {
-    background: #7c6fcd;
-    border-color: #6a5db5;
     color: #fff;
     box-shadow: 0 2px 6px rgba(124,111,205,0.45);
-    transform: scale(1.08);
+    transform: scale(1.1);
+    border-color: transparent;
 }
+
+/* Cores progressivas por número */
+.wpaip-para-btn[data-val="1"] { border-color: #c4b5fd; color: #a78bfa; background: #faf5ff; }
+.wpaip-para-btn[data-val="2"] { border-color: #a78bfa; color: #8b5cf6; background: #f5f0ff; }
+.wpaip-para-btn[data-val="3"] { border-color: #8b5cf6; color: #7c3aed; background: #ede9fe; }
+.wpaip-para-btn[data-val="4"] { border-color: #7c3aed; color: #6d28d9; background: #ddd6fe; }
+.wpaip-para-btn[data-val="5"] { border-color: #6d28d9; color: #5b21b6; background: #c4b5fd; }
+
+.wpaip-para-btn[data-val="1"].is-active { background: #c4b5fd; }
+.wpaip-para-btn[data-val="2"].is-active { background: #a78bfa; }
+.wpaip-para-btn[data-val="3"].is-active { background: #8b5cf6; }
+.wpaip-para-btn[data-val="4"].is-active { background: #7c3aed; }
+.wpaip-para-btn[data-val="5"].is-active { background: #6d28d9; }
 
 .wpaip-para-btn--more {
     border-style: dashed;
