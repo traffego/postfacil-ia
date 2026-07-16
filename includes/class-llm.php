@@ -254,12 +254,17 @@ class WPAIP_LLM {
             wp_send_json_error( [ 'message' => $result['message'] ] );
         }
 
-        // Modo draft: extrai título e HTML do JSON retornado
+        // Modo draft: tenta extrair título do H1 gerado
         $title = '';
         $text  = $result['text'];
 
         if ( $mode === 'draft' ) {
-            $text = self::extract_draft_content( $text, $title );
+            // Extrai e remove o primeiro H1 para usar como título do post
+            if ( preg_match( '/<h1[^>]*>(.*?)<\/h1>/is', $text, $m ) ) {
+                $title = wp_strip_all_tags( $m[1] );
+                $text  = preg_replace( '/<h1[^>]*>.*?<\/h1>/is', '', $text, 1 );
+                $text  = trim( $text );
+            }
         }
 
         wp_send_json_success( [ 'text' => $text, 'title' => $title ] );
@@ -346,15 +351,19 @@ class WPAIP_LLM {
 
         switch ( $mode ) {
             case 'expand':
-                return "Expanda o seguinte trecho, mantendo o estilo e tom. Retorne apenas o texto expandido, sem comentários:{$ref_block}\n\n{$input}";
+                return "Expanda o seguinte conteúdo em um artigo de blog completo e bem estruturado. "
+                     . "Desenvolva cada ponto com profundidade, use linguagem envolvente e acessível, "
+                     . "adicione exemplos práticos quando útil. "
+                     . "Retorne apenas o HTML do artigo (use H2 e H3 para sub-títulos, parágrafos, listas quando pertinente), sem comentários extra:{$ref_block}\n\n{$input}";
             case 'summarize':
                 return "Resuma o seguinte texto de forma clara e concisa. Retorne apenas o resumo:{$ref_block}\n\n{$input}";
             case 'draft':
             default:
-                return 'Crie um artigo de blog completo e bem estruturado sobre o seguinte tema. '
-                     . 'Use subtítulos H2 e H3, parágrafos envolventes e linguagem acessível. '
-                     . 'Retorne SOMENTE um objeto JSON válido (sem markdown, sem texto extra) com duas chaves: '
-                     . '"title" (string com o título do artigo) e "content" (string com o artigo em HTML semântico). '
+                return 'Crie um artigo de blog longo, completo e muito bem estruturado sobre o seguinte tema. '
+                     . 'O artigo deve ter: título em H1, introdução envolvente, desenvolvimento com múnimos 5 sub-títulos H2 '
+                     . '(cada um com 2 ou mais parágrafos ricos), e uma conclusão. '
+                     . 'Use linguagem clara, acessível e otimizada para SEO. '
+                     . 'Retorne SOMENTE o HTML do artigo (sem markdown, sem \`\`\`html, sem texto extra fora do HTML). '
                      . "Tema:\n\n{$input}{$ref_block}";
         }
     }
@@ -363,7 +372,7 @@ class WPAIP_LLM {
 
     private static function call_openai( string $key, string $prompt, string $system, array $opts ): array {
         $model      = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'openai_model', 'gpt-4o' );
-        $max_tokens = (int) ( $opts['max_tokens'] ?? 4000 );
+        $max_tokens = (int) ( $opts['max_tokens'] ?? 6000 );
 
         $body = wp_json_encode( [
             'model'      => $model,
@@ -399,7 +408,7 @@ class WPAIP_LLM {
 
         $body = wp_json_encode( [
             'contents'           => [ [ 'parts' => [ [ 'text' => $combined_prompt ] ] ] ],
-            'generationConfig'   => [ 'maxOutputTokens' => $opts['max_tokens'] ?? 2000 ],
+            'generationConfig'   => [ 'maxOutputTokens' => $opts['max_tokens'] ?? 8000 ],
         ] );
 
         $response = wp_remote_post( $url, [
@@ -417,7 +426,7 @@ class WPAIP_LLM {
 
     private static function call_anthropic( string $key, string $prompt, string $system, array $opts ): array {
         $model      = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'anthropic_model', 'claude-sonnet-4-5' );
-        $max_tokens = (int) ( $opts['max_tokens'] ?? 4000 );
+        $max_tokens = (int) ( $opts['max_tokens'] ?? 6000 );
 
         $body = wp_json_encode( [
             'model'      => $model,
@@ -447,7 +456,7 @@ class WPAIP_LLM {
 
     private static function call_deepseek( string $key, string $prompt, string $system, array $opts ): array {
         $model      = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'deepseek_model', 'deepseek-chat' );
-        $max_tokens = (int) ( $opts['max_tokens'] ?? 4000 );
+        $max_tokens = (int) ( $opts['max_tokens'] ?? 6000 );
 
         $body = wp_json_encode( [
             'model'      => $model,
