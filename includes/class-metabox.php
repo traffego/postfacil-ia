@@ -81,6 +81,31 @@ class WPAIP_Metabox {
                 'ref_fetch_fail' => __( 'Falha ao buscar referências.', 'wp-ai-publisher' ),
             ],
         ] );
+
+        // Injeta o trigger fixo e o modal via footer (não depende de JS para existir no DOM)
+        add_action( 'admin_footer', [ __CLASS__, 'render_modal_shell' ] );
+    }
+
+    public static function render_modal_shell(): void {
+        ?>
+        <button type="button" id="wpaip-floating-trigger" title="<?php esc_attr_e( 'POST FÁCIL I.A.', 'wp-ai-publisher' ); ?>">
+            <span class="dashicons dashicons-superhero"></span>
+        </button>
+        <div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;">
+            <div class="wpaip-modal-header">
+                <div class="wpaip-modal-title-group">
+                    <button type="button" id="wpaip-save-dot" class="wpaip-save-dot wpaip-save-dot--saved" title="<?php esc_attr_e( 'Salvar post', 'wp-ai-publisher' ); ?>">
+                        <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4.5L10.5 1H2zm8.5 0v3.5H13L10.5 1zM5 9h6v4H5V9zm1 1v2h4v-2H6z"/>
+                        </svg>
+                    </button>
+                    <h3>POST FÁCIL I.A.</h3>
+                </div>
+                <button type="button" class="wpaip-modal-close">&times;</button>
+            </div>
+            <!-- painel será movido aqui pelo JS -->
+        </div>
+        <?php
     }
 
     // ── Render HTML do Metabox ────────────────────────────────────────────────

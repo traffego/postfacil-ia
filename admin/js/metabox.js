@@ -7,46 +7,40 @@
 
     // ── Modal Flutuante Dark ──────────────────────────────────────────────────
     function initModal() {
-        const $panel = $('#wpaip-panel-root');
-        if (!$panel.length) return false;
+        try {
+            var $panel    = $('#wpaip-panel-root');
+            var $trigger  = $('#wpaip-floating-trigger');
+            var $modal    = $('#wpaip-floating-modal');
+            var $closeBtn = $('.wpaip-modal-close');
+            var $saveDot  = $('#wpaip-save-dot');
 
-        const $trigger    = $('<button type="button" id="wpaip-floating-trigger" title="POST F\u00c1CIL I.A."><span class="dashicons dashicons-superhero"></span></button>');
-        const $modal      = $('<div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;"></div>');
-        const $header     = $('<div class="wpaip-modal-header"></div>');
-        const $titleGroup = $('<div class="wpaip-modal-title-group"></div>');
-        const $saveDot    = $('<button type="button" id="wpaip-save-dot" class="wpaip-save-dot wpaip-save-dot--saved" title="Salvar post"><svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4.5L10.5 1H2zm8.5 0v3.5H13L10.5 1zM5 9h6v4H5V9zm1 1v2h4v-2H6z"/></svg></button>');
-        const $title      = $('<h3>POST F\u00c1CIL I.A.</h3>');
-        const $closeBtn   = $('<button type="button" class="wpaip-modal-close">&times;</button>');
+            if (!$panel.length || !$trigger.length || !$modal.length) return false;
+            if ($modal.data('wpaip-init')) return true; // já iniciado
 
-        $titleGroup.append($saveDot).append($title);
-        $header.append($titleGroup).append($closeBtn);
-        $modal.append($header).append($panel);
-        $('body').append($trigger).append($modal);
+            // Move o painel para dentro do modal e oculta o postbox vazio
+            $modal.append($panel);
+            $panel.closest('.postbox').hide();
 
-        // Oculta o postbox vazio (painel está no modal)
-        $panel.closest('.postbox').hide();
+            $trigger.on('click', function () { $modal.fadeToggle(200); });
+            $closeBtn.on('click', function () { $modal.fadeOut(200); });
+            initSaveDot($saveDot);
 
-        $trigger.on('click', function () { $modal.fadeToggle(200); });
-        $closeBtn.on('click', function () { $modal.fadeOut(200); });
-        initSaveDot($saveDot);
-        return true;
+            $modal.data('wpaip-init', true);
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 
     $(function () {
-        // Tenta imediatamente
         if (initModal()) return;
 
-        // Gutenberg renderiza metaboxes assincronamente — observa o DOM
+        // Fallback: observa DOM caso o painel apareça depois (Editor Clássico pode atrasar)
         var attempts = 0;
-        var observer = new MutationObserver(function () {
+        var timer = setInterval(function () {
             attempts++;
-            if (initModal()) {
-                observer.disconnect();
-            } else if (attempts > 200) {
-                observer.disconnect(); // desiste após ~20s
-            }
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
+            if (initModal() || attempts > 50) clearInterval(timer);
+        }, 200);
     });
 
     function initSaveDot($dot) {
