@@ -339,6 +339,54 @@
 
 .wpaip-btn--secondary:hover:not(:disabled) { background: #eee; }
 
+/* ── Botão toggle Matérias Externas ── */
+.wpaip-btn-toggle-refs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    background: none;
+    border: 1px dashed #bbb;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+    cursor: pointer;
+    margin: 6px 0 4px;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.wpaip-btn-toggle-refs:hover {
+    color: #7c6fcd;
+    border-color: #7c6fcd;
+}
+
+.wpaip-btn-toggle-refs.is-open {
+    color: #7c6fcd;
+    border-color: #7c6fcd;
+    border-style: solid;
+}
+
+.wpaip-toggle-icon {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1;
+    transition: transform 0.2s;
+}
+
+.wpaip-btn-toggle-refs.is-open .wpaip-toggle-icon {
+    transform: rotate(45deg);
+}
+
+#wpaip-refs-section {
+    border-left: 2px solid #e0d9f7;
+    padding-left: 8px;
+    margin-bottom: 4px;
+}
+
 /* ── Bolinha de Salvar (Cabeçalho do Modal) ── */
 .wpaip-save-dot {
     display: inline-flex !important;

@@ -8,6 +8,12 @@
     $(document).on('click', '.wpaip-modal-close', function () {
         $('#wpaip-floating-modal').fadeOut(200);
     });
+    $(document).on('click', '#wpaip-btn-toggle-refs', function () {
+        var $btn     = $(this);
+        var $section = $('#wpaip-refs-section');
+        $btn.toggleClass('is-open');
+        $section.slideToggle(180);
+    });
     // Move o painel para o modal assim que estiver pronto
     $(function () {
         function tryMove() {

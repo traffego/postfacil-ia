@@ -125,22 +125,27 @@ class WPAIP_Metabox {
             <?php else : ?>
 
                 <!-- ── Referências Externas ── -->
-                <div class="wpaip-section-title"><?php _e( 'Referências', 'wp-ai-publisher' ); ?></div>
+                <button type="button" id="wpaip-btn-toggle-refs" class="wpaip-btn-toggle-refs">
+                    <span class="wpaip-toggle-icon">+</span>
+                    <?php _e( 'Usar matérias externas', 'wp-ai-publisher' ); ?>
+                </button>
 
-                <div class="wpaip-field">
-                    <label class="wpaip-label" for="wpaip-ref-input">
-                        <?php _e( 'Adicionar URL de referência', 'wp-ai-publisher' ); ?>
-                    </label>
-                    <div class="wpaip-ref-input-row">
-                        <input type="url" id="wpaip-ref-input" class="wpaip-input"
-                            placeholder="<?php esc_attr_e( 'https://exemplo.com/artigo', 'wp-ai-publisher' ); ?>" />
-                        <button type="button" id="wpaip-btn-ref-add" class="wpaip-btn wpaip-btn--secondary wpaip-btn--icon" title="<?php esc_attr_e( 'Adicionar', 'wp-ai-publisher' ); ?>">+</button>
+                <div id="wpaip-refs-section" style="display:none;">
+                    <div class="wpaip-field">
+                        <label class="wpaip-label" for="wpaip-ref-input">
+                            <?php _e( 'Adicionar URL de referência', 'wp-ai-publisher' ); ?>
+                        </label>
+                        <div class="wpaip-ref-input-row">
+                            <input type="url" id="wpaip-ref-input" class="wpaip-input"
+                                placeholder="<?php esc_attr_e( 'https://exemplo.com/artigo', 'wp-ai-publisher' ); ?>" />
+                            <button type="button" id="wpaip-btn-ref-add" class="wpaip-btn wpaip-btn--secondary wpaip-btn--icon" title="<?php esc_attr_e( 'Adicionar', 'wp-ai-publisher' ); ?>">+</button>
+                        </div>
                     </div>
+
+                    <ul id="wpaip-ref-list" class="wpaip-ref-list"></ul>
+
+                    <div id="wpaip-ref-status" class="wpaip-status" style="display:none;"></div>
                 </div>
-
-                <ul id="wpaip-ref-list" class="wpaip-ref-list"></ul>
-
-                <div id="wpaip-ref-status" class="wpaip-status" style="display:none;"></div>
 
                 <!-- ── Geração de Texto ── -->
                 <div class="wpaip-section-title"><?php _e( 'Texto', 'wp-ai-publisher' ); ?></div>
