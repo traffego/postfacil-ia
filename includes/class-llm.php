@@ -72,37 +72,17 @@ class WPAIP_LLM {
                 continue;
             }
 
-            $response = wp_remote_get( $url, [
-                'timeout'    => 20,
-                'user-agent' => 'Mozilla/5.0 (compatible; WP-AI-Publisher/1.0)',
-            ] );
+            // Tenta buscar com cURL (Chrome UA + Referer Google + Cookie)
+            $text = self::fetch_url_curl( $url );
 
-            if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
-                $results[] = [
-                    'url'     => $url,
-                    'success' => false,
-                    'text'    => '',
-                ];
-                continue;
+            // Fallback: Jina AI Reader (processa qualquer URL, até com paywall)
+            if ( empty( $text ) ) {
+                $text = self::fetch_url_jina( $url );
             }
 
-            $html = wp_remote_retrieve_body( $response );
-
-            // Remove scripts, styles e SVG
-            $html = preg_replace( '/<(script|style|svg|noscript)[^>]*>.*?<\/\1>/si', '', $html );
-
-            // Tenta pegar apenas o <body>
-            if ( preg_match( '/<body[^>]*>(.*?)<\/body>/si', $html, $match ) ) {
-                $html = $match[1];
-            }
-
-            $text = wp_strip_all_tags( $html );
-            $text = preg_replace( '/\s{2,}/', ' ', $text );
-            $text = trim( $text );
-
-            // Limita a 3000 caracteres por referência para não explodir o contexto
-            if ( mb_strlen( $text ) > 3000 ) {
-                $text = mb_substr( $text, 0, 3000 ) . '…';
+            // Limita a 6000 chars por referência
+            if ( mb_strlen( $text ) > 6000 ) {
+                $text = mb_substr( $text, 0, 6000 ) . '…';
             }
 
             $results[] = [
@@ -113,6 +93,101 @@ class WPAIP_LLM {
         }
 
         wp_send_json_success( [ 'references' => $results ] );
+    }
+
+    /**
+     * Busca conteúdo de uma URL via cURL simulando browser Chrome.
+     * Referer Google + Cookie jar — funciona em sites como G1, UOL, etc.
+     */
+    private static function fetch_url_curl( string $url ): string {
+        if ( ! function_exists( 'curl_init' ) ) {
+            return '';
+        }
+
+        $cookie_file = sys_get_temp_dir() . '/wpaip_ref_' . md5( $url ) . '.txt';
+
+        $ch = curl_init( $url );
+        curl_setopt_array( $ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS      => 5,
+            CURLOPT_TIMEOUT        => 25,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_ENCODING       => '', // aceita gzip/deflate automaticamente
+            CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+            CURLOPT_REFERER        => 'https://www.google.com.br/',
+            CURLOPT_COOKIEFILE     => $cookie_file,
+            CURLOPT_COOKIEJAR      => $cookie_file,
+            CURLOPT_HTTPHEADER     => [
+                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Cache-Control: no-cache',
+                'Pragma: no-cache',
+            ],
+        ] );
+
+        $html = curl_exec( $ch );
+        $code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+        curl_close( $ch );
+
+        // Limpa cookie temp
+        if ( file_exists( $cookie_file ) ) {
+            @unlink( $cookie_file );
+        }
+
+        if ( ! $html || $code !== 200 ) {
+            return '';
+        }
+
+        // Remove ruído: scripts, estilos, SVG, nav, footer, header
+        $html = preg_replace( '/<(script|style|svg|noscript|nav|header|footer|aside)[^>]*>.*?<\/\1>/si', '', $html );
+
+        // Tenta extrair <article> ou <main> ou <body>
+        foreach ( [ 'article', 'main', 'body' ] as $tag ) {
+            if ( preg_match( '/<' . $tag . '[^>]*>(.*?)<\/' . $tag . '>/si', $html, $m ) ) {
+                $html = $m[1];
+                break;
+            }
+        }
+
+        $text = wp_strip_all_tags( $html );
+        $text = preg_replace( '/\s{2,}/', ' ', $text );
+        return trim( $text );
+    }
+
+    /**
+     * Busca conteúdo via Jina AI Reader (https://r.jina.ai/).
+     * Fallback útil para sites com JavaScript pesado ou paywall leve.
+     */
+    private static function fetch_url_jina( string $url ): string {
+        if ( ! function_exists( 'curl_init' ) ) {
+            return '';
+        }
+
+        $jina_url = 'https://r.jina.ai/' . $url;
+
+        $ch = curl_init( $jina_url );
+        curl_setopt_array( $ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_USERAGENT      => 'Mozilla/5.0',
+            CURLOPT_HTTPHEADER     => [
+                'Accept: text/plain',
+                'X-Return-Format: text',
+            ],
+        ] );
+
+        $text = curl_exec( $ch );
+        $code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+        curl_close( $ch );
+
+        if ( ! $text || $code !== 200 ) {
+            return '';
+        }
+
+        return trim( $text );
     }
 
     public static function ajax_generate_text(): void {
