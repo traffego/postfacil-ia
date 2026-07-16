@@ -178,6 +178,13 @@ class WPAIP_Metabox {
 
                 <div id="wpaip-image-status" class="wpaip-status" style="display:none;"></div>
 
+                <!-- ── Salvar Post ── -->
+                <div class="wpaip-save-divider"></div>
+                <button type="button" id="wpaip-btn-save" class="wpaip-btn wpaip-btn--save">
+                    <?php _e( '💾 Salvar Post', 'wp-ai-publisher' ); ?>
+                </button>
+                <div id="wpaip-save-status" class="wpaip-status" style="display:none;"></div>
+
             <?php endif; ?>
 
         </div>

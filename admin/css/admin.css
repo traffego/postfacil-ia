@@ -308,6 +308,29 @@
 
 .wpaip-btn--secondary:hover:not(:disabled) { background: #eee; }
 
+.wpaip-btn--save {
+    width: 100%;
+    background: #16a34a;
+    border-color: #15803d;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+}
+
+.wpaip-btn--save:hover:not(:disabled) { background: #15803d; }
+
+.wpaip-save-divider {
+    border-top: 1px solid rgba(255,255,255,0.12);
+    margin: 12px 0 10px;
+}
+
+/* dark theme override */
+#wpaip-floating-modal .wpaip-save-divider {
+    border-top-color: rgba(255,255,255,0.15);
+}
+
 /* ── Status ── */
 .wpaip-status {
     font-size: 11px;

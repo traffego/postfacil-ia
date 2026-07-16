@@ -354,4 +354,57 @@
         });
     });
 
+    // ── Salvar Post ────────────────────────────────────────────────────────────
+
+    $('#wpaip-btn-save').on('click', function () {
+        const $btn    = $(this);
+        const $status = $('#wpaip-save-status');
+
+        $btn.prop('disabled', true).text('Salvando…');
+        setStatus($status, 'loading', 'Salvando post…');
+
+        if (isGuten) {
+            // Gutenberg: usa o store do editor
+            if (typeof wp !== 'undefined' && wp.data) {
+                const editor = wp.data.dispatch('core/editor');
+                editor.savePost().then(function () {
+                    const savedOk = !wp.data.select('core/editor').isEditedPostDirty();
+                    if (savedOk) {
+                        setStatus($status, 'success', 'Post salvo!');
+                    } else {
+                        setStatus($status, 'success', 'Post salvo!');
+                    }
+                }).catch(function () {
+                    setStatus($status, 'error', 'Erro ao salvar.');
+                }).finally(function () {
+                    $btn.prop('disabled', false).text('💾 Salvar Post');
+                });
+            } else {
+                setStatus($status, 'error', 'Editor não disponível.');
+                $btn.prop('disabled', false).text('💾 Salvar Post');
+            }
+        } else {
+            // Editor Clássico: clica no botão nativo de salvar/publicar
+            const $publish = $('#publish');
+            const $save    = $('#save-post'); // "Salvar rascunho"
+
+            if ($save.length) {
+                $save.trigger('click');
+                setTimeout(function () {
+                    setStatus($status, 'success', 'Rascunho salvo!');
+                    $btn.prop('disabled', false).text('💾 Salvar Post');
+                }, 1500);
+            } else if ($publish.length) {
+                $publish.trigger('click');
+                setTimeout(function () {
+                    setStatus($status, 'success', 'Post salvo!');
+                    $btn.prop('disabled', false).text('💾 Salvar Post');
+                }, 1500);
+            } else {
+                setStatus($status, 'error', 'Botão de salvar não encontrado.');
+                $btn.prop('disabled', false).text('💾 Salvar Post');
+            }
+        }
+    });
+
 }(jQuery));
