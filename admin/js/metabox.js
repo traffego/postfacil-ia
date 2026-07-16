@@ -7,13 +7,16 @@
 
     // ── Modal Flutuante ───────────────────────────────────────────────────────
     $(function () {
-        const $panel = $('#wpaip-panel-root');
+        const $panel   = $('#wpaip-panel-root');
         if (!$panel.length) return;
 
         const $trigger = $('<button type="button" id="wpaip-floating-trigger" title="POST FÁCIL I.A."><span class="dashicons dashicons-superhero"></span></button>');
-        const $modal = $('<div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;"></div>');
-        const $header = $('<div class="wpaip-modal-header"><h3>POST FÁCIL I.A.</h3><button type="button" class="wpaip-modal-close">&times;</button></div>');
-        
+        const $modal   = $('<div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;"></div>');
+        const $saveDot = $('<button type="button" id="wpaip-save-dot" class="wpaip-save-dot wpaip-save-dot--saved" title="Salvar post">&#x1F4BE;</button>');
+        const $header  = $('<div class="wpaip-modal-header"><h3>POST FÁCIL I.A.</h3></div>');
+        const $closeBtn = $('<button type="button" class="wpaip-modal-close">&times;</button>');
+
+        $header.append($saveDot).append($closeBtn);
         $modal.append($header).append($panel);
         $('body').append($trigger).append($modal);
 
@@ -25,10 +28,70 @@
             $modal.fadeToggle(200);
         });
 
-        $header.find('.wpaip-modal-close').on('click', function () {
+        $closeBtn.on('click', function () {
             $modal.fadeOut(200);
         });
+
+        // ── Monitoramento de estado salvo ──────────────────────────────────────
+        initSaveDot($saveDot);
     });
+
+    function initSaveDot($dot) {
+        function setSaved(saved) {
+            $dot
+                .toggleClass('wpaip-save-dot--saved',   saved)
+                .toggleClass('wpaip-save-dot--unsaved', !saved)
+                .attr('title', saved ? 'Post salvo' : 'Salvar post (alterações não salvas)');
+        }
+
+        if (isGuten && typeof wp !== 'undefined' && wp.data) {
+            // Gutenberg: assina o store para detectar mudanças
+            wp.data.subscribe(function () {
+                const isDirty   = wp.data.select('core/editor').isEditedPostDirty();
+                const isSaving  = wp.data.select('core/editor').isSavingPost();
+                if (isSaving) {
+                    $dot.addClass('wpaip-save-dot--saving');
+                } else {
+                    $dot.removeClass('wpaip-save-dot--saving');
+                    setSaved(!isDirty);
+                }
+            });
+        } else {
+            // Editor Clássico: monitora alterações no formulário do post
+            var dirty = false;
+            $(document).on('input change', '#title, #content, #excerpt', function () {
+                if (!dirty) { dirty = true; setSaved(false); }
+            });
+            // Quando salva, volta para verde
+            $('#post').on('submit', function () {
+                dirty = false;
+                setSaved(true);
+            });
+            // Verifica se já tem conteúdo ao abrir
+            setSaved(true);
+        }
+
+        // ── Clique na bolinha salva o post ─────────────────────────────────────
+        $dot.on('click', function () {
+            if ($dot.hasClass('wpaip-save-dot--saving')) return;
+            $dot.addClass('wpaip-save-dot--saving');
+
+            if (isGuten && typeof wp !== 'undefined' && wp.data) {
+                wp.data.dispatch('core/editor').savePost()
+                    .catch(function () { setSaved(false); })
+                    .finally(function () { $dot.removeClass('wpaip-save-dot--saving'); });
+            } else {
+                var $save = $('#save-post');
+                var $pub  = $('#publish');
+                if ($save.length)      { $save.trigger('click'); }
+                else if ($pub.length)  { $pub.trigger('click');  }
+                setTimeout(function () {
+                    $dot.removeClass('wpaip-save-dot--saving');
+                    setSaved(true);
+                }, 1800);
+            }
+        });
+    }
 
     // ── Utilitários ────────────────────────────────────────────────────────────
 
@@ -354,57 +417,6 @@
         });
     });
 
-    // ── Salvar Post ────────────────────────────────────────────────────────────
-
-    $('#wpaip-btn-save').on('click', function () {
-        const $btn    = $(this);
-        const $status = $('#wpaip-save-status');
-
-        $btn.prop('disabled', true).text('Salvando…');
-        setStatus($status, 'loading', 'Salvando post…');
-
-        if (isGuten) {
-            // Gutenberg: usa o store do editor
-            if (typeof wp !== 'undefined' && wp.data) {
-                const editor = wp.data.dispatch('core/editor');
-                editor.savePost().then(function () {
-                    const savedOk = !wp.data.select('core/editor').isEditedPostDirty();
-                    if (savedOk) {
-                        setStatus($status, 'success', 'Post salvo!');
-                    } else {
-                        setStatus($status, 'success', 'Post salvo!');
-                    }
-                }).catch(function () {
-                    setStatus($status, 'error', 'Erro ao salvar.');
-                }).finally(function () {
-                    $btn.prop('disabled', false).text('💾 Salvar Post');
-                });
-            } else {
-                setStatus($status, 'error', 'Editor não disponível.');
-                $btn.prop('disabled', false).text('💾 Salvar Post');
-            }
-        } else {
-            // Editor Clássico: clica no botão nativo de salvar/publicar
-            const $publish = $('#publish');
-            const $save    = $('#save-post'); // "Salvar rascunho"
-
-            if ($save.length) {
-                $save.trigger('click');
-                setTimeout(function () {
-                    setStatus($status, 'success', 'Rascunho salvo!');
-                    $btn.prop('disabled', false).text('💾 Salvar Post');
-                }, 1500);
-            } else if ($publish.length) {
-                $publish.trigger('click');
-                setTimeout(function () {
-                    setStatus($status, 'success', 'Post salvo!');
-                    $btn.prop('disabled', false).text('💾 Salvar Post');
-                }, 1500);
-            } else {
-                setStatus($status, 'error', 'Botão de salvar não encontrado.');
-                $btn.prop('disabled', false).text('💾 Salvar Post');
-            }
-        }
     });
 
 }(jQuery));

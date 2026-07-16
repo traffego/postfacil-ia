@@ -308,28 +308,60 @@
 
 .wpaip-btn--secondary:hover:not(:disabled) { background: #eee; }
 
-.wpaip-btn--save {
-    width: 100%;
+/* ── Bolinha de Salvar ── */
+.wpaip-save-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    margin-right: 4px;
+    transition: background 0.25s, border-color 0.25s, transform 0.15s, box-shadow 0.25s;
+    flex-shrink: 0;
+}
+
+.wpaip-save-dot--saved {
     background: #16a34a;
     border-color: #15803d;
-    color: #fff;
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    margin-top: 2px;
+    box-shadow: 0 0 6px rgba(22,163,74,.5);
 }
 
-.wpaip-btn--save:hover:not(:disabled) { background: #15803d; }
-
-.wpaip-save-divider {
-    border-top: 1px solid rgba(255,255,255,0.12);
-    margin: 12px 0 10px;
+.wpaip-save-dot--unsaved {
+    background: #dc2626;
+    border-color: #b91c1c;
+    box-shadow: 0 0 6px rgba(220,38,38,.5);
+    animation: wpaip-pulse-red 1.6s ease-in-out infinite;
 }
 
-/* dark theme override */
-#wpaip-floating-modal .wpaip-save-divider {
-    border-top-color: rgba(255,255,255,0.15);
+.wpaip-save-dot--saving {
+    background: #d97706;
+    border-color: #b45309;
+    animation: wpaip-spin 0.8s linear infinite;
 }
+
+.wpaip-save-dot:hover:not(:disabled) {
+    transform: scale(1.15);
+}
+
+@keyframes wpaip-pulse-red {
+    0%, 100% { box-shadow: 0 0 6px rgba(220,38,38,.5); }
+    50%       { box-shadow: 0 0 14px rgba(220,38,38,.9); }
+}
+
+@keyframes wpaip-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Botões legados removidos — save agora é bolinha */
+.wpaip-btn--save,
+.wpaip-save-divider { display: none; }
 
 /* ── Status ── */
 .wpaip-status {
