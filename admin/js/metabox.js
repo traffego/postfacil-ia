@@ -182,14 +182,15 @@
         setStatus($status, 'loading', cfg.strings.generating);
 
         $.post(cfg.ajax_url, {
-            action:    'wpaip_generate_text',
-            nonce:     cfg.nonce,
-            prompt:    prompt,
-            provider:  '',
-            model:     '',
-            mode:      mode,
-            ref_urls:  refUrls,
-            ref_texts: refTexts,
+            action:     'wpaip_generate_text',
+            nonce:      cfg.nonce,
+            prompt:     prompt,
+            provider:   '',
+            model:      '',
+            mode:       mode,
+            paragraphs: parseInt($('#wpaip-paragraphs').val(), 10) || 5,
+            ref_urls:   refUrls,
+            ref_texts:  refTexts,
         })
         .done(function (res) {
             if (res.success && res.data.text) {

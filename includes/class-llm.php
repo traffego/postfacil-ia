@@ -216,10 +216,11 @@ class WPAIP_LLM {
     public static function ajax_generate_text(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
 
-        $prompt    = sanitize_textarea_field( $_POST['prompt']   ?? '' );
-        $provider  = sanitize_text_field(     $_POST['provider'] ?? '' );
-        $model     = sanitize_text_field(     $_POST['model']    ?? '' );
-        $mode      = sanitize_text_field(     $_POST['mode']     ?? 'draft' ); // draft | expand | summarize
+        $prompt    = sanitize_textarea_field( $_POST['prompt']     ?? '' );
+        $provider  = sanitize_text_field(     $_POST['provider']   ?? '' );
+        $model     = sanitize_text_field(     $_POST['model']      ?? '' );
+        $mode      = sanitize_text_field(     $_POST['mode']       ?? 'draft' );
+        $paragraphs = max( 1, min( 50, (int) ( $_POST['paragraphs'] ?? 5 ) ) );
 
         // URLs sempre enviadas (mesmo quando fetch server-side falhou)
         $ref_urls  = isset( $_POST['ref_urls'] ) && is_array( $_POST['ref_urls'] )
@@ -241,7 +242,7 @@ class WPAIP_LLM {
         $prompt = mb_substr( $prompt, 0, 2000 ); // limita input do usuário
 
         // Monta prompt baseado no modo
-        $final_prompt = self::build_prompt( $prompt, $mode, $ref_urls, $ref_texts );
+        $final_prompt = self::build_prompt( $prompt, $mode, $ref_urls, $ref_texts, $paragraphs );
 
         // Só passa 'model' se vier preenchido; caso vazio, cada call_* usa o valor das configurações
         $options = [];
@@ -324,7 +325,7 @@ class WPAIP_LLM {
      * @param string[] $ref_urls  Lista de URLs de referência (sempre presente).
      * @param string[] $ref_texts Conteúdo extraído de cada URL (pode estar vazio).
      */
-    private static function build_prompt( string $input, string $mode, array $ref_urls = [], array $ref_texts = [] ): string {
+    private static function build_prompt( string $input, string $mode, array $ref_urls = [], array $ref_texts = [], int $paragraphs = 5 ): string {
         // Monta bloco de contexto com referências
         $ref_block = '';
         if ( ! empty( $ref_urls ) ) {
@@ -354,16 +355,18 @@ class WPAIP_LLM {
                 return "Expanda o seguinte conteúdo em um artigo de blog completo e bem estruturado. "
                      . "Desenvolva cada ponto com profundidade, use linguagem envolvente e acessível, "
                      . "adicione exemplos práticos quando útil. "
+                     . "O artigo deve ter exatamente {$paragraphs} parágrafos de conteúdo (além dos sub-títulos). "
                      . "Retorne apenas o HTML do artigo (use H2 e H3 para sub-títulos, parágrafos, listas quando pertinente), sem comentários extra:{$ref_block}\n\n{$input}";
             case 'summarize':
                 return "Resuma o seguinte texto de forma clara e concisa. Retorne apenas o resumo:{$ref_block}\n\n{$input}";
             case 'draft':
             default:
-                return 'Crie um artigo de blog longo, completo e muito bem estruturado sobre o seguinte tema. '
-                     . 'O artigo deve ter: título em H1, introdução envolvente, desenvolvimento com múnimos 5 sub-títulos H2 '
-                     . '(cada um com 2 ou mais parágrafos ricos), e uma conclusão. '
+                $h2_count = max( 1, (int) ceil( $paragraphs / 2 ) );
+                return "Crie um artigo de blog longo, completo e muito bem estruturado sobre o seguinte tema. "
+                     . "O artigo deve ter: título em H1, introdução envolvente, exatamente {$h2_count} seções H2 "
+                     . "(cada seção com pelo menos 2 parágrafos ricos), totalizando aproximadamente {$paragraphs} parágrafos no corpo do texto, e uma conclusão. "
                      . 'Use linguagem clara, acessível e otimizada para SEO. '
-                     . 'Retorne SOMENTE o HTML do artigo (sem markdown, sem \`\`\`html, sem texto extra fora do HTML). '
+                     . 'Retorne SOMENTE o HTML do artigo (sem markdown, sem ```html, sem texto extra fora do HTML). '
                      . "Tema:\n\n{$input}{$ref_block}";
         }
     }

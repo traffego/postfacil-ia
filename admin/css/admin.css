@@ -107,6 +107,28 @@
 
 .wpaip-textarea { resize: vertical; }
 
+/* ── Field inline (label + select na mesma linha) ── */
+.wpaip-field--inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0.75rem;
+}
+
+.wpaip-field--inline .wpaip-label {
+    white-space: nowrap;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/* ── Select compacto ── */
+.wpaip-select--sm {
+    width: auto;
+    min-width: 70px;
+    padding: 5px 8px;
+    font-size: 0.8rem;
+}
+
 /* ── API Row ── */
 .wpaip-api-row {
     display: flex;

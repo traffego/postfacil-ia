@@ -123,6 +123,21 @@ class WPAIP_Metabox {
                         placeholder="<?php esc_attr_e( 'Ex: 5 dicas de SEO para e-commerce', 'wp-ai-publisher' ); ?>"></textarea>
                 </div>
 
+                <!-- ── Quantidade de parágrafos ── -->
+                <div class="wpaip-field wpaip-field--inline">
+                    <label class="wpaip-label" for="wpaip-paragraphs">
+                        <?php _e( 'Parágrafos', 'wp-ai-publisher' ); ?>
+                    </label>
+                    <select id="wpaip-paragraphs" class="wpaip-select wpaip-select--sm">
+                        <option value="3">3</option>
+                        <option value="5" selected>5</option>
+                        <option value="7">7</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+
                 <div class="wpaip-btn-group">
                     <button type="button" id="wpaip-btn-draft" class="wpaip-btn wpaip-btn--primary" data-mode="draft">
                         <?php _e( '✦ Gerar Rascunho', 'wp-ai-publisher' ); ?>
