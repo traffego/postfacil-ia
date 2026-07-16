@@ -6,41 +6,36 @@
     const isGuten   = cfg.is_gutenberg;
 
     // ── Modal Flutuante Dark ──────────────────────────────────────────────────
-    function initModal() {
-        try {
-            var $panel    = $('#wpaip-panel-root');
-            var $trigger  = $('#wpaip-floating-trigger');
-            var $modal    = $('#wpaip-floating-modal');
-            var $closeBtn = $('.wpaip-modal-close');
-            var $saveDot  = $('#wpaip-save-dot');
+    $(function () {
+        var $trigger  = $('#wpaip-floating-trigger');
+        var $modal    = $('#wpaip-floating-modal');
+        var $closeBtn = $('.wpaip-modal-close');
+        var $saveDot  = $('#wpaip-save-dot');
 
-            if (!$panel.length || !$trigger.length || !$modal.length) return false;
-            if ($modal.data('wpaip-init')) return true; // já iniciado
+        // Click sempre funciona — independente do painel
+        $trigger.on('click', function () { $modal.fadeToggle(200); });
+        $closeBtn.on('click', function () { $modal.fadeOut(200); });
+        initSaveDot($saveDot);
 
-            // Move o painel para dentro do modal e oculta o postbox vazio
+        // Move o #wpaip-panel-root para dentro do modal (com retry)
+        function tryMovePanel() {
+            var $panel = $('#wpaip-panel-root');
+            if (!$panel.length) return false;
+            if ($modal.data('panel-moved')) return true;
+
             $modal.append($panel);
             $panel.closest('.postbox').hide();
-
-            $trigger.on('click', function () { $modal.fadeToggle(200); });
-            $closeBtn.on('click', function () { $modal.fadeOut(200); });
-            initSaveDot($saveDot);
-
-            $modal.data('wpaip-init', true);
+            $modal.data('panel-moved', true);
             return true;
-        } catch (e) {
-            return false;
         }
-    }
 
-    $(function () {
-        if (initModal()) return;
-
-        // Fallback: observa DOM caso o painel apareça depois (Editor Clássico pode atrasar)
-        var attempts = 0;
-        var timer = setInterval(function () {
-            attempts++;
-            if (initModal() || attempts > 50) clearInterval(timer);
-        }, 200);
+        if (!tryMovePanel()) {
+            var attempts = 0;
+            var timer = setInterval(function () {
+                attempts++;
+                if (tryMovePanel() || attempts > 50) clearInterval(timer);
+            }, 200);
+        }
     });
 
     function initSaveDot($dot) {
