@@ -169,12 +169,6 @@ class WPAIP_Metabox {
                             <button type="button" id="wpaip-btn-draft" class="wpaip-btn wpaip-btn--primary" data-mode="draft">
                                 <?php _e( '✦ Gerar', 'wp-ai-publisher' ); ?>
                             </button>
-                            <button type="button" id="wpaip-btn-expand" class="wpaip-btn wpaip-btn--secondary" data-mode="expand">
-                                <?php _e( 'Expandir', 'wp-ai-publisher' ); ?>
-                            </button>
-                            <button type="button" id="wpaip-btn-summarize" class="wpaip-btn wpaip-btn--secondary" data-mode="summarize">
-                                <?php _e( 'Resumir', 'wp-ai-publisher' ); ?>
-                            </button>
                         </div>
                     </div>
                 </div>
