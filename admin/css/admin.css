@@ -308,28 +308,31 @@
 
 .wpaip-btn--secondary:hover:not(:disabled) { background: #eee; }
 
-/* ── Bolinha de Salvar ── */
+/* ── Bolinha de Salvar (Flutuante Fixa no Modal) ── */
 .wpaip-save-dot {
+    position: fixed !important;
+    bottom: 105px !important; /* 85px bottom do modal + 20px */
+    right: 45px !important;   /* 25px right do modal + 20px */
+    z-index: 100000 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 28px !important;
-    height: 28px !important;
+    width: 44px !important;
+    height: 44px !important;
     border-radius: 50% !important;
     border: 2px solid transparent !important;
     cursor: pointer !important;
-    padding: 5px !important;
+    padding: 0 !important;
     margin: 0 !important;
     color: #fff !important;
-    line-height: 1 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
     transition: background 0.25s, border-color 0.25s, transform 0.15s, box-shadow 0.25s !important;
-    flex-shrink: 0 !important;
     box-sizing: border-box !important;
 }
 
 .wpaip-save-dot svg {
-    width: 14px !important;
-    height: 14px !important;
+    width: 18px !important;
+    height: 18px !important;
     display: block !important;
     fill: currentColor !important;
     pointer-events: none !important;
@@ -338,13 +341,13 @@
 .wpaip-save-dot--saved {
     background: #16a34a !important;
     border-color: #15803d !important;
-    box-shadow: 0 0 6px rgba(22,163,74,.5) !important;
+    box-shadow: 0 4px 12px rgba(22,163,74,.4) !important;
 }
 
 .wpaip-save-dot--unsaved {
     background: #dc2626 !important;
     border-color: #b91c1c !important;
-    box-shadow: 0 0 6px rgba(220,38,38,.5) !important;
+    box-shadow: 0 4px 12px rgba(220,38,38,.4) !important;
     animation: wpaip-pulse-red 1.6s ease-in-out infinite !important;
 }
 
@@ -355,12 +358,12 @@
 }
 
 .wpaip-save-dot:hover {
-    transform: scale(1.15) !important;
+    transform: scale(1.1) !important;
 }
 
 @keyframes wpaip-pulse-red {
-    0%, 100% { box-shadow: 0 0 6px rgba(220,38,38,.5); }
-    50%       { box-shadow: 0 0 14px rgba(220,38,38,.9); }
+    0%, 100% { box-shadow: 0 4px 10px rgba(220,38,38,.4); }
+    50%       { box-shadow: 0 4px 20px rgba(220,38,38,.8); }
 }
 
 @keyframes wpaip-spin {
@@ -492,9 +495,8 @@
     color: #fff;
 }
 
-/* Customização dos elementos internos para Dark Theme */
 .wpaip-dark-theme #wpaip-panel-root {
-    padding: 16px;
+    padding: 16px 16px 65px 16px !important;
 }
 
 .wpaip-dark-theme .wpaip-label {

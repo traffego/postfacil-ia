@@ -13,13 +13,11 @@
         const $trigger  = $('<button type="button" id="wpaip-floating-trigger" title="POST FÁCIL I.A."><span class="dashicons dashicons-superhero"></span></button>');
         const $modal    = $('<div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;"></div>');
         const $header   = $('<div class="wpaip-modal-header"><h3>POST FÁCIL I.A.</h3></div>');
-        const $actions  = $('<div class="wpaip-modal-actions"></div>');
-        const $saveDot  = $('<button type="button" id="wpaip-save-dot" class="wpaip-save-dot wpaip-save-dot--saved" title="Salvar post"><svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4.5L10.5 1H2zm8.5 0v3.5H13L10.5 1zM5 9h6v4H5V9zm1 1v2h4v-2H6z"/></svg></button>');
         const $closeBtn = $('<button type="button" class="wpaip-modal-close">&times;</button>');
+        const $saveDot  = $('<button type="button" id="wpaip-save-dot" class="wpaip-save-dot wpaip-save-dot--saved" title="Salvar post"><svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4.5L10.5 1H2zm8.5 0v3.5H13L10.5 1zM5 9h6v4H5V9zm1 1v2h4v-2H6z"/></svg></button>');
 
-        $actions.append($saveDot).append($closeBtn);
-        $header.append($actions);
-        $modal.append($header).append($panel);
+        $header.append($closeBtn);
+        $modal.append($header).append($panel).append($saveDot);
         $('body').append($trigger).append($modal);
 
         // Oculta metabox original
@@ -41,36 +39,48 @@
     function initSaveDot($dot) {
         function setSaved(saved) {
             $dot
-                .toggleClass('wpaip-save-dot--saved',   saved)
-                .toggleClass('wpaip-save-dot--unsaved', !saved)
+                .removeClass('wpaip-save-dot--saved wpaip-save-dot--unsaved')
+                .addClass(saved ? 'wpaip-save-dot--saved' : 'wpaip-save-dot--unsaved')
                 .attr('title', saved ? 'Post salvo' : 'Salvar post (alterações não salvas)');
         }
+
+        // Estado inicial
+        setSaved(true);
 
         if (isGuten && typeof wp !== 'undefined' && wp.data) {
             // Gutenberg: assina o store para detectar mudanças
             wp.data.subscribe(function () {
-                const isDirty   = wp.data.select('core/editor').isEditedPostDirty();
-                const isSaving  = wp.data.select('core/editor').isSavingPost();
-                if (isSaving) {
-                    $dot.addClass('wpaip-save-dot--saving');
-                } else {
-                    $dot.removeClass('wpaip-save-dot--saving');
-                    setSaved(!isDirty);
+                try {
+                    const editorSelect = wp.data.select('core/editor');
+                    if (!editorSelect) return;
+
+                    const isDirty   = typeof editorSelect.isEditedPostDirty === 'function' ? editorSelect.isEditedPostDirty() : false;
+                    const isSaving  = typeof editorSelect.isSavingPost === 'function' ? editorSelect.isSavingPost() : false;
+
+                    if (isSaving) {
+                        $dot.addClass('wpaip-save-dot--saving');
+                    } else {
+                        $dot.removeClass('wpaip-save-dot--saving');
+                        setSaved(!isDirty);
+                    }
+                } catch (err) {
+                    // Evita quebrar se o editor ainda não estiver totalmente carregado
                 }
             });
         } else {
             // Editor Clássico: monitora alterações no formulário do post
             var dirty = false;
             $(document).on('input change', '#title, #content, #excerpt', function () {
-                if (!dirty) { dirty = true; setSaved(false); }
+                if (!dirty) { 
+                    dirty = true; 
+                    setSaved(false); 
+                }
             });
             // Quando salva, volta para verde
             $('#post').on('submit', function () {
                 dirty = false;
                 setSaved(true);
             });
-            // Verifica se já tem conteúdo ao abrir
-            setSaved(true);
         }
 
         // ── Clique na bolinha salva o post ─────────────────────────────────────
@@ -79,9 +89,18 @@
             $dot.addClass('wpaip-save-dot--saving');
 
             if (isGuten && typeof wp !== 'undefined' && wp.data) {
-                wp.data.dispatch('core/editor').savePost()
-                    .catch(function () { setSaved(false); })
-                    .finally(function () { $dot.removeClass('wpaip-save-dot--saving'); });
+                try {
+                    const editorDispatch = wp.data.dispatch('core/editor');
+                    if (editorDispatch && typeof editorDispatch.savePost === 'function') {
+                        editorDispatch.savePost()
+                            .catch(function () { setSaved(false); })
+                            .finally(function () { $dot.removeClass('wpaip-save-dot--saving'); });
+                    } else {
+                        $dot.removeClass('wpaip-save-dot--saving');
+                    }
+                } catch (e) {
+                    $dot.removeClass('wpaip-save-dot--saving');
+                }
             } else {
                 var $save = $('#save-post');
                 var $pub  = $('#publish');
