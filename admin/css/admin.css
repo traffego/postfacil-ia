@@ -330,18 +330,18 @@
     border-color: transparent;
 }
 
-/* Cores progressivas por número */
-.wpaip-para-btn[data-val="1"] { border-color: #c4b5fd; color: #a78bfa; background: #faf5ff; }
-.wpaip-para-btn[data-val="2"] { border-color: #a78bfa; color: #8b5cf6; background: #f5f0ff; }
-.wpaip-para-btn[data-val="3"] { border-color: #8b5cf6; color: #7c3aed; background: #ede9fe; }
-.wpaip-para-btn[data-val="4"] { border-color: #7c3aed; color: #6d28d9; background: #ddd6fe; }
-.wpaip-para-btn[data-val="5"] { border-color: #6d28d9; color: #5b21b6; background: #c4b5fd; }
+/* Cores progressivas por número — cinzas */
+.wpaip-para-btn[data-val="1"] { border-color: #e0e0e0; color: #bbb; background: #fafafa; }
+.wpaip-para-btn[data-val="2"] { border-color: #c8c8c8; color: #999; background: #f5f5f5; }
+.wpaip-para-btn[data-val="3"] { border-color: #aaa;    color: #777; background: #efefef; }
+.wpaip-para-btn[data-val="4"] { border-color: #888;    color: #555; background: #e8e8e8; }
+.wpaip-para-btn[data-val="5"] { border-color: #666;    color: #333; background: #ddd;    }
 
-.wpaip-para-btn[data-val="1"].is-active { background: #c4b5fd; }
-.wpaip-para-btn[data-val="2"].is-active { background: #a78bfa; }
-.wpaip-para-btn[data-val="3"].is-active { background: #8b5cf6; }
-.wpaip-para-btn[data-val="4"].is-active { background: #7c3aed; }
-.wpaip-para-btn[data-val="5"].is-active { background: #6d28d9; }
+.wpaip-para-btn[data-val="1"].is-active { background: #ccc; border-color: #bbb; }
+.wpaip-para-btn[data-val="2"].is-active { background: #bbb; border-color: #aaa; }
+.wpaip-para-btn[data-val="3"].is-active { background: #999; border-color: #888; }
+.wpaip-para-btn[data-val="4"].is-active { background: #777; border-color: #666; }
+.wpaip-para-btn[data-val="5"].is-active { background: #555; border-color: #444; }
 
 .wpaip-para-btn--more {
     border-style: dashed;
