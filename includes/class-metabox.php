@@ -161,20 +161,22 @@ class WPAIP_Metabox {
                         </div>
                         <input type="hidden" id="wpaip-paragraphs" value="5">
                     </div>
-                    <textarea id="wpaip-prompt" class="wpaip-textarea" rows="3"
-                        placeholder="<?php esc_attr_e( 'Ex: 5 dicas de SEO para e-commerce', 'wp-ai-publisher' ); ?>"></textarea>
-                </div>
 
-                <div class="wpaip-btn-group">
-                    <button type="button" id="wpaip-btn-draft" class="wpaip-btn wpaip-btn--primary" data-mode="draft">
-                        <?php _e( '✦ Gerar Rascunho', 'wp-ai-publisher' ); ?>
-                    </button>
-                    <button type="button" id="wpaip-btn-expand" class="wpaip-btn wpaip-btn--secondary" data-mode="expand">
-                        <?php _e( 'Expandir', 'wp-ai-publisher' ); ?>
-                    </button>
-                    <button type="button" id="wpaip-btn-summarize" class="wpaip-btn wpaip-btn--secondary" data-mode="summarize">
-                        <?php _e( 'Resumir', 'wp-ai-publisher' ); ?>
-                    </button>
+                    <div class="wpaip-prompt-wrap">
+                        <textarea id="wpaip-prompt" class="wpaip-textarea" rows="4"
+                            placeholder="<?php esc_attr_e( 'Ex: 5 dicas de SEO para e-commerce', 'wp-ai-publisher' ); ?>"></textarea>
+                        <div class="wpaip-prompt-actions">
+                            <button type="button" id="wpaip-btn-draft" class="wpaip-btn wpaip-btn--primary" data-mode="draft">
+                                <?php _e( '✦ Gerar', 'wp-ai-publisher' ); ?>
+                            </button>
+                            <button type="button" id="wpaip-btn-expand" class="wpaip-btn wpaip-btn--secondary" data-mode="expand">
+                                <?php _e( 'Expandir', 'wp-ai-publisher' ); ?>
+                            </button>
+                            <button type="button" id="wpaip-btn-summarize" class="wpaip-btn wpaip-btn--secondary" data-mode="summarize">
+                                <?php _e( 'Resumir', 'wp-ai-publisher' ); ?>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="wpaip-text-status" class="wpaip-status" style="display:none;"></div>
