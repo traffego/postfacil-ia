@@ -308,31 +308,27 @@
 
 .wpaip-btn--secondary:hover:not(:disabled) { background: #eee; }
 
-/* ── Bolinha de Salvar (Flutuante Fixa no Modal) ── */
+/* ── Bolinha de Salvar (Cabeçalho do Modal) ── */
 .wpaip-save-dot {
-    position: fixed !important;
-    bottom: 105px !important; /* 85px bottom do modal + 20px */
-    right: 45px !important;   /* 25px right do modal + 20px */
-    z-index: 100000 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 44px !important;
-    height: 44px !important;
+    width: 22px !important;
+    height: 22px !important;
     border-radius: 50% !important;
-    border: 2px solid transparent !important;
+    border: 1px solid transparent !important;
     cursor: pointer !important;
     padding: 0 !important;
     margin: 0 !important;
     color: #fff !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
     transition: background 0.25s, border-color 0.25s, transform 0.15s, box-shadow 0.25s !important;
     box-sizing: border-box !important;
+    flex-shrink: 0 !important;
 }
 
 .wpaip-save-dot svg {
-    width: 18px !important;
-    height: 18px !important;
+    width: 11px !important;
+    height: 11px !important;
     display: block !important;
     fill: currentColor !important;
     pointer-events: none !important;
@@ -341,13 +337,13 @@
 .wpaip-save-dot--saved {
     background: #16a34a !important;
     border-color: #15803d !important;
-    box-shadow: 0 4px 12px rgba(22,163,74,.4) !important;
+    box-shadow: 0 0 4px rgba(22,163,74,.4) !important;
 }
 
 .wpaip-save-dot--unsaved {
     background: #dc2626 !important;
     border-color: #b91c1c !important;
-    box-shadow: 0 4px 12px rgba(220,38,38,.4) !important;
+    box-shadow: 0 0 6px rgba(220,38,38,.6) !important;
     animation: wpaip-pulse-red 1.6s ease-in-out infinite !important;
 }
 
@@ -362,8 +358,8 @@
 }
 
 @keyframes wpaip-pulse-red {
-    0%, 100% { box-shadow: 0 4px 10px rgba(220,38,38,.4); }
-    50%       { box-shadow: 0 4px 20px rgba(220,38,38,.8); }
+    0%, 100% { box-shadow: 0 0 4px rgba(220,38,38,.4); }
+    50%       { box-shadow: 0 0 10px rgba(220,38,38,.8); }
 }
 
 @keyframes wpaip-spin {
@@ -443,7 +439,7 @@
     right: 25px;
     width: 350px;
     max-height: calc(100vh - 120px);
-    overflow-y: auto;
+    overflow: hidden; /* Header e rodapé ficam fixos */
     background: #111827;
     color: #f3f4f6;
     border-radius: 12px;
@@ -464,13 +460,13 @@
     background: #1f2937;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
+    flex-shrink: 0; /* Impede encolhimento do header */
 }
 
-.wpaip-modal-actions {
+.wpaip-modal-title-group {
     display: flex;
     align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
+    gap: 8px;
 }
 
 .wpaip-modal-header h3 {
@@ -496,7 +492,9 @@
 }
 
 .wpaip-dark-theme #wpaip-panel-root {
-    padding: 16px 16px 65px 16px !important;
+    padding: 16px 16px 24px 16px !important;
+    overflow-y: auto !important; /* Apenas o corpo do painel rola */
+    flex: 1 !important;
 }
 
 .wpaip-dark-theme .wpaip-label {
