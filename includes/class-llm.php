@@ -30,7 +30,8 @@ class WPAIP_LLM {
         }
 
         $system = $options['system'] ?? WPAIP_Settings::get( 'system_prompt' );
-        $prompt = WPAIP_Security::prepare_prompt( $prompt, 12000 );
+        // Nota: o prompt já vem sanitizado pelo ajax_generate_text; não re-sanitizar
+        // para evitar que wp_strip_all_tags destrua conteúdo de referências.
 
         switch ( $provider ) {
             case 'openai':
@@ -225,14 +226,19 @@ class WPAIP_LLM {
             ? array_map( 'esc_url_raw', $_POST['ref_urls'] )
             : [];
 
-        // Conteúdo extraído (pode estar vazio se o site bloqueou a requisição)
+        // Conteúdo extraído: não usar sanitize_textarea_field aqui pois
+        // wp_strip_all_tags poderia destruir texto com < ou > do conteúdo web
         $ref_texts = isset( $_POST['ref_texts'] ) && is_array( $_POST['ref_texts'] )
-            ? array_map( 'sanitize_textarea_field', $_POST['ref_texts'] )
+            ? array_map( 'wp_kses_no_null', $_POST['ref_texts'] )
             : [];
 
         if ( empty( $prompt ) ) {
             wp_send_json_error( [ 'message' => 'Prompt vazio.' ] );
         }
+
+        // Sanitiza apenas o input do usuário (não o prompt final)
+        $prompt = WPAIP_Security::sanitize_prompt( $prompt );
+        $prompt = mb_substr( $prompt, 0, 2000 ); // limita input do usuário
 
         // Monta prompt baseado no modo
         $final_prompt = self::build_prompt( $prompt, $mode, $ref_urls, $ref_texts );
@@ -352,7 +358,7 @@ class WPAIP_LLM {
 
     private static function call_openai( string $key, string $prompt, string $system, array $opts ): array {
         $model      = $opts['model'] ?? WPAIP_Settings::get( 'openai_model', 'gpt-4o' );
-        $max_tokens = (int) ( $opts['max_tokens'] ?? 2000 );
+        $max_tokens = (int) ( $opts['max_tokens'] ?? 4000 );
 
         $body = wp_json_encode( [
             'model'      => $model,
@@ -406,7 +412,7 @@ class WPAIP_LLM {
 
     private static function call_anthropic( string $key, string $prompt, string $system, array $opts ): array {
         $model      = $opts['model'] ?? WPAIP_Settings::get( 'anthropic_model', 'claude-sonnet-4-5' );
-        $max_tokens = (int) ( $opts['max_tokens'] ?? 2000 );
+        $max_tokens = (int) ( $opts['max_tokens'] ?? 4000 );
 
         $body = wp_json_encode( [
             'model'      => $model,
@@ -436,7 +442,7 @@ class WPAIP_LLM {
 
     private static function call_deepseek( string $key, string $prompt, string $system, array $opts ): array {
         $model      = $opts['model'] ?? WPAIP_Settings::get( 'deepseek_model', 'deepseek-chat' );
-        $max_tokens = (int) ( $opts['max_tokens'] ?? 2000 );
+        $max_tokens = (int) ( $opts['max_tokens'] ?? 4000 );
 
         $body = wp_json_encode( [
             'model'      => $model,
