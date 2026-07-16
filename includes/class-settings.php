@@ -174,18 +174,23 @@ class WPAIP_Settings {
             return;
         }
 
+        $css_file = WPAIP_PLUGIN_DIR . 'admin/css/admin.css';
+        $js_file  = WPAIP_PLUGIN_DIR . 'admin/js/settings.js';
+        $css_ver  = file_exists( $css_file ) ? filemtime( $css_file ) : time();
+        $js_ver   = file_exists( $js_file )  ? filemtime( $js_file )  : time();
+
         wp_enqueue_style(
             'wpaip-admin',
             WPAIP_PLUGIN_URL . 'admin/css/admin.css',
             [],
-            WPAIP_VERSION
+            $css_ver
         );
 
         wp_enqueue_script(
             'wpaip-settings',
             WPAIP_PLUGIN_URL . 'admin/js/settings.js',
             [ 'jquery' ],
-            WPAIP_VERSION,
+            $js_ver,
             true
         );
 
