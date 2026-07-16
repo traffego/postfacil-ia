@@ -310,43 +310,52 @@
 
 /* ── Bolinha de Salvar ── */
 .wpaip-save-dot {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    margin-right: 4px;
-    transition: background 0.25s, border-color 0.25s, transform 0.15s, box-shadow 0.25s;
-    flex-shrink: 0;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    border: 2px solid transparent !important;
+    cursor: pointer !important;
+    padding: 5px !important;
+    margin: 0 !important;
+    color: #fff !important;
+    line-height: 1 !important;
+    transition: background 0.25s, border-color 0.25s, transform 0.15s, box-shadow 0.25s !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.wpaip-save-dot svg {
+    width: 14px !important;
+    height: 14px !important;
+    display: block !important;
+    fill: currentColor !important;
+    pointer-events: none !important;
 }
 
 .wpaip-save-dot--saved {
-    background: #16a34a;
-    border-color: #15803d;
-    box-shadow: 0 0 6px rgba(22,163,74,.5);
+    background: #16a34a !important;
+    border-color: #15803d !important;
+    box-shadow: 0 0 6px rgba(22,163,74,.5) !important;
 }
 
 .wpaip-save-dot--unsaved {
-    background: #dc2626;
-    border-color: #b91c1c;
-    box-shadow: 0 0 6px rgba(220,38,38,.5);
-    animation: wpaip-pulse-red 1.6s ease-in-out infinite;
+    background: #dc2626 !important;
+    border-color: #b91c1c !important;
+    box-shadow: 0 0 6px rgba(220,38,38,.5) !important;
+    animation: wpaip-pulse-red 1.6s ease-in-out infinite !important;
 }
 
 .wpaip-save-dot--saving {
-    background: #d97706;
-    border-color: #b45309;
-    animation: wpaip-spin 0.8s linear infinite;
+    background: #d97706 !important;
+    border-color: #b45309 !important;
+    animation: wpaip-spin 0.8s linear infinite !important;
 }
 
-.wpaip-save-dot:hover:not(:disabled) {
-    transform: scale(1.15);
+.wpaip-save-dot:hover {
+    transform: scale(1.15) !important;
 }
 
 @keyframes wpaip-pulse-red {
@@ -361,7 +370,7 @@
 
 /* Botões legados removidos — save agora é bolinha */
 .wpaip-btn--save,
-.wpaip-save-divider { display: none; }
+.wpaip-save-divider { display: none !important; }
 
 /* ── Status ── */
 .wpaip-status {
@@ -452,6 +461,13 @@
     background: #1f2937;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
+}
+
+.wpaip-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .wpaip-modal-header h3 {

@@ -10,13 +10,15 @@
         const $panel   = $('#wpaip-panel-root');
         if (!$panel.length) return;
 
-        const $trigger = $('<button type="button" id="wpaip-floating-trigger" title="POST FÁCIL I.A."><span class="dashicons dashicons-superhero"></span></button>');
-        const $modal   = $('<div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;"></div>');
-        const $saveDot = $('<button type="button" id="wpaip-save-dot" class="wpaip-save-dot wpaip-save-dot--saved" title="Salvar post">&#x1F4BE;</button>');
-        const $header  = $('<div class="wpaip-modal-header"><h3>POST FÁCIL I.A.</h3></div>');
+        const $trigger  = $('<button type="button" id="wpaip-floating-trigger" title="POST FÁCIL I.A."><span class="dashicons dashicons-superhero"></span></button>');
+        const $modal    = $('<div id="wpaip-floating-modal" class="wpaip-dark-theme" style="display:none;"></div>');
+        const $header   = $('<div class="wpaip-modal-header"><h3>POST FÁCIL I.A.</h3></div>');
+        const $actions  = $('<div class="wpaip-modal-actions"></div>');
+        const $saveDot  = $('<button type="button" id="wpaip-save-dot" class="wpaip-save-dot wpaip-save-dot--saved" title="Salvar post"><svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4.5L10.5 1H2zm8.5 0v3.5H13L10.5 1zM5 9h6v4H5V9zm1 1v2h4v-2H6z"/></svg></button>');
         const $closeBtn = $('<button type="button" class="wpaip-modal-close">&times;</button>');
 
-        $header.append($saveDot).append($closeBtn);
+        $actions.append($saveDot).append($closeBtn);
+        $header.append($actions);
         $modal.append($header).append($panel);
         $('body').append($trigger).append($modal);
 
