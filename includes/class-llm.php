@@ -7,6 +7,8 @@ defined( 'ABSPATH' ) || exit;
 
 class WPAIP_LLM {
 
+    private static string $last_search_error = '';
+
     /**
      * Gera texto usando o provider configurado.
      *
@@ -249,12 +251,15 @@ class WPAIP_LLM {
         $prompt = mb_substr( $prompt, 0, 2000 ); // limita input do usuário
 
         // Pesquisa automática em segundo plano via Gemini (se habilitado)
+        $search_warning = '';
         $is_search_enabled = WPAIP_Settings::get( 'enable_gemini_search', '0' ) === '1';
         if ( $is_search_enabled ) {
             $web_context = self::fetch_web_context_via_gemini( $prompt );
             if ( ! empty( $web_context ) ) {
                 $ref_urls[]  = 'google-search-gemini';
                 $ref_texts[] = $web_context;
+            } else {
+                $search_warning = self::$last_search_error ?: 'Erro desconhecido na busca.';
             }
         }
 
@@ -287,7 +292,12 @@ class WPAIP_LLM {
             }
         }
 
-        wp_send_json_success( [ 'text' => $text, 'title' => $title ] );
+        $response_data = [ 'text' => $text, 'title' => $title ];
+        if ( ! empty( $search_warning ) ) {
+            $response_data['search_warning'] = 'WP AI Publisher — Falha na busca em tempo real via Gemini: ' . $search_warning;
+        }
+
+        wp_send_json_success( $response_data );
     }
 
     public static function ajax_improve_prompt(): void {
@@ -352,7 +362,8 @@ class WPAIP_LLM {
         if ( $result['success'] && ! empty( $result['text'] ) ) {
             return trim( $result['text'] );
         } else {
-            error_log( 'WP AI Publisher — Falha na busca em tempo real via Gemini: ' . ( $result['message'] ?? 'Resposta vazia' ) );
+            self::$last_search_error = $result['message'] ?? 'Resposta de busca vazia do Gemini.';
+            error_log( 'WP AI Publisher — Falha na busca em tempo real via Gemini: ' . self::$last_search_error );
         }
 
         return '';

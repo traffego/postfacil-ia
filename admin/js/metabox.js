@@ -316,6 +316,9 @@
                 if (res.data.title) {
                     setPostTitle(res.data.title);
                 }
+                if (res.data.search_warning) {
+                    console.error(res.data.search_warning);
+                }
                 setStatus($status, 'success', cfg.strings.success);
             } else {
                 setStatus($status, 'error', cfg.strings.error + (res.data.message || 'Erro desconhecido'));
