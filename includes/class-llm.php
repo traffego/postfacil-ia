@@ -30,6 +30,13 @@ class WPAIP_LLM {
         }
 
         $system = $options['system'] ?? WPAIP_Settings::get( 'system_prompt' );
+
+        // Injeta contexto de data/hora atual para evitar anacronismos temporais na escrita do modelo
+        $current_date = date_i18n( 'd \d\e F \d\e Y' );
+        $current_time = date_i18n( 'H:i' );
+        $temporal_instruction = "Data e hora de referência atual: {$current_date} às {$current_time}. Escreva o conteúdo ciente desta data atual e utilize os tempos verbais corretos (tempo passado para o que já aconteceu e futuro apenas para eventos posteriores a essa data).";
+        $system = $temporal_instruction . "\n\n" . $system;
+
         // Nota: o prompt já vem sanitizado pelo ajax_generate_text; não re-sanitizar
         // para evitar que wp_strip_all_tags destrua conteúdo de referências.
 
