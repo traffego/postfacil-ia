@@ -243,11 +243,28 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                 <p class="wpaip-card-desc"><?php _e( 'Instrução base enviada a todos os modelos. Defina tom, idioma e estilo de escrita.', 'wp-ai-publisher' ); ?></p>
             </div>
             <div class="wpaip-card-body">
-                <textarea
-                    name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[system_prompt]"
-                    class="wpaip-input wpaip-textarea"
-                    rows="4"
-                ><?php echo esc_textarea( $opts['system_prompt'] ?? '' ); ?></textarea>
+                <div class="wpaip-field">
+                    <label for="wpaip-system-prompt"><?php _e( 'Prompt de Sistema', 'wp-ai-publisher' ); ?></label>
+                    <textarea
+                        id="wpaip-system-prompt"
+                        name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[system_prompt]"
+                        class="wpaip-input wpaip-textarea"
+                        rows="4"
+                    ><?php echo esc_textarea( $opts['system_prompt'] ?? '' ); ?></textarea>
+                </div>
+
+                <div class="wpaip-field" style="margin-top: 15px;">
+                    <label for="wpaip-default-journalistic-style"><?php _e( 'Estilo Jornalístico Padrão', 'wp-ai-publisher' ); ?></label>
+                    <select id="wpaip-default-journalistic-style" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_journalistic_style]" class="wpaip-select">
+                        <option value="default" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'default' ); ?>><?php _e( 'Informativo / Padrão (Fatos diretos e linguagem neutra)', 'wp-ai-publisher' ); ?></option>
+                        <option value="investigative" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'investigative' ); ?>><?php _e( 'Investigativo (Profundo e analítico)', 'wp-ai-publisher' ); ?></option>
+                        <option value="editorial" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'editorial' ); ?>><?php _e( 'Opinativo / Editorial (Argumentativo e defensor de tese)', 'wp-ai-publisher' ); ?></option>
+                        <option value="interview" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'interview' ); ?>><?php _e( 'Entrevista (Estrutura de perguntas/respostas ou abundante em citações)', 'wp-ai-publisher' ); ?></option>
+                        <option value="narrative" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'narrative' ); ?>><?php _e( 'Crônica / Narrativo (Storytelling, tom literário e reflexivo)', 'wp-ai-publisher' ); ?></option>
+                        <option value="sensationalist" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'sensationalist' ); ?>><?php _e( 'Sensacionalista / Tabloide (Dramático, ganchos de curiosidade e forte apelo emocional)', 'wp-ai-publisher' ); ?></option>
+                    </select>
+                    <span class="wpaip-field-hint"><?php _e( 'O estilo selecionado influenciará a estrutura, tom de voz e abordagem do conteúdo gerado pela IA.', 'wp-ai-publisher' ); ?></span>
+                </div>
             </div>
         </div>
 

@@ -120,6 +120,9 @@ class WPAIP_Settings {
         // Prompt de sistema global
         $clean['system_prompt'] = sanitize_textarea_field( $input['system_prompt'] ?? '' );
 
+        // Estilo jornalístico padrão
+        $clean['default_journalistic_style'] = sanitize_text_field( $input['default_journalistic_style'] ?? 'default' );
+
         return $clean;
     }
 
@@ -157,6 +160,7 @@ class WPAIP_Settings {
             'deepseek_model'          => 'deepseek-chat',
             'huggingface_image_model' => 'black-forest-labs/FLUX.1-schnell',
             'system_prompt'           => 'Você é um redator especialista em SEO e marketing de conteúdo. Escreva em português do Brasil com linguagem clara, objetiva e envolvente.',
+            'default_journalistic_style' => 'default',
             // Asaas
             'asaas_api_key'           => '',
             'asaas_environment'       => 'sandbox',

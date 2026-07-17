@@ -241,8 +241,11 @@ class WPAIP_LLM {
         $prompt = WPAIP_Security::sanitize_prompt( $prompt );
         $prompt = mb_substr( $prompt, 0, 2000 ); // limita input do usuário
 
-        // Monta prompt baseado no modo
-        $final_prompt = self::build_prompt( $prompt, $mode, $ref_urls, $ref_texts, $paragraphs );
+        // Resgata o estilo jornalístico global configurado
+        $journalistic_style = WPAIP_Settings::get( 'default_journalistic_style', 'default' );
+
+        // Monta prompt baseado no modo e estilo jornalístico
+        $final_prompt = self::build_prompt( $prompt, $mode, $ref_urls, $ref_texts, $paragraphs, $journalistic_style );
 
         // Só passa 'model' se vier preenchido; caso vazio, cada call_* usa o valor das configurações
         $options = [];
@@ -359,20 +362,7 @@ class WPAIP_LLM {
             $content = json_decode( '"' . $m[1] . '"' );
             return $content ?: $m[1];
         }
-
-        // ── Passo 6: retorna o texto bruto se tudo falhar ────────────────────────
-        return $raw;
-    }
-
-    // ── Prompt builder ────────────────────────────────────────────────────────
-
-    /**
-     * @param string   $input     Tema / instrução do usuário.
-     * @param string   $mode      draft | expand | summarize
-     * @param string[] $ref_urls  Lista de URLs de referência (sempre presente).
-     * @param string[] $ref_texts Conteúdo extraído de cada URL (pode estar vazio).
-     */
-    private static function build_prompt( string $input, string $mode, array $ref_urls = [], array $ref_texts = [], int $paragraphs = 5 ): string {
+    private static function build_prompt( string $input, string $mode, array $ref_urls = [], array $ref_texts = [], int $paragraphs = 5, string $journalistic_style = 'default' ): string {
         // Monta bloco de contexto com referências
         $ref_block = '';
         if ( ! empty( $ref_urls ) ) {
@@ -397,9 +387,34 @@ class WPAIP_LLM {
             $ref_block .= "---\n";
         }
 
+        // Mapeia instruções de estilo jornalístico
+        $style_instruction = '';
+        switch ( $journalistic_style ) {
+            case 'investigative':
+                $style_instruction = 'Adote um estilo jornalístico investigativo: aprofunde-se nos fatos, traga detalhes minuciosos, evidencie contradições, organize o texto como se estivesse revelando segredos ou cruzando fontes de informação.';
+                break;
+            case 'editorial':
+                $style_instruction = 'Adote um estilo jornalístico de opinião/editorial: apresente uma tese clara logo no início, argumente fortemente usando lógica e fatos, e assuma uma postura crítica ou analítica sobre o tema.';
+                break;
+            case 'interview':
+                $style_instruction = 'Adote um formato jornalístico de entrevista: estruture partes do texto usando perguntas e respostas (Q&A) ou dê grande destaque a aspas e citações hipotéticas de especialistas sobre o tema.';
+                break;
+            case 'narrative':
+                $style_instruction = 'Adote um estilo de crônica ou jornalismo literário (narrativo): use storytelling, tom pessoal, linguagem fluida, descrições ricas de cenas/contextos e reflexões profundas.';
+                break;
+            case 'sensationalist':
+                $style_instruction = 'Adote um estilo de tabloide/sensacionalista: use ganchos de curiosidade dramáticos, chamadas instigantes, termos fortes e focados na emoção e impacto imediato do leitor.';
+                break;
+            case 'default':
+            default:
+                $style_instruction = 'Adote um estilo jornalístico informativo clássico: seja imparcial, direto, comece com os fatos principais e explique-os de forma simples e direta.';
+                break;
+        }
+
         switch ( $mode ) {
             case 'expand':
                 return "Expanda o seguinte conteúdo em um artigo de blog completo e bem estruturado. "
+                     . "ESTILO DE ESCRITA: {$style_instruction} "
                      . "Desenvolva cada ponto com profundidade, use linguagem envolvente e acessível, "
                      . "adicione exemplos práticos quando útil. "
                      . "O artigo deve ter exatamente {$paragraphs} parágrafos de conteúdo (além dos sub-títulos). "
@@ -422,6 +437,7 @@ class WPAIP_LLM {
                 }
 
                 return "Crie um artigo de blog sobre o tema abaixo. "
+                     . "ESTILO DE ESCRITA OBRIGATÓRIO: {$style_instruction} "
                      . "TAMANHO OBRIGATÓRIO: {$size_desc}. "
                      . 'Use linguagem clara, acessível e otimizada para SEO. '
                      . 'Retorne SOMENTE o HTML do artigo (sem markdown, sem ```html, sem texto extra fora do HTML). '
