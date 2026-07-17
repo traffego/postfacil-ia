@@ -362,6 +362,11 @@ class WPAIP_LLM {
             $content = json_decode( '"' . $m[1] . '"' );
             return $content ?: $m[1];
         }
+
+        // ── Passo 6: retorna o texto bruto se tudo falhar ────────────────────────
+        return $raw;
+    }
+
     private static function build_prompt( string $input, string $mode, array $ref_urls = [], array $ref_texts = [], int $paragraphs = 5, string $journalistic_style = 'default' ): string {
         // Monta bloco de contexto com referências
         $ref_block = '';
