@@ -351,6 +351,8 @@ class WPAIP_LLM {
 
         if ( $result['success'] && ! empty( $result['text'] ) ) {
             return trim( $result['text'] );
+        } else {
+            error_log( 'WP AI Publisher — Falha na busca em tempo real via Gemini: ' . ( $result['message'] ?? 'Resposta vazia' ) );
         }
 
         return '';
@@ -569,7 +571,7 @@ class WPAIP_LLM {
 
     private static function call_gemini( string $key, string $prompt, string $system, array $opts ): array {
         $model = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'gemini_model', 'gemini-2.0-flash' );
-        $url   = "https://generativelanguage.googleapis.com/v1/models/{$model}:generateContent?key={$key}";
+        $url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$key}";
 
         // Combina instrução de sistema com o prompt para evitar problemas de compatibilidade de campos no JSON do v1
         $combined_prompt = "Instruções do Sistema:\n{$system}\n\nTarefa:\n{$prompt}";
