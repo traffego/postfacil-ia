@@ -182,4 +182,47 @@
         });
     });
 
+    // ── Melhorar Prompt de Sistema ─────────────────────────────────────────────
+
+    $('#wpaip-btn-improve-prompt').on('click', function () {
+        const $btn    = $(this);
+        const $status = $('#wpaip-improve-prompt-status');
+        const $prompt = $('#wpaip-system-prompt');
+        const promptVal = $.trim($prompt.val());
+
+        if (!promptVal) {
+            $status.css('color', 'red').text('Escreva um prompt inicial para que possamos melhorá-lo.').show();
+            return;
+        }
+
+        const provider = $('#wpaip-default-llm').val();
+        const model = $('.wpaip-model-group[data-provider="' + provider + '"] select').val();
+
+        $btn.prop('disabled', true).text('Melhorando…');
+        $status.css('color', '#888').text('Melhorando prompt com ' + provider + '...').show();
+
+        $.post(cfg.ajax_url, {
+            action:        'wpaip_improve_prompt',
+            nonce:         cfg.nonce,
+            system_prompt: promptVal,
+            provider:      provider,
+            model:         model
+        })
+        .done(function (res) {
+            if (res.success && res.data.prompt) {
+                $prompt.val(res.data.prompt);
+                $status.css('color', 'green').text('Prompt melhorado com sucesso!');
+            } else {
+                $status.css('color', 'red').text('Erro: ' + (res.data.message || 'Erro desconhecido.'));
+            }
+        })
+        .fail(function () {
+            $status.css('color', 'red').text('Falha na requisição.');
+        })
+        .always(function () {
+            $btn.prop('disabled', false).text('✦ Melhorar Prompt');
+            setTimeout(function () { $status.fadeOut(300); }, 5000);
+        });
+    });
+
 }(jQuery));

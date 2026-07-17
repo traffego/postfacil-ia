@@ -273,6 +273,43 @@ class WPAIP_LLM {
         wp_send_json_success( [ 'text' => $text, 'title' => $title ] );
     }
 
+    public static function ajax_improve_prompt(): void {
+        WPAIP_Security::check_ajax( 'manage_options', 'settings' );
+
+        $system_prompt = sanitize_textarea_field( $_POST['system_prompt'] ?? '' );
+        $provider      = sanitize_text_field( $_POST['provider'] ?? '' );
+        $model         = sanitize_text_field( $_POST['model'] ?? '' );
+
+        if ( empty( $system_prompt ) ) {
+            wp_send_json_error( [ 'message' => __( 'O prompt de sistema inicial está vazio.', 'wp-ai-publisher' ) ] );
+        }
+
+        $meta_prompt = "Melhore o seguinte prompt de sistema para redação de artigos de blog em português. "
+                     . "Seu objetivo é enriquecer as instruções de comportamento da IA para que os artigos gerados sejam altamente envolventes, fluídos, bem estruturados e otimizados para SEO. "
+                     . "Retorne EXCLUSIVAMENTE o texto puro do novo prompt de sistema melhorado (em português), sem explicações, sem aspas e sem blocos de código markdown (como ```):\n\n"
+                     . $system_prompt;
+
+        $options = [];
+        if ( ! empty( $model ) ) {
+            $options['model'] = $model;
+        }
+        $options['system'] = 'Você é um engenheiro de prompt de inteligência artificial de elite especialista em criação de conteúdo.';
+        $options['max_tokens'] = 2000;
+
+        $result = self::generate( $meta_prompt, $provider, $options );
+
+        if ( ! $result['success'] ) {
+            wp_send_json_error( [ 'message' => $result['message'] ] );
+        }
+
+        $improved_prompt = trim( $result['text'] );
+        $improved_prompt = preg_replace( '/^```[a-zA-Z]*\s*/i', '', $improved_prompt );
+        $improved_prompt = preg_replace( '/\s*```$/i', '', $improved_prompt );
+        $improved_prompt = trim( $improved_prompt );
+
+        wp_send_json_success( [ 'prompt' => $improved_prompt ] );
+    }
+
     /**
      * Mantém apenas os primeiros $max parágrafos <p> do HTML,
      * preservando headings (H2, H3) e listas que os acompanham.

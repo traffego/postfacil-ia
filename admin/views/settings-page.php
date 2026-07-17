@@ -251,6 +251,12 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                         class="wpaip-input wpaip-textarea"
                         rows="4"
                     ><?php echo esc_textarea( $opts['system_prompt'] ?? '' ); ?></textarea>
+                    <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
+                        <button type="button" id="wpaip-btn-improve-prompt" class="button button-secondary">
+                            <?php _e( '✦ Melhorar Prompt', 'wp-ai-publisher' ); ?>
+                        </button>
+                        <span id="wpaip-improve-prompt-status" style="font-size: 11px; color: #888; display: none;"></span>
+                    </div>
                 </div>
 
                 <div class="wpaip-field" style="margin-top: 15px;">

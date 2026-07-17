@@ -22,6 +22,8 @@ class WPAIP_Settings {
         add_action( 'wp_ajax_wpaip_test_asaas',     [ __CLASS__, 'ajax_test_asaas'     ] );
         // AJAX: limpar cache Asaas do usuário atual
         add_action( 'wp_ajax_wpaip_clear_asaas_cache', [ __CLASS__, 'ajax_clear_asaas_cache' ] );
+        // AJAX: melhorar prompt de sistema global
+        add_action( 'wp_ajax_wpaip_improve_prompt', [ 'WPAIP_LLM', 'ajax_improve_prompt' ] );
     }
 
     // ── Menu Admin ────────────────────────────────────────────────────────────
