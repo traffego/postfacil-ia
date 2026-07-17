@@ -125,6 +125,9 @@ class WPAIP_Settings {
         // Estilo jornalístico padrão
         $clean['default_journalistic_style'] = sanitize_text_field( $input['default_journalistic_style'] ?? 'default' );
 
+        // Pesquisa em tempo real via Gemini
+        $clean['enable_gemini_search'] = ! empty( $input['enable_gemini_search'] ) ? '1' : '0';
+
         return $clean;
     }
 
@@ -163,6 +166,7 @@ class WPAIP_Settings {
             'huggingface_image_model' => 'black-forest-labs/FLUX.1-schnell',
             'system_prompt'           => 'Você é um redator especialista em SEO e marketing de conteúdo. Escreva em português do Brasil com linguagem clara, objetiva e envolvente.',
             'default_journalistic_style' => 'default',
+            'enable_gemini_search'       => '0',
             // Asaas
             'asaas_api_key'           => '',
             'asaas_environment'       => 'sandbox',

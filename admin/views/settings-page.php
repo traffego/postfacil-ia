@@ -178,6 +178,23 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                 </div>
                 <?php endforeach; ?>
 
+                <!-- Pesquisa em tempo real via Gemini -->
+                <div class="wpaip-field" style="grid-column: 1 / -1; margin-top: 10px; border-top: 1px solid #f0f0f0; padding-top: 15px;">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                        <input
+                            type="checkbox"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[enable_gemini_search]"
+                            value="1"
+                            <?php checked( WPAIP_Settings::get( 'enable_gemini_search', '0' ), '1' ); ?>
+                            style="width:18px; height:18px; accent-color:#7c3aed; cursor:pointer;"
+                        >
+                        <span><?php _e( 'Habilitar pesquisa automática em tempo real via Google Gemini', 'wp-ai-publisher' ); ?></span>
+                    </label>
+                    <span class="wpaip-field-hint" style="margin-left:28px;">
+                        <?php _e( 'Se ativo, o plugin usará a chave de API do Gemini para pesquisar no Google por fatos recentes sobre o tema e repassará essas informações como referência ao modelo de texto ativo antes de escrever o post. (Exige chave do Gemini configurada acima).', 'wp-ai-publisher' ); ?>
+                    </span>
+                </div>
+
             </div>
         </div>
 

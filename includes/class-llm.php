@@ -248,6 +248,16 @@ class WPAIP_LLM {
         $prompt = WPAIP_Security::sanitize_prompt( $prompt );
         $prompt = mb_substr( $prompt, 0, 2000 ); // limita input do usuário
 
+        // Pesquisa automática em segundo plano via Gemini (se habilitado)
+        $is_search_enabled = WPAIP_Settings::get( 'enable_gemini_search', '0' ) === '1';
+        if ( $is_search_enabled ) {
+            $web_context = self::fetch_web_context_via_gemini( $prompt );
+            if ( ! empty( $web_context ) ) {
+                $ref_urls[]  = 'google-search-gemini';
+                $ref_texts[] = $web_context;
+            }
+        }
+
         // Resgata o estilo jornalístico global configurado
         $journalistic_style = WPAIP_Settings::get( 'default_journalistic_style', 'default' );
 
@@ -315,6 +325,35 @@ class WPAIP_LLM {
         $improved_prompt = trim( $improved_prompt );
 
         wp_send_json_success( [ 'prompt' => $improved_prompt ] );
+    }
+
+    public static function fetch_web_context_via_gemini( string $user_prompt ): string {
+        $api_key = WPAIP_Settings::get_api_key( 'gemini' );
+        if ( empty( $api_key ) ) {
+            return '';
+        }
+
+        $model = WPAIP_Settings::get( 'gemini_model', 'gemini-2.0-flash' );
+
+        $search_prompt = "Pesquise na internet informações e fatos recentes, reais e atualizados sobre o seguinte tema: \"{$user_prompt}\". Resuma os pontos mais importantes, notícias reais, datas e acontecimentos levantados pela pesquisa em tópicos explicativos factuais para servir de base e referência fidedigna para a criação de um artigo. Retorne apenas os fatos consolidados encontrados na busca, sem introduções de IA, sem conclusões e sem blocos de código markdown (como ```).";
+
+        $options = [
+            'model'      => $model,
+            'max_tokens' => 2000,
+            'tools'      => [
+                [ 'googleSearch' => [] ]
+            ]
+        ];
+
+        $system = "Você é um pesquisador auxiliar de internet de alta precisão. Use a busca do Google para obter e reportar informações reais e consolidadas sobre o tema de forma direta, sem inventar fatos.";
+
+        $result = self::call_gemini( $api_key, $search_prompt, $system, $options );
+
+        if ( $result['success'] && ! empty( $result['text'] ) ) {
+            return trim( $result['text'] );
+        }
+
+        return '';
     }
 
     /**
@@ -535,10 +574,16 @@ class WPAIP_LLM {
         // Combina instrução de sistema com o prompt para evitar problemas de compatibilidade de campos no JSON do v1
         $combined_prompt = "Instruções do Sistema:\n{$system}\n\nTarefa:\n{$prompt}";
 
-        $body = wp_json_encode( [
+        $body_data = [
             'contents'           => [ [ 'parts' => [ [ 'text' => $combined_prompt ] ] ] ],
             'generationConfig'   => [ 'maxOutputTokens' => $opts['max_tokens'] ?? 8000 ],
-        ] );
+        ];
+
+        if ( ! empty( $opts['tools'] ) ) {
+            $body_data['tools'] = $opts['tools'];
+        }
+
+        $body = wp_json_encode( $body_data );
 
         $response = wp_remote_post( $url, [
             'headers' => [ 'Content-Type' => 'application/json' ],
