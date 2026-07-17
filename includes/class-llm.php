@@ -351,7 +351,7 @@ class WPAIP_LLM {
             'model'      => $model,
             'max_tokens' => 2000,
             'tools'      => [
-                [ 'googleSearch' => [] ]
+                [ 'google_search' => (object) [] ]
             ]
         ];
 
