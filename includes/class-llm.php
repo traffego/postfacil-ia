@@ -410,6 +410,9 @@ class WPAIP_LLM {
             case 'sensationalist':
                 $style_instruction = 'Adote um estilo de tabloide/sensacionalista: use ganchos de curiosidade dramáticos, chamadas instigantes, termos fortes e focados na emoção e impacto imediato do leitor.';
                 break;
+            case 'ugauga':
+                $style_instruction = 'Adote um tom humorístico e místico primitivo: você DEVE obrigatoriamente inserir a palavra literal "UGA-UGA" (em caixa alta) no meio do texto diversas vezes (pelo menos 5 vezes ao longo do texto), de forma visível e destacada em diferentes parágrafos.';
+                break;
             case 'default':
             default:
                 $style_instruction = 'Adote um estilo jornalístico informativo clássico: seja imparcial, direto, comece com os fatos principais e explique-os de forma simples e direta.';

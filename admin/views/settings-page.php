@@ -262,6 +262,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                         <option value="interview" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'interview' ); ?>><?php _e( 'Entrevista (Estrutura de perguntas/respostas ou abundante em citações)', 'wp-ai-publisher' ); ?></option>
                         <option value="narrative" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'narrative' ); ?>><?php _e( 'Crônica / Narrativo (Storytelling, tom literário e reflexivo)', 'wp-ai-publisher' ); ?></option>
                         <option value="sensationalist" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'sensationalist' ); ?>><?php _e( 'Sensacionalista / Tabloide (Dramático, ganchos de curiosidade e forte apelo emocional)', 'wp-ai-publisher' ); ?></option>
+                        <option value="ugauga" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'ugauga' ); ?>><?php _e( 'UGA-UGA Teste (Inserção obrigatória do termo UGA-UGA várias vezes)', 'wp-ai-publisher' ); ?></option>
                     </select>
                     <span class="wpaip-field-hint"><?php _e( 'O estilo selecionado influenciará a estrutura, tom de voz e abordagem do conteúdo gerado pela IA.', 'wp-ai-publisher' ); ?></span>
                 </div>
