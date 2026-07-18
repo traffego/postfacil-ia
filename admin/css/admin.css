@@ -880,3 +880,79 @@
 .wpaip-dark-theme .wpaip-ref-remove:hover {
     color: #f87171 !important;
 }
+
+/* ── Estúdio Gemini e Abas ── */
+.wpaip-tab-nav-btn {
+    transition: color 0.15s, border-bottom-color 0.15s;
+    outline: none;
+}
+.wpaip-tab-nav-btn:hover {
+    color: #fff !important;
+    border-bottom-color: #4f46e5 !important;
+}
+.wpaip-tab-nav-btn.is-active {
+    color: #fff !important;
+    border-bottom-color: #6366f1 !important;
+}
+
+/* Dropzone estilizada */
+.wpaip-gemini-dropzone {
+    border: 2px dashed #4b5563;
+    border-radius: 8px;
+    padding: 14px 10px;
+    text-align: center;
+    background: #1f2937;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+
+.wpaip-gemini-dropzone .wpaip-dropzone-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.wpaip-gemini-dropzone .wpaip-dropzone-inner p {
+    margin: 0 !important;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.wpaip-gemini-dropzone .wpaip-dropzone-inner .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #9ca3af;
+    transition: color 0.2s, transform 0.2s;
+}
+
+/* Hover dragover */
+.wpaip-gemini-dropzone.is-dragover {
+    border-color: #10b981 !important;
+    background-color: #064e3b !important;
+    color: #a7f3d0 !important;
+}
+
+.wpaip-gemini-dropzone.is-dragover .wpaip-dropzone-inner .dashicons {
+    color: #a7f3d0 !important;
+    transform: translateY(-2px);
+}
+
+/* Estado de carregamento do dropzone */
+.wpaip-gemini-dropzone.is-loading {
+    border-color: #d97706 !important;
+    background-color: #78350f !important;
+    color: #fef3c7 !important;
+    cursor: wait;
+}
+
+.wpaip-gemini-dropzone.is-loading .wpaip-dropzone-inner .dashicons {
+    animation: wpaip-spin 1s linear infinite;
+    color: #fef3c7 !important;
+}

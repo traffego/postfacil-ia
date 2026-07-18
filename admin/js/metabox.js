@@ -475,4 +475,160 @@
         });
     });
 
+    // ── Lógica de Abas do Metabox ─────────────────────────────────────────────
+
+    $(document).on('click', '.wpaip-tab-nav-btn', function() {
+        var $btn = $(this);
+        var tabId = $btn.data('tab');
+
+        // Alterna botões
+        $('.wpaip-tab-nav-btn')
+            .removeClass('is-active')
+            .css('border-bottom-color', 'transparent')
+            .css('color', '#9ca3af');
+
+        $btn
+            .addClass('is-active')
+            .css('border-bottom-color', '#6366f1')
+            .css('color', '#fff');
+
+        // Alterna conteúdo
+        $('.wpaip-tab-content').hide();
+        $('#wpaip-tab-' + tabId).show();
+    });
+
+    // ── Lógica do Drag and Drop (Soltar Imagem do Gemini) ─────────────────────
+
+    var $dropzone = $('#wpaip-gemini-dropzone');
+    var $dropStatus = $('#wpaip-gemini-drop-status');
+
+    if ($dropzone.length) {
+        // Prevenir comportamento padrão para eventos de arrastar
+        $dropzone.on('dragover dragenter', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!$dropzone.hasClass('is-loading')) {
+                $dropzone.addClass('is-dragover');
+            }
+        });
+
+        $dropzone.on('dragleave dragend drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $dropzone.removeClass('is-dragover');
+        });
+
+        $dropzone.on('drop', function(e) {
+            if ($dropzone.hasClass('is-loading')) return;
+
+            var dt = e.originalEvent.dataTransfer;
+            var files = dt.files;
+            var imageUrl = '';
+
+            // Tenta pegar a imagem arrastada do chat (via HTML ou URL)
+            var html = dt.getData('text/html');
+            if (html) {
+                // Tenta extrair a URL de uma tag img contida no HTML
+                var $temp = $('<div>' + html + '</div>');
+                var src = $temp.find('img').attr('src');
+                if (src) {
+                    imageUrl = src;
+                }
+            }
+
+            // Se não pegou via HTML, tenta via URL pura
+            if (!imageUrl) {
+                var rawUrl = dt.getData('text/plain') || dt.getData('URL');
+                if (rawUrl && /^https?:\/\/.+/.test(rawUrl)) {
+                    imageUrl = rawUrl;
+                }
+            }
+
+            // Envia para o WordPress
+            if (files && files.length > 0) {
+                // Caso A: Arquivo físico solto
+                uploadDroppedFile(files[0]);
+            } else if (imageUrl) {
+                // Caso B: Link de imagem solto
+                importDroppedUrl(imageUrl);
+            } else {
+                setStatus($dropStatus, 'error', 'Nenhum formato de imagem reconhecido. Tente clicar, segurar e arrastar a imagem diretamente.');
+            }
+        });
+    }
+
+    function uploadDroppedFile(file) {
+        var dropType = $('#wpaip-gemini-drop-type').val() || 'featured';
+        var formData = new FormData();
+        formData.append('action', 'wpaip_import_dropped_image');
+        formData.append('nonce', cfg.nonce);
+        formData.append('post_id', cfg.post_id);
+        formData.append('type', dropType);
+        formData.append('image_file', file);
+
+        $dropzone.addClass('is-loading');
+        setStatus($dropStatus, 'loading', cfg.strings.uploading);
+
+        $.ajax({
+            url: cfg.ajax_url,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                handleImportSuccess(res);
+            },
+            error: function() {
+                setStatus($dropStatus, 'error', 'Falha ao enviar arquivo.');
+            },
+            complete: function() {
+                $dropzone.removeClass('is-loading');
+            }
+        });
+    }
+
+    function importDroppedUrl(url) {
+        var dropType = $('#wpaip-gemini-drop-type').val() || 'featured';
+        $dropzone.addClass('is-loading');
+        setStatus($dropStatus, 'loading', cfg.strings.uploading);
+
+        $.post(cfg.ajax_url, {
+            action: 'wpaip_import_dropped_image',
+            nonce: cfg.nonce,
+            post_id: cfg.post_id,
+            type: dropType,
+            image_url: url
+        })
+        .done(function(res) {
+            handleImportSuccess(res);
+        })
+        .fail(function() {
+            setStatus($dropStatus, 'error', 'Falha ao processar URL da imagem.');
+        })
+        .always(function() {
+            $dropzone.removeClass('is-loading');
+        });
+    }
+
+    function handleImportSuccess(res) {
+        if (res.success) {
+            setStatus($dropStatus, 'success', 'Imagem importada com sucesso!');
+            if (res.data.type === 'featured') {
+                // Capa: Mostra preview e atualiza box nativo do WP
+                $('#wpaip-featured-img').attr('src', res.data.thumb_url);
+                $('#wpaip-featured-preview').show();
+
+                if (!isGuten && typeof wp !== 'undefined' && wp.media) {
+                    $('#postimagediv').find('img').attr('src', res.data.thumb_url);
+                    $('#_thumbnail_id').val(res.data.attachment_id);
+                }
+            } else {
+                // Inline: insere no post
+                insertImageInEditor(res.data.html);
+            }
+        } else {
+            setStatus($dropStatus, 'error', res.data.message || 'Erro desconhecido ao importar.');
+        }
+    }
+
 }(jQuery));
