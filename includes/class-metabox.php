@@ -124,133 +124,82 @@ class WPAIP_Metabox {
                 </p>
             <?php else : ?>
 
-                <!-- Abas do Painel -->
-                <div class="wpaip-tabs-nav" style="display:flex; border-bottom:1px solid #374151; margin-bottom:12px; gap:4px; padding-bottom: 2px;">
-                    <button type="button" class="wpaip-tab-nav-btn is-active" data-tab="assistant" style="flex:1; background:transparent; border:none; border-bottom:2px solid #6366f1; color:#fff; padding:6px; font-size:10px; font-weight:700; text-transform:uppercase; cursor:pointer; text-align:center;">
-                        <?php _e( 'Assistente IA', 'wp-ai-publisher' ); ?>
-                    </button>
-                    <button type="button" class="wpaip-tab-nav-btn" data-tab="gemini" style="flex:1; background:transparent; border:none; border-bottom:2px solid transparent; color:#9ca3af; padding:6px; font-size:10px; font-weight:700; text-transform:uppercase; cursor:pointer; text-align:center;">
-                        <?php _e( 'Estúdio Gemini', 'wp-ai-publisher' ); ?>
-                    </button>
-                </div>
+                <!-- ── Referências Externas ── -->
+                <button type="button" id="wpaip-btn-toggle-refs" class="wpaip-btn-toggle-refs">
+                    <span class="wpaip-toggle-icon">+</span>
+                    <?php _e( 'Usar matérias externas', 'wp-ai-publisher' ); ?>
+                </button>
 
-                <!-- Aba 1: Assistente IA -->
-                <div id="wpaip-tab-assistant" class="wpaip-tab-content">
-                    <!-- ── Referências Externas ── -->
-                    <button type="button" id="wpaip-btn-toggle-refs" class="wpaip-btn-toggle-refs">
-                        <span class="wpaip-toggle-icon">+</span>
-                        <?php _e( 'Usar matérias externas', 'wp-ai-publisher' ); ?>
-                    </button>
-
-                    <div id="wpaip-refs-section" style="display:none;">
-                        <div class="wpaip-field">
-                            <label class="wpaip-label" for="wpaip-ref-input">
-                                <?php _e( 'Adicionar URL de referência', 'wp-ai-publisher' ); ?>
-                            </label>
-                            <div class="wpaip-ref-input-row">
-                                <input type="url" id="wpaip-ref-input" class="wpaip-input"
-                                    placeholder="<?php esc_attr_e( 'https://exemplo.com/artigo', 'wp-ai-publisher' ); ?>" />
-                                <button type="button" id="wpaip-btn-ref-add" class="wpaip-btn wpaip-btn--secondary wpaip-btn--icon" title="<?php esc_attr_e( 'Adicionar', 'wp-ai-publisher' ); ?>">+</button>
-                            </div>
-                        </div>
-
-                        <ul id="wpaip-ref-list" class="wpaip-ref-list"></ul>
-
-                        <div id="wpaip-ref-status" class="wpaip-status" style="display:none;"></div>
-                    </div>
-
-                    <!-- ── Geração de Texto ── -->
+                <div id="wpaip-refs-section" style="display:none;">
                     <div class="wpaip-field">
-                        <div class="wpaip-prompt-header">
-                            <label class="wpaip-label" for="wpaip-prompt">PROMPT</label>
-                            <div class="wpaip-para-btns">
-                                <button type="button" class="wpaip-para-btn" data-val="1">1</button>
-                                <button type="button" class="wpaip-para-btn" data-val="2">2</button>
-                                <button type="button" class="wpaip-para-btn" data-val="3">3</button>
-                                <button type="button" class="wpaip-para-btn" data-val="4">4</button>
-                                <button type="button" class="wpaip-para-btn is-active" data-val="5">5</button>
-                                <button type="button" id="wpaip-para-more" class="wpaip-para-btn wpaip-para-btn--more" title="<?php esc_attr_e( 'Mais parágrafos', 'wp-ai-publisher' ); ?>">+</button>
-                            </div>
-                            <input type="hidden" id="wpaip-paragraphs" value="5">
-                        </div>
-
-                        <div class="wpaip-prompt-wrap">
-                            <textarea id="wpaip-prompt" class="wpaip-textarea" rows="4"
-                                placeholder="<?php esc_attr_e( 'Ex: 5 dicas de SEO para e-commerce', 'wp-ai-publisher' ); ?>"></textarea>
-                            <div class="wpaip-prompt-actions">
-                                <button type="button" id="wpaip-btn-draft" class="wpaip-btn wpaip-btn--primary" data-mode="draft">
-                                    <?php _e( '✦ Gerar', 'wp-ai-publisher' ); ?>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="wpaip-text-status" class="wpaip-status" style="display:none;"></div>
-
-                    <!-- ── Imagem Destacada ── -->
-                    <div class="wpaip-section-title"><?php _e( 'Imagem de Capa', 'wp-ai-publisher' ); ?></div>
-
-                    <div class="wpaip-field">
-                        <label class="wpaip-label" for="wpaip-image-prompt">
-                            <?php _e( 'Prompt visual', 'wp-ai-publisher' ); ?>
+                        <label class="wpaip-label" for="wpaip-ref-input">
+                            <?php _e( 'Adicionar URL de referência', 'wp-ai-publisher' ); ?>
                         </label>
-                        <textarea id="wpaip-image-prompt" class="wpaip-textarea" rows="2"
-                            placeholder="<?php esc_attr_e( 'Deixe vazio para usar o título do post', 'wp-ai-publisher' ); ?>"></textarea>
-                    </div>
-
-                    <div id="wpaip-featured-preview" style="display:none; margin-bottom: 8px;">
-                        <img id="wpaip-featured-img" src="" alt="" style="width:100%; border-radius:4px;" />
-                    </div>
-
-                    <div class="wpaip-btn-group">
-                        <button type="button" id="wpaip-btn-featured" class="wpaip-btn wpaip-btn--primary">
-                            <?php _e( '🖼 Gerar Capa', 'wp-ai-publisher' ); ?>
-                        </button>
-                        <button type="button" id="wpaip-btn-inline" class="wpaip-btn wpaip-btn--secondary">
-                            <?php _e( '+ Inserir no texto', 'wp-ai-publisher' ); ?>
-                        </button>
-                    </div>
-
-                    <div id="wpaip-image-status" class="wpaip-status" style="display:none;"></div>
-                </div>
-
-                <!-- Aba 2: Estúdio Gemini -->
-                <div id="wpaip-tab-gemini" class="wpaip-tab-content" style="display:none;">
-                    
-                    <!-- Bloco de Instruções da Extensão -->
-                    <div style="background:#1f2937; border:1px solid #374151; border-radius:8px; padding:12px; margin-bottom:12px;">
-                        <h4 style="margin:0 0 6px; font-size:11px; color:#fff; display:flex; align-items:center; gap:6px;">
-                            <span class="dashicons dashicons-admin-plugins" style="color:#6366f1; font-size:14px; width:14px; height:14px;"></span>
-                            <?php _e( 'Integração via Extensão do Chrome', 'wp-ai-publisher' ); ?>
-                        </h4>
-                        <p style="margin:0 0 10px; font-size:10px; color:#9ca3af; line-height:1.4;">
-                            <?php _e( 'Use o Gemini Oficial (gemini.google.com) e envie as imagens diretamente para este post com um clique usando nossa extensão do Chrome.', 'wp-ai-publisher' ); ?>
-                        </p>
-                        
-                        <div style="font-size:10px; color:#d1d5db; line-height:1.5; margin-bottom:8px; padding-left:4px; border-left:2px solid #6366f1;">
-                            <strong>1.</strong> Instale a extensão acessando <code>chrome://extensions</code> no Chrome, ative o <strong>Modo do desenvolvedor</strong> e clique em <strong>Carregar sem compactação</strong> apontando para a pasta <code>chrome-extension</code> dentro deste plugin.<br>
-                            <strong>2.</strong> Configure o link do site e sua <strong>Senha de Aplicativo</strong> do WordPress no ícone da extensão.<br>
-                            <strong>3.</strong> No Gemini, clique em <strong>"✦ Enviar ao WordPress"</strong> sobre qualquer imagem gerada e depois cole (Ctrl+V) no seu post!
+                        <div class="wpaip-ref-input-row">
+                            <input type="url" id="wpaip-ref-input" class="wpaip-input"
+                                placeholder="<?php esc_attr_e( 'https://exemplo.com/artigo', 'wp-ai-publisher' ); ?>" />
+                            <button type="button" id="wpaip-btn-ref-add" class="wpaip-btn wpaip-btn--secondary wpaip-btn--icon" title="<?php esc_attr_e( 'Adicionar', 'wp-ai-publisher' ); ?>">+</button>
                         </div>
                     </div>
 
-                    <!-- Dropzone -->
-                    <div id="wpaip-gemini-dropzone" class="wpaip-gemini-dropzone" style="min-height: 90px; margin-bottom: 10px;">
-                        <div class="wpaip-dropzone-inner">
-                            <span class="dashicons dashicons-upload"></span>
-                            <p><?php _e( 'Ou arraste a imagem do Gemini e solte aqui', 'wp-ai-publisher' ); ?></p>
-                            <div style="display:flex; justify-content:center; gap:6px; align-items:center; margin-top:5px; pointer-events: auto;">
-                                <label for="wpaip-gemini-drop-type" style="font-size:9px; font-weight:600; text-transform:uppercase; color:#bbb;"><?php _e( 'Ação:', 'wp-ai-publisher' ); ?></label>
-                                <select id="wpaip-gemini-drop-type" class="wpaip-select wpaip-select--sm" style="height:22px; padding:2px; font-size:10px; background:#374151; border-color:#4b5563; color:#fff;">
-                                    <option value="featured"><?php _e( 'Definir como Capa', 'wp-ai-publisher' ); ?></option>
-                                    <option value="inline"><?php _e( 'Inserir no Post', 'wp-ai-publisher' ); ?></option>
-                                </select>
-                            </div>
+                    <ul id="wpaip-ref-list" class="wpaip-ref-list"></ul>
+
+                    <div id="wpaip-ref-status" class="wpaip-status" style="display:none;"></div>
+                </div>
+
+                <!-- ── Geração de Texto ── -->
+                <div class="wpaip-field">
+                    <div class="wpaip-prompt-header">
+                        <label class="wpaip-label" for="wpaip-prompt">PROMPT</label>
+                        <div class="wpaip-para-btns">
+                            <button type="button" class="wpaip-para-btn" data-val="1">1</button>
+                            <button type="button" class="wpaip-para-btn" data-val="2">2</button>
+                            <button type="button" class="wpaip-para-btn" data-val="3">3</button>
+                            <button type="button" class="wpaip-para-btn" data-val="4">4</button>
+                            <button type="button" class="wpaip-para-btn is-active" data-val="5">5</button>
+                            <button type="button" id="wpaip-para-more" class="wpaip-para-btn wpaip-para-btn--more" title="<?php esc_attr_e( 'Mais parágrafos', 'wp-ai-publisher' ); ?>">+</button>
                         </div>
+                        <input type="hidden" id="wpaip-paragraphs" value="5">
                     </div>
 
-                    <div id="wpaip-gemini-drop-status" class="wpaip-status" style="display:none; margin: 6px 0;"></div>
+                    <div class="wpaip-prompt-wrap">
+                        <textarea id="wpaip-prompt" class="wpaip-textarea" rows="4"
+                            placeholder="<?php esc_attr_e( 'Ex: 5 dicas de SEO para e-commerce', 'wp-ai-publisher' ); ?>"></textarea>
+                        <div class="wpaip-prompt-actions">
+                            <button type="button" id="wpaip-btn-draft" class="wpaip-btn wpaip-btn--primary" data-mode="draft">
+                                <?php _e( '✦ Gerar', 'wp-ai-publisher' ); ?>
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
+                <div id="wpaip-text-status" class="wpaip-status" style="display:none;"></div>
+
+                <!-- ── Imagem Destacada ── -->
+                <div class="wpaip-section-title"><?php _e( 'Imagem de Capa', 'wp-ai-publisher' ); ?></div>
+
+                <div class="wpaip-field">
+                    <label class="wpaip-label" for="wpaip-image-prompt">
+                        <?php _e( 'Prompt visual', 'wp-ai-publisher' ); ?>
+                    </label>
+                    <textarea id="wpaip-image-prompt" class="wpaip-textarea" rows="2"
+                        placeholder="<?php esc_attr_e( 'Deixe vazio para usar o título do post', 'wp-ai-publisher' ); ?>"></textarea>
+                </div>
+
+                <div id="wpaip-featured-preview" style="display:none; margin-bottom: 8px;">
+                    <img id="wpaip-featured-img" src="" alt="" style="width:100%; border-radius:4px;" />
+                </div>
+
+                <div class="wpaip-btn-group">
+                    <button type="button" id="wpaip-btn-featured" class="wpaip-btn wpaip-btn--primary">
+                        <?php _e( '🖼 Gerar Capa', 'wp-ai-publisher' ); ?>
+                    </button>
+                    <button type="button" id="wpaip-btn-inline" class="wpaip-btn wpaip-btn--secondary">
+                        <?php _e( '+ Inserir no texto', 'wp-ai-publisher' ); ?>
+                    </button>
+                </div>
+
+                <div id="wpaip-image-status" class="wpaip-status" style="display:none;"></div>
 
             <?php endif; ?>
 

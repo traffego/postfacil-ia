@@ -43,7 +43,6 @@ class WPAIP_Image {
     public static function register_ajax(): void {
         add_action( 'wp_ajax_wpaip_generate_featured_image', [ __CLASS__, 'ajax_generate_featured' ] );
         add_action( 'wp_ajax_wpaip_generate_inline_image',   [ __CLASS__, 'ajax_generate_inline'   ] );
-        add_action( 'wp_ajax_wpaip_import_dropped_image',    [ __CLASS__, 'ajax_import_dropped_image' ] );
     }
 
     /**
@@ -119,68 +118,6 @@ class WPAIP_Image {
                 $attachment_id
             ),
         ] );
-    }
-
-    /**
-     * Importa uma imagem arrastada do Iframe (ou arquivo enviado via FormData).
-     */
-    public static function ajax_import_dropped_image(): void {
-        WPAIP_Security::check_ajax( 'edit_posts' );
-
-        $post_id = (int) ( $_POST['post_id'] ?? 0 );
-        $type    = sanitize_text_field( $_POST['type'] ?? 'featured' );
-
-        // 1. Caso seja upload de arquivo físico (Blob/File) enviado pelo FormData
-        if ( ! empty( $_FILES['image_file'] ) ) {
-            require_once ABSPATH . 'wp-admin/includes/image.php';
-            require_once ABSPATH . 'wp-admin/includes/file.php';
-            require_once ABSPATH . 'wp-admin/includes/media.php';
-
-            $attachment_id = media_handle_upload( 'image_file', $post_id );
-
-            if ( is_wp_error( $attachment_id ) ) {
-                wp_send_json_error( [ 'message' => $attachment_id->get_error_message() ] );
-            }
-        }
-        // 2. Caso seja uma URL de imagem
-        elseif ( ! empty( $_POST['image_url'] ) ) {
-            $image_url = esc_url_raw( $_POST['image_url'] );
-            $prompt    = 'Imagem importada do Gemini';
-            
-            $attachment_id = WPAIP_Media::upload_from_url( $image_url, $post_id ?: null, $prompt );
-
-            if ( is_wp_error( $attachment_id ) ) {
-                wp_send_json_error( [ 'message' => $attachment_id->get_error_message() ] );
-            }
-        } else {
-            wp_send_json_error( [ 'message' => 'Nenhuma imagem ou URL enviada.' ] );
-        }
-
-        // Se for definir como destaque
-        if ( $type === 'featured' && $post_id ) {
-            set_post_thumbnail( $post_id, $attachment_id );
-            $thumb_url = wp_get_attachment_image_url( $attachment_id, 'medium' );
-            wp_send_json_success( [
-                'attachment_id' => $attachment_id,
-                'thumb_url'     => $thumb_url,
-                'type'          => 'featured',
-                'message'       => 'Imagem importada e definida como destaque.',
-            ] );
-        } else {
-            // Se for inline (inserir no texto)
-            $full_url = wp_get_attachment_image_url( $attachment_id, 'large' );
-            wp_send_json_success( [
-                'attachment_id' => $attachment_id,
-                'url'           => $full_url,
-                'type'          => 'inline',
-                'html'          => sprintf(
-                    '<img src="%s" alt="Imagem do Gemini" class="aligncenter size-large wp-image-%d" />',
-                    esc_url( $full_url ),
-                    $attachment_id
-                ),
-                'message'       => 'Imagem importada para a biblioteca.',
-            ] );
-        }
     }
 
     // ── DALL-E 3 ──────────────────────────────────────────────────────────────
