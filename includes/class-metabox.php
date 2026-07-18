@@ -217,19 +217,13 @@ class WPAIP_Metabox {
                 <!-- Aba 2: Estúdio Gemini -->
                 <div id="wpaip-tab-gemini" class="wpaip-tab-content" style="display:none;">
                     <div class="wpaip-field">
-                        <span class="wpaip-field-hint" style="margin-bottom: 8px; display: block; line-height: 1.4; color: #9ca3af;">
-                            <?php _e( '✦ Clique no botão abaixo para abrir o Gemini em uma janela flutuante ao lado. Gere sua imagem lá, clique e arraste-a para a caixa roxa abaixo para importá-la.', 'wp-ai-publisher' ); ?>
+                        <span class="wpaip-field-hint" style="margin-bottom: 6px; display: block; line-height: 1.4; color: #9ca3af;">
+                            <?php _e( '✦ Gere a imagem no Gemini abaixo, clique e segure nela, arraste-a e solte na caixa roxa para importá-la automaticamente.', 'wp-ai-publisher' ); ?>
                         </span>
                     </div>
 
-                    <!-- Botão para abrir o Gemini em popup flutuante -->
-                    <button type="button" id="wpaip-btn-open-gemini" class="wpaip-btn wpaip-btn--primary" style="width:100%; margin-bottom:10px; padding:8px; font-size:11px; display:flex; align-items:center; justify-content:center; gap:6px; font-weight: 700;">
-                        <span class="dashicons dashicons-admin-links" style="font-size:14px; width:14px; height:14px; line-height:14px;"></span>
-                        <?php _e( 'Abrir Chat do Gemini', 'wp-ai-publisher' ); ?>
-                    </button>
-
                     <!-- Dropzone -->
-                    <div id="wpaip-gemini-dropzone" class="wpaip-gemini-dropzone" style="min-height: 100px;">
+                    <div id="wpaip-gemini-dropzone" class="wpaip-gemini-dropzone" style="min-height: 90px; margin-bottom: 10px;">
                         <div class="wpaip-dropzone-inner">
                             <span class="dashicons dashicons-upload"></span>
                             <p><?php _e( 'Arraste a imagem e solte aqui', 'wp-ai-publisher' ); ?></p>
@@ -244,6 +238,11 @@ class WPAIP_Metabox {
                     </div>
 
                     <div id="wpaip-gemini-drop-status" class="wpaip-status" style="display:none; margin: 6px 0;"></div>
+
+                    <!-- Iframe Gemini via Proxy Local -->
+                    <div class="wpaip-gemini-iframe-wrapper" style="margin-top: 8px;">
+                        <iframe src="<?php echo esc_url( WPAIP_PLUGIN_URL . 'admin/views/proxy.php' ); ?>" id="wpaip-gemini-iframe" style="width:100%; height:460px; border:1px solid #374151; border-radius:6px; background:#fff;"></iframe>
+                    </div>
                 </div>
 
             <?php endif; ?>

@@ -497,21 +497,6 @@
         $('#wpaip-tab-' + tabId).show();
     });
 
-    // ── Abrir Gemini em Janela Flutuante ──────────────────────────────────────
-
-    $(document).on('click', '#wpaip-btn-open-gemini', function() {
-        var width = 580;
-        var height = 750;
-        var left = (window.screen.width / 2) - (width / 2);
-        var top = (window.screen.height / 2) - (height / 2);
-        
-        window.open(
-            'https://gemini.google.com/',
-            'GeminiStudio',
-            'width=' + width + ',height=' + height + ',top=' + top + ',left=' + left + ',menubar=no,status=no,toolbar=no,location=no'
-        );
-    });
-
     // ── Lógica do Drag and Drop (Soltar Imagem do Gemini) ─────────────────────
 
     var $dropzone = $('#wpaip-gemini-dropzone');
