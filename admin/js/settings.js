@@ -109,15 +109,27 @@
     // Init
     updateTextModelVisibility($('#wpaip-default-llm').val());
 
-    // ── Modelo HF visível só quando Hugging Face selecionado ──────────────────
+    // ── Modelos de imagem visíveis condicionalmente (Hugging Face / Poe) ─────
 
-    $('#wpaip-default-image').on('change', function () {
-        if ($(this).val() === 'huggingface') {
+    function updateImageModelVisibility(provider) {
+        if (provider === 'huggingface') {
             $('#wpaip-hf-model-wrapper').show();
+            $('#wpaip-poe-model-wrapper').hide();
+        } else if (provider === 'poe') {
+            $('#wpaip-hf-model-wrapper').hide();
+            $('#wpaip-poe-model-wrapper').show();
         } else {
             $('#wpaip-hf-model-wrapper').hide();
+            $('#wpaip-poe-model-wrapper').hide();
         }
+    }
+
+    $('#wpaip-default-image').on('change', function () {
+        updateImageModelVisibility($(this).val());
     });
+
+    // Init
+    updateImageModelVisibility($('#wpaip-default-image').val());
 
     // ── Testar conexão Asaas ──────────────────────────────────────────────────
 

@@ -31,6 +31,8 @@ class WPAIP_Image {
                 return self::call_pollinations( $prompt, $options );
             case 'huggingface':
                 return self::call_huggingface( $prompt, $options );
+            case 'poe':
+                return self::call_poe( $prompt, $options );
             default:
                 return [ 'success' => false, 'url' => '', 'message' => 'Provider de imagem desconhecido: ' . $provider ];
         }
@@ -268,5 +270,78 @@ class WPAIP_Image {
         file_put_contents( $tmp, $body_response );
 
         return [ 'success' => true, 'url' => $tmp, 'is_local' => true, 'message' => '' ];
+    }
+
+    /**
+     * Gera uma imagem via API compatível com OpenAI do Poe.com.
+     *
+     * @param string $prompt
+     * @param array  $opts
+     * @return array
+     */
+    private static function call_poe( string $prompt, array $opts ): array {
+        $api_key = WPAIP_Settings::get_api_key( 'poe' );
+        if ( empty( $api_key ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => 'API key Poe.com não configurada.' ];
+        }
+
+        $model = $opts['model'] ?? WPAIP_Settings::get( 'poe_image_bot', 'FLUX-schnell' );
+        $url   = 'https://api.poe.com/v1/chat/completions';
+
+        $body = wp_json_encode( [
+            'model'    => $model,
+            'messages' => [
+                [ 'role' => 'user', 'content' => $prompt ]
+            ],
+            'stream'   => false
+        ] );
+
+        $response = wp_remote_post( $url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $api_key,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => $body,
+            'timeout' => 90,
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => $response->get_error_message() ];
+        }
+
+        $code = wp_remote_retrieve_response_code( $response );
+        $body_response = wp_remote_retrieve_body( $response );
+        $data = json_decode( $body_response, true );
+
+        if ( $code !== 200 ) {
+            $msg = $data['error']['message'] ?? $data['error'] ?? ( 'Erro HTTP ' . $code );
+            return [ 'success' => false, 'url' => '', 'message' => $msg ];
+        }
+
+        $content = $data['choices'][0]['message']['content'] ?? '';
+        if ( empty( $content ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => 'Resposta vazia do Poe.' ];
+        }
+
+        // Tenta extrair a URL da imagem no formato Markdown: ![image](https://...)
+        if ( preg_match( '/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/i', $content, $matches ) ) {
+            $image_url = $matches[1];
+        } else {
+            // Fallback: tenta capturar qualquer link que pareça uma URL de imagem
+            if ( preg_match( '/(https?:\/\/[^\s\)]+\.(?:png|jpg|jpeg|webp)(?:\?[^\s\)]*)?)/i', $content, $matches ) ) {
+                $image_url = $matches[1];
+            } else {
+                // Fallback final: tenta capturar qualquer URL iniciada por http/https
+                if ( preg_match( '/(https?:\/\/[^\s\)]+)/i', $content, $matches ) ) {
+                    $image_url = $matches[1];
+                } else {
+                    return [ 'success' => false, 'url' => '', 'message' => 'Não foi possível extrair a URL da imagem da resposta do Poe: ' . esc_html( $content ) ];
+                }
+            }
+        }
+
+        $image_url = trim( $image_url, '()"\' ' );
+
+        return [ 'success' => true, 'url' => $image_url, 'message' => '' ];
     }
 }

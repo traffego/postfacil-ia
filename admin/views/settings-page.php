@@ -75,6 +75,15 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                         4. Copie e cole. Permite imagens grátis!
                     </p>
                 </div>
+                <div style="padding: 12px; border: 1px solid #f0f0f0; border-radius: 6px; background: #fafafa;">
+                    <h3 style="margin-top: 0; font-size: 0.9rem; color: #333; display: flex; align-items: center; gap: 6px;">Poe.com</h3>
+                    <p style="font-size: 0.78rem; line-height: 1.4; color: #666; margin-bottom: 0;">
+                        1. Acesse <a href="https://poe.com/api/keys" target="_blank">poe.com/api/keys</a>.<br>
+                        2. Crie sua chave de API (Token).<br>
+                        3. Copie a chave gerada.<br>
+                        4. Permite acessar qualquer bot de imagem/texto.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -97,6 +106,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                     'anthropic'   => [ 'label' => 'Anthropic',  'placeholder' => 'sk-ant-...',   'icon' => '' ],
                     'deepseek'    => [ 'label' => 'DeepSeek',   'placeholder' => 'sk-...',       'icon' => '' ],
                     'huggingface' => [ 'label' => 'Hugging Face (Imagens Grátis)', 'placeholder' => 'hf_...', 'icon' => '' ],
+                    'poe'         => [ 'label' => 'Poe.com',    'placeholder' => 'pb-...',       'icon' => '' ],
                 ];
 
                 foreach ( $providers_meta as $key => $meta ) :
@@ -214,6 +224,7 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                         <option value="dalle3"       <?php selected( $opts['default_image'], 'dalle3'       ); ?>>DALL-E 3 (OpenAI)</option>
                         <option value="gemini"       <?php selected( $opts['default_image'], 'gemini'       ); ?>>Imagen 4 (Gemini)</option>
                         <option value="huggingface"  <?php selected( $opts['default_image'], 'huggingface'  ); ?>>Hugging Face (Grátis — Com Chave)</option>
+                        <option value="poe"          <?php selected( $opts['default_image'], 'poe'          ); ?>>Poe.com (Com Chave)</option>
                     </select>
                 </div>
 
@@ -247,6 +258,22 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                     </div>
                     <span class="wpaip-field-hint">
                         <?php _e( 'Clique em "Carregar da API" para buscar os 30 modelos text-to-image mais populares do Hugging Face (requer chave configurada).', 'wp-ai-publisher' ); ?>
+                    </span>
+                </div>
+
+                <!-- Modelo Poe (visível só quando Poe selecionado) -->
+                <div class="wpaip-field" id="wpaip-poe-model-wrapper" style="<?php echo ( $opts['default_image'] === 'poe' ) ? '' : 'display:none;'; ?>">
+                    <label for="wpaip-poe-bot"><?php _e( 'Bot de Imagem do Poe.com', 'wp-ai-publisher' ); ?></label>
+                    <input
+                        type="text"
+                        id="wpaip-poe-bot"
+                        name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[poe_image_bot]"
+                        class="wpaip-input"
+                        value="<?php echo esc_attr( $opts['poe_image_bot'] ?? 'FLUX-schnell' ); ?>"
+                        placeholder="Ex: FLUX-schnell, StableDiffusionXL, DALL-E-3"
+                    >
+                    <span class="wpaip-field-hint">
+                        <?php _e( 'Digite o handle do bot de imagem do Poe (Ex: FLUX-schnell, StableDiffusionXL, DALL-E-3 ou qualquer outro bot público de imagem da plataforma).', 'wp-ai-publisher' ); ?>
                     </span>
                 </div>
 

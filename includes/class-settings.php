@@ -73,7 +73,7 @@ class WPAIP_Settings {
         $saved = self::get_options();
 
         // LLM providers
-        foreach ( [ 'openai', 'gemini', 'anthropic', 'deepseek', 'huggingface' ] as $provider ) {
+        foreach ( [ 'openai', 'gemini', 'anthropic', 'deepseek', 'huggingface', 'poe' ] as $provider ) {
             $key = $provider . '_api_key';
             if ( ! empty( $input[ $key ] ) ) {
                 $raw = sanitize_text_field( $input[ $key ] );
@@ -118,6 +118,7 @@ class WPAIP_Settings {
         $clean['anthropic_model']       = sanitize_text_field( $input['anthropic_model']       ?? 'claude-sonnet-4-5' );
         $clean['deepseek_model']        = sanitize_text_field( $input['deepseek_model']        ?? 'deepseek-chat' );
         $clean['huggingface_image_model'] = sanitize_text_field( $input['huggingface_image_model'] ?? 'black-forest-labs/FLUX.1-schnell' );
+        $clean['poe_image_bot']         = sanitize_text_field( $input['poe_image_bot']         ?? 'FLUX-schnell' );
 
         // Prompt de sistema global
         $clean['system_prompt'] = sanitize_textarea_field( $input['system_prompt'] ?? '' );
@@ -157,6 +158,7 @@ class WPAIP_Settings {
             'anthropic_api_key'       => '',
             'deepseek_api_key'        => '',
             'huggingface_api_key'     => '',
+            'poe_api_key'             => '',
             'default_llm'             => 'openai',
             'default_image'           => 'pollinations',
             'openai_model'            => 'gpt-4o',
@@ -164,6 +166,7 @@ class WPAIP_Settings {
             'anthropic_model'         => 'claude-sonnet-4-5',
             'deepseek_model'          => 'deepseek-chat',
             'huggingface_image_model' => 'black-forest-labs/FLUX.1-schnell',
+            'poe_image_bot'           => 'FLUX-schnell',
             'system_prompt'           => 'Você é um redator especialista em SEO e marketing de conteúdo. Escreva em português do Brasil com linguagem clara, objetiva e envolvente.',
             'default_journalistic_style' => 'default',
             'enable_gemini_search'       => '0',
@@ -305,6 +308,10 @@ class WPAIP_Settings {
         $endpoints = [
             'openai'    => [
                 'url'     => 'https://api.openai.com/v1/models',
+                'headers' => [ 'Authorization' => 'Bearer ' . $api_key ],
+            ],
+            'poe'       => [
+                'url'     => 'https://api.poe.com/v1/models',
                 'headers' => [ 'Authorization' => 'Bearer ' . $api_key ],
             ],
             'gemini'    => [
