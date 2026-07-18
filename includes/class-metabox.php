@@ -239,9 +239,9 @@ class WPAIP_Metabox {
 
                     <div id="wpaip-gemini-drop-status" class="wpaip-status" style="display:none; margin: 6px 0;"></div>
 
-                    <!-- Iframe Gemini via Proxy Local -->
+                    <!-- Fenced Frame Gemini via Proxy Local -->
                     <div class="wpaip-gemini-iframe-wrapper" style="margin-top: 8px;">
-                        <iframe src="<?php echo esc_url( WPAIP_PLUGIN_URL . 'admin/views/proxy.php' ); ?>" id="wpaip-gemini-iframe" style="width:100%; height:460px; border:1px solid #374151; border-radius:6px; background:#fff;"></iframe>
+                        <fencedframe src="<?php echo esc_url( WPAIP_PLUGIN_URL . 'admin/views/proxy.php' ); ?>" id="wpaip-gemini-iframe" style="width:100%; height:460px; border:1px solid #374151; border-radius:6px; background:#fff;"></fencedframe>
                     </div>
                 </div>
 
