@@ -66,7 +66,7 @@
       uploadBtn.innerHTML = '✦ Enviar ao WordPress';
       uploadBtn.type = 'button';
 
-      uploadBtn.addEventListener('click', async function (e) {
+      uploadBtn.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -80,57 +80,34 @@
         uploadBtn.classList.add('is-loading');
         uploadBtn.textContent = 'Enviando...';
 
-        try {
-          // 1. Faz o fetch na URL do Google para pegar os bytes (blob) da imagem
-          const imageResponse = await fetch(src);
-          const blob = await imageResponse.blob();
-
-          // Define extensão e nome do arquivo com base no mime type
-          let ext = 'png';
-          if (blob.type === 'image/jpeg') ext = 'jpg';
-          if (blob.type === 'image/webp') ext = 'webp';
-          const filename = 'gemini-img-' + Date.now() + '.' + ext;
-
-          // 2. Faz o upload via REST API nativa do WordPress
-          const wpApiUrl = wpConfig.wp_url + 'wp-json/wp/v2/media';
-          
-          const headers = new Headers();
-          // Autenticação básica via token Base64 do Usuário + Senha de Aplicativo
-          const authString = btoa(wpConfig.wp_user + ':' + wpConfig.wp_password);
-          headers.append('Authorization', 'Basic ' + authString);
-          headers.append('Content-Disposition', `attachment; filename="${filename}"`);
-          headers.append('Content-Type', blob.type);
-
-          const wpResponse = await fetch(wpApiUrl, {
-            method: 'POST',
-            headers: headers,
-            body: blob
-          });
-
-          const data = await wpResponse.json();
-
-          if (!wpResponse.ok) {
-            throw new Error(data.message || 'Erro HTTP ' + wpResponse.status);
+        // Envia mensagem para o Service Worker (background.js) fazer o upload sem bloqueio de CORS
+        chrome.runtime.sendMessage({
+          action: 'upload_image_to_wp',
+          src: src
+        }, async function (response) {
+          if (chrome.runtime.lastError) {
+            alert('Erro de comunicação com a extensão: ' + chrome.runtime.lastError.message);
+            resetButton();
+            return;
           }
 
-          // 3. Sucesso! Obtém a URL da imagem hospedada e copia o HTML para o clipboard
-          const uploadedUrl = data.source_url;
-          const imageHtml = `<img src="${uploadedUrl}" alt="Imagem gerada no Gemini" class="aligncenter size-large wp-image-${data.id}" />`;
+          if (response && response.success) {
+            const data = response.data;
+            const imageHtml = `<img src="${data.source_url}" alt="Imagem gerada no Gemini" class="aligncenter size-large wp-image-${data.id}" />`;
 
-          await copyToClipboard(imageHtml);
+            await copyToClipboard(imageHtml);
 
-          uploadBtn.className = 'wpaip-gemini-btn is-success';
-          uploadBtn.textContent = 'Copiado (Ctrl+V)!';
+            uploadBtn.className = 'wpaip-gemini-btn is-success';
+            uploadBtn.textContent = 'Copiado (Ctrl+V)!';
 
-          // Restaura o botão após 3.5 segundos
-          setTimeout(function () {
-            uploadBtn.className = 'wpaip-gemini-btn';
-            uploadBtn.innerHTML = '✦ Enviar ao WordPress';
-          }, 3500);
+            setTimeout(resetButton, 3500);
+          } else {
+            alert('Falha ao enviar imagem para o WordPress:\n' + (response.error || 'Erro desconhecido.'));
+            resetButton();
+          }
+        });
 
-        } catch (error) {
-          console.error('Erro no upload:', error);
-          alert('Falha ao enviar imagem para o WordPress:\n' + error.message);
+        function resetButton() {
           uploadBtn.className = 'wpaip-gemini-btn';
           uploadBtn.innerHTML = '✦ Enviar ao WordPress';
         }
