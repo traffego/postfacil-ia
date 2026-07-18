@@ -216,17 +216,29 @@ class WPAIP_Metabox {
 
                 <!-- Aba 2: Estúdio Gemini -->
                 <div id="wpaip-tab-gemini" class="wpaip-tab-content" style="display:none;">
-                    <div class="wpaip-field">
-                        <span class="wpaip-field-hint" style="margin-bottom: 6px; display: block; line-height: 1.4; color: #9ca3af;">
-                            <?php _e( '✦ Gere a imagem no Gemini abaixo, clique e segure nela, arraste-a e solte na caixa roxa para importá-la automaticamente.', 'wp-ai-publisher' ); ?>
-                        </span>
+                    
+                    <!-- Bloco de Instruções da Extensão -->
+                    <div style="background:#1f2937; border:1px solid #374151; border-radius:8px; padding:12px; margin-bottom:12px;">
+                        <h4 style="margin:0 0 6px; font-size:11px; color:#fff; display:flex; align-items:center; gap:6px;">
+                            <span class="dashicons dashicons-admin-plugins" style="color:#6366f1; font-size:14px; width:14px; height:14px;"></span>
+                            <?php _e( 'Integração via Extensão do Chrome', 'wp-ai-publisher' ); ?>
+                        </h4>
+                        <p style="margin:0 0 10px; font-size:10px; color:#9ca3af; line-height:1.4;">
+                            <?php _e( 'Use o Gemini Oficial (gemini.google.com) e envie as imagens diretamente para este post com um clique usando nossa extensão do Chrome.', 'wp-ai-publisher' ); ?>
+                        </p>
+                        
+                        <div style="font-size:10px; color:#d1d5db; line-height:1.5; margin-bottom:8px; padding-left:4px; border-left:2px solid #6366f1;">
+                            <strong>1.</strong> Instale a extensão acessando <code>chrome://extensions</code> no Chrome, ative o <strong>Modo do desenvolvedor</strong> e clique em <strong>Carregar sem compactação</strong> apontando para a pasta <code>chrome-extension</code> dentro deste plugin.<br>
+                            <strong>2.</strong> Configure o link do site e sua <strong>Senha de Aplicativo</strong> do WordPress no ícone da extensão.<br>
+                            <strong>3.</strong> No Gemini, clique em <strong>"✦ Enviar ao WordPress"</strong> sobre qualquer imagem gerada e depois cole (Ctrl+V) no seu post!
+                        </div>
                     </div>
 
                     <!-- Dropzone -->
                     <div id="wpaip-gemini-dropzone" class="wpaip-gemini-dropzone" style="min-height: 90px; margin-bottom: 10px;">
                         <div class="wpaip-dropzone-inner">
                             <span class="dashicons dashicons-upload"></span>
-                            <p><?php _e( 'Arraste a imagem e solte aqui', 'wp-ai-publisher' ); ?></p>
+                            <p><?php _e( 'Ou arraste a imagem do Gemini e solte aqui', 'wp-ai-publisher' ); ?></p>
                             <div style="display:flex; justify-content:center; gap:6px; align-items:center; margin-top:5px; pointer-events: auto;">
                                 <label for="wpaip-gemini-drop-type" style="font-size:9px; font-weight:600; text-transform:uppercase; color:#bbb;"><?php _e( 'Ação:', 'wp-ai-publisher' ); ?></label>
                                 <select id="wpaip-gemini-drop-type" class="wpaip-select wpaip-select--sm" style="height:22px; padding:2px; font-size:10px; background:#374151; border-color:#4b5563; color:#fff;">
@@ -238,11 +250,6 @@ class WPAIP_Metabox {
                     </div>
 
                     <div id="wpaip-gemini-drop-status" class="wpaip-status" style="display:none; margin: 6px 0;"></div>
-
-                    <!-- Fenced Frame Gemini via Proxy Local -->
-                    <div class="wpaip-gemini-iframe-wrapper" style="margin-top: 8px;">
-                        <fencedframe src="<?php echo esc_url( WPAIP_PLUGIN_URL . 'admin/views/proxy.php' ); ?>" id="wpaip-gemini-iframe" style="width:100%; height:460px; border:1px solid #374151; border-radius:6px; background:#fff;"></fencedframe>
-                    </div>
                 </div>
 
             <?php endif; ?>

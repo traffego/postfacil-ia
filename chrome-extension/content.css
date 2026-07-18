@@ -1,0 +1,58 @@
+/* Estilos para o botão flutuante injetado no chat do Gemini */
+
+.wpaip-gemini-btn-wrapper {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 999999 !important;
+  display: flex;
+  gap: 5px;
+  background: rgba(17, 24, 39, 0.9) !important;
+  padding: 5px !important;
+  border-radius: 6px !important;
+  backdrop-filter: blur(4px) !important;
+  border: 1px solid rgba(75, 85, 99, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.wpaip-gemini-btn {
+  background: #6366f1 !important;
+  border: none !important;
+  color: #fff !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  transition: background 0.2s, transform 0.1s !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+}
+
+.wpaip-gemini-btn:hover {
+  background: #4f46e5 !important;
+  transform: translateY(-1px) !important;
+}
+
+.wpaip-gemini-btn:active {
+  transform: translateY(0) !important;
+}
+
+.wpaip-gemini-btn.is-success {
+  background: #10b981 !important;
+}
+
+.wpaip-gemini-btn.is-loading {
+  background: #d97706 !important;
+  cursor: wait !important;
+}
+
+/* Garante que o container da imagem seja o ponto de referência relativo */
+.wpaip-positioned-container {
+  position: relative !important;
+}

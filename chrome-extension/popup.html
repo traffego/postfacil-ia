@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 290px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #111827;
+      color: #f3f4f6;
+      margin: 0;
+      padding: 15px;
+    }
+    h3 {
+      margin-top: 0;
+      font-size: 0.95rem;
+      border-bottom: 1px solid #374151;
+      padding-bottom: 8px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .field {
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+    }
+    input {
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: #fff;
+      padding: 6px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #6366f1;
+    }
+    button {
+      background: #6366f1;
+      border: none;
+      color: #fff;
+      padding: 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 5px;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #4f46e5;
+    }
+    .status {
+      font-size: 11px;
+      margin-top: 8px;
+      text-align: center;
+    }
+    .status.success { color: #34d399; }
+    .status.error { color: #f87171; }
+    .help {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 10px;
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+  <h3>PostFácil IA - Conexão</h3>
+  
+  <div class="field">
+    <label for="wp_url">URL do seu WordPress</label>
+    <input type="url" id="wp_url" placeholder="https://meusite.com.br" required>
+  </div>
+  
+  <div class="field">
+    <label for="wp_user">Usuário Admin</label>
+    <input type="text" id="wp_user" placeholder="admin" required>
+  </div>
+  
+  <div class="field">
+    <label for="wp_password">Senha de Aplicativo (WP)</label>
+    <input type="password" id="wp_password" placeholder="xxxx xxxx xxxx xxxx" required>
+  </div>
+  
+  <button id="save_btn">Salvar Credenciais</button>
+  <div id="status_msg" class="status"></div>
+  
+  <div class="help">
+    * Dica: Gere a Senha de Aplicativo no WordPress indo em: <strong>Usuários > Perfil > Senhas de Aplicativo</strong> (no final da página). Não use a sua senha de login normal por motivos de segurança.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
