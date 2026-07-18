@@ -263,17 +263,47 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
 
                 <!-- Modelo Poe (visível só quando Poe selecionado) -->
                 <div class="wpaip-field" id="wpaip-poe-model-wrapper" style="<?php echo ( $opts['default_image'] === 'poe' ) ? '' : 'display:none;'; ?>">
-                    <label for="wpaip-poe-bot"><?php _e( 'Bot de Imagem do Poe.com', 'wp-ai-publisher' ); ?></label>
+                    <label for="wpaip-poe-bot-select"><?php _e( 'Bot de Imagem do Poe.com', 'wp-ai-publisher' ); ?></label>
+                    <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                        <select id="wpaip-poe-bot-select" class="wpaip-select" style="flex:1;">
+                            <?php
+                            $saved_poe = $opts['poe_image_bot'] ?? 'FLUX-schnell';
+                            $defaults_poe = [
+                                'FLUX-schnell'      => 'FLUX.1-schnell (Custo baixo / Excelente com texto)',
+                                'StableDiffusionXL' => 'Stable Diffusion XL (Custo baixíssimo / Rápido)',
+                                'Playground-v2.5'   => 'Playground v2.5 (Custo baixo / Cores vibrantes)',
+                                'DALL-E-3'          => 'DALL-E 3 (Custo alto / Prompts complexos)',
+                                'FLUX-pro'          => 'FLUX.1-pro (Custo alto / Qualidade máxima)',
+                                'FLUX-dev'          => 'FLUX.1-dev (Custo alto / Fotorealismo)',
+                                'Imagen-3'          => 'Imagen 3 (Custo alto / Google)',
+                            ];
+                            // Se o valor salvo não estiver na lista padrão de opções de imagem, marcamos como customizado
+                            $is_custom = ! array_key_exists( $saved_poe, $defaults_poe );
+                            
+                            foreach ( $defaults_poe as $val => $label ) :
+                            ?>
+                                <option value="<?php echo esc_attr( $val ); ?>" <?php selected( $saved_poe, $val ); ?>>
+                                    <?php echo esc_html( $label ); ?>
+                                </option>
+                            <?php endforeach; ?>
+                            <option value="custom" <?php selected( $is_custom, true ); ?>><?php _e( 'Outro bot (Digitar handle)...', 'wp-ai-publisher' ); ?></option>
+                        </select>
+                        <button type="button" id="wpaip-poe-load-models" class="button">Carregar da API</button>
+                        <span id="wpaip-poe-models-status" style="font-size:11px; color:#888;"></span>
+                    </div>
+                    
+                    <!-- Input de texto livre para bot customizado -->
                     <input
                         type="text"
                         id="wpaip-poe-bot"
                         name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[poe_image_bot]"
                         class="wpaip-input"
-                        value="<?php echo esc_attr( $opts['poe_image_bot'] ?? 'FLUX-schnell' ); ?>"
+                        value="<?php echo esc_attr( $saved_poe ); ?>"
                         placeholder="Ex: FLUX-schnell, StableDiffusionXL, DALL-E-3"
+                        style="<?php echo $is_custom ? 'display:block;' : 'display:none;'; ?>"
                     >
                     <span class="wpaip-field-hint">
-                        <?php _e( 'Digite o handle do bot de imagem do Poe (Ex: FLUX-schnell, StableDiffusionXL, DALL-E-3 ou qualquer outro bot público de imagem da plataforma).', 'wp-ai-publisher' ); ?>
+                        <?php _e( 'Escolha um modelo oficial, carregue seus bots criados via API, ou selecione "Outro bot (Digitar handle)..." para usar qualquer bot público da comunidade do Poe.com.', 'wp-ai-publisher' ); ?>
                     </span>
                 </div>
 

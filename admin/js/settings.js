@@ -95,6 +95,63 @@
         });
     });
 
+    // ── Buscar Modelos Poe.com ────────────────────────────────────────────────
+
+    $('#wpaip-poe-load-models').on('click', function () {
+        const $btn = $(this);
+        const $select = $('#wpaip-poe-bot-select');
+        const $status = $('#wpaip-poe-models-status');
+        const $input = $('#wpaip-poe-bot');
+        const savedVal = $input.val();
+
+        $btn.prop('disabled', true);
+        $status.css('color', '#888').text(cfg.strings.loading_models);
+
+        $.post(cfg.ajax_url, {
+            action: 'wpaip_list_poe_bots',
+            nonce: cfg.nonce
+        })
+        .done(function (res) {
+            if (res.success && res.data.bots) {
+                $select.empty();
+                let foundSaved = false;
+                res.data.bots.forEach(function (b) {
+                    if (b.id) {
+                        const isSelected = b.id === savedVal ? ' selected' : '';
+                        if (b.id === savedVal) foundSaved = true;
+                        $select.append('<option value="' + b.id + '"' + isSelected + '>' + b.id + '</option>');
+                    }
+                });
+                // Readiciona a opção customizada no final
+                const customSelected = (!savedVal || !foundSaved) ? ' selected' : '';
+                $select.append('<option value="custom"' + customSelected + '>Outro bot (Digitar handle)...</option>');
+                
+                $status.css('color', 'green').text('Modelos carregados');
+                $select.trigger('change');
+            } else {
+                $status.css('color', 'red').text(res.data.message || 'Erro ao carregar bots. Verifique a chave do Poe.');
+            }
+        })
+        .fail(function () {
+            $status.css('color', 'red').text('Erro de rede.');
+        })
+        .always(function () {
+            $btn.prop('disabled', false);
+        });
+    });
+
+    // ── Controle do Select de Bots do Poe ─────────────────────────────────────
+
+    $('#wpaip-poe-bot-select').on('change', function () {
+        const val = $(this).val();
+        const $input = $('#wpaip-poe-bot');
+        if (val === 'custom') {
+            $input.show();
+        } else {
+            $input.val(val).hide();
+        }
+    });
+
     // ── Versão de texto dinâmica por provider ─────────────────────────────────
 
     function updateTextModelVisibility(provider) {

@@ -18,6 +18,8 @@ class WPAIP_Settings {
         add_action( 'wp_ajax_wpaip_test_api_key',   [ __CLASS__, 'ajax_test_api_key'   ] );
         // AJAX: listar modelos do Hugging Face
         add_action( 'wp_ajax_wpaip_list_hf_models', [ __CLASS__, 'ajax_list_hf_models' ] );
+        // AJAX: listar modelos do Poe.com
+        add_action( 'wp_ajax_wpaip_list_poe_bots',   [ __CLASS__, 'ajax_list_poe_bots'   ] );
         // AJAX: testar conexão Asaas
         add_action( 'wp_ajax_wpaip_test_asaas',     [ __CLASS__, 'ajax_test_asaas'     ] );
         // AJAX: limpar cache Asaas do usuário atual
@@ -254,6 +256,45 @@ class WPAIP_Settings {
         ], $data );
 
         wp_send_json_success( [ 'models' => $models ] );
+    }
+
+    // ── AJAX: Listar Modelos do Poe.com ─────────────────────────────────────
+
+    public static function ajax_list_poe_bots(): void {
+        WPAIP_Security::check_ajax( 'manage_options', 'settings' );
+
+        $api_key = self::get_api_key( 'poe' );
+        if ( empty( $api_key ) ) {
+            wp_send_json_error( [ 'message' => 'Configure a chave do Poe.com primeiro.' ] );
+        }
+
+        $url = 'https://api.poe.com/v1/models';
+        $response = wp_remote_get( $url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $api_key,
+                'Content-Type'  => 'application/json',
+            ],
+            'timeout' => 15,
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            wp_send_json_error( [ 'message' => $response->get_error_message() ] );
+        }
+
+        $code = wp_remote_retrieve_response_code( $response );
+        $body = wp_remote_retrieve_body( $response );
+        $data = json_decode( $body, true );
+
+        if ( $code !== 200 || ! is_array( $data ) || ! isset( $data['data'] ) ) {
+            $msg = $data['error']['message'] ?? $data['error'] ?? ( 'Erro HTTP ' . $code );
+            wp_send_json_error( [ 'message' => $msg ] );
+        }
+
+        $bots = array_map( fn( $m ) => [
+            'id' => $m['id'] ?? '',
+        ], $data['data'] );
+
+        wp_send_json_success( [ 'bots' => $bots ] );
     }
 
     // ── AJAX: Testar conexão Asaas ───────────────────────────────────────────
