@@ -10,7 +10,7 @@ class WPAIP_LLM {
     private static string $last_search_error = '';
 
     /**
-     * Gera texto usando o provider configurado.
+     * Gera texto usando o provider configurado, intermediando a chamada pelo gateway de licenças.
      *
      * @param string $prompt  Prompt do usuário (já sanitizado).
      * @param string $provider 'openai' | 'gemini' | 'anthropic' | 'deepseek'
@@ -20,6 +20,17 @@ class WPAIP_LLM {
     public static function generate( string $prompt, string $provider = '', array $options = [] ): array {
         if ( empty( $provider ) ) {
             $provider = WPAIP_Settings::get( 'default_llm', 'openai' );
+        }
+
+        $license_key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
+        $server_url  = WPAIP_Settings::get( 'license_server_url', '' );
+
+        if ( empty( $license_key ) || empty( $server_url ) ) {
+            return [
+                'success' => false,
+                'text'    => '',
+                'message' => __( 'Chave de licença ou URL do servidor de licenças não configurada.', 'wp-ai-publisher' ),
+            ];
         }
 
         $api_key = WPAIP_Settings::get_api_key( $provider );
@@ -39,21 +50,49 @@ class WPAIP_LLM {
         $temporal_instruction = "Data e hora de referência atual: {$current_date} às {$current_time}. Escreva o conteúdo ciente desta data atual e utilize os tempos verbais corretos (tempo passado para o que já aconteceu e futuro apenas para eventos posteriores a essa data).";
         $system = $temporal_instruction . "\n\n" . $system;
 
-        // Nota: o prompt já vem sanitizado pelo ajax_generate_text; não re-sanitizar
-        // para evitar que wp_strip_all_tags destrua conteúdo de referências.
+        // Roteamento via Gateway do Servidor de Licenças
+        $clean_domain = preg_replace( '/^https?:\/\//i', '', get_site_url() );
+        $clean_domain = rtrim( $clean_domain, '/' );
 
-        switch ( $provider ) {
-            case 'openai':
-                return self::call_openai( $api_key, $prompt, $system, $options );
-            case 'gemini':
-                return self::call_gemini( $api_key, $prompt, $system, $options );
-            case 'anthropic':
-                return self::call_anthropic( $api_key, $prompt, $system, $options );
-            case 'deepseek':
-                return self::call_deepseek( $api_key, $prompt, $system, $options );
-            default:
-                return [ 'success' => false, 'text' => '', 'message' => 'Provider desconhecido: ' . $provider ];
+        $response = wp_remote_post( rtrim( $server_url, '/' ) . '/api/generate.php', [
+            'body'    => [
+                'license_key' => $license_key,
+                'domain'      => $clean_domain,
+                'action'      => 'text',
+                'provider'    => $provider,
+                'api_key'     => $api_key,
+                'prompt'      => $prompt,
+                'system'      => $system,
+                'options'     => wp_json_encode( $options ),
+            ],
+            'timeout' => 120,
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            return [
+                'success' => false,
+                'text'    => '',
+                'message' => 'Erro de conexão com o servidor de licenças: ' . $response->get_error_message(),
+            ];
         }
+
+        $code = wp_remote_retrieve_response_code( $response );
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+        if ( $code !== 200 || empty( $body ) ) {
+            $msg = $body['message'] ?? ( 'Erro HTTP ' . $code );
+            return [ 'success' => false, 'text' => '', 'message' => 'Gateway: ' . $msg ];
+        }
+
+        if ( empty( $body['success'] ) ) {
+            return [ 'success' => false, 'text' => '', 'message' => $body['message'] ?? 'Erro desconhecido no gateway.' ];
+        }
+
+        return [
+            'success' => true,
+            'text'    => $body['text'] ?? '',
+            'message' => '',
+        ];
     }
 
     // ── AJAX Handler ──────────────────────────────────────────────────────────

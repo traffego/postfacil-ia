@@ -357,105 +357,98 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                     <?php _e( 'Asaas — Controle de Acesso', 'wp-ai-publisher' ); ?>
                 </h2>
                 <p class="wpaip-card-desc">
-                    <?php _e( 'Restrinja o uso do plugin a usuários com assinatura ou cobrança ativa no Asaas. Deixe a chave em branco para desabilitar o paywall.', 'wp-ai-publisher' ); ?>
+                    <?php _e( 'Valide sua chave de licença integrada ao Asaas para liberar o uso dos recursos do plugin. Deixe a chave em branco para desabilitar o paywall.', 'wp-ai-publisher' ); ?>
                 </p>
             </div>
             <div class="wpaip-card-body">
 
-                <!-- Chave API -->
+                <!-- Chave de Licença -->
                 <div class="wpaip-api-row">
                     <div class="wpaip-api-label">
-                        <span class="wpaip-api-icon"><span class="dashicons dashicons-cart" style="font-size:18px;"></span></span>
+                        <span class="wpaip-api-icon"><span class="dashicons dashicons-admin-network" style="font-size:18px;"></span></span>
                         <div>
-                            <strong><?php _e( 'Chave de API Asaas', 'wp-ai-publisher' ); ?></strong>
-                            <?php $has_asaas = ! empty( WPAIP_Security::decrypt( WPAIP_Settings::get( 'asaas_api_key' ) ) ); ?>
-                            <?php if ( $has_asaas ) : ?>
-                                <span class="wpaip-badge wpaip-badge--ok"><?php _e( 'Configurada', 'wp-ai-publisher' ); ?></span>
+                            <strong><?php _e( 'Chave de Licença', 'wp-ai-publisher' ); ?></strong>
+                            <?php 
+                            $decrypted_lic = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
+                            $has_license = ! empty( $decrypted_lic ); 
+                            ?>
+                            <?php if ( $has_license ) : ?>
+                                <span class="wpaip-badge wpaip-badge--ok"><?php _e( 'Ativada', 'wp-ai-publisher' ); ?></span>
                             <?php else : ?>
-                                <span class="wpaip-badge wpaip-badge--empty"><?php _e( 'Não configurada', 'wp-ai-publisher' ); ?></span>
+                                <span class="wpaip-badge wpaip-badge--empty"><?php _e( 'Pendente', 'wp-ai-publisher' ); ?></span>
                             <?php endif; ?>
                         </div>
                     </div>
                     <div class="wpaip-api-input-group">
                         <input
                             type="password"
-                            id="wpaip-asaas-key"
-                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_api_key]"
+                            id="wpaip-license-key"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[license_key]"
                             class="wpaip-input"
-                            placeholder="<?php echo esc_attr( $has_asaas ? '••••••••••••••••' : '$aact_...' ); ?>"
+                            placeholder="<?php echo esc_attr( $has_license ? '••••••••••••••••' : 'WPAIP-XXXX-XXXX-XXXX' ); ?>"
                             autocomplete="new-password"
                         >
-                        <button type="button" id="wpaip-asaas-test-btn" class="button">
-                            <?php _e( 'Testar', 'wp-ai-publisher' ); ?>
+                        <button type="button" id="wpaip-license-test-btn" class="button">
+                            <?php _e( 'Ativar Licença', 'wp-ai-publisher' ); ?>
                         </button>
-                        <span class="wpaip-test-result" id="wpaip-asaas-test-result"></span>
+                        <span class="wpaip-test-result" id="wpaip-license-test-result"></span>
                     </div>
                 </div>
 
                 <div class="wpaip-grid-2" style="margin-top:20px;">
 
-                    <!-- Ambiente -->
-                    <div class="wpaip-field">
-                        <label for="wpaip-asaas-env"><?php _e( 'Ambiente', 'wp-ai-publisher' ); ?></label>
-                        <select id="wpaip-asaas-env" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_environment]" class="wpaip-select">
-                            <option value="sandbox"    <?php selected( WPAIP_Settings::get( 'asaas_environment', 'sandbox' ), 'sandbox'    ); ?>>Sandbox (testes)</option>
-                            <option value="production" <?php selected( WPAIP_Settings::get( 'asaas_environment', 'sandbox' ), 'production' ); ?>>Produção</option>
-                        </select>
-                        <span class="wpaip-field-hint">Use Sandbox para testes e Produção para o site real.</span>
+                    <!-- URL do Servidor de Licenças -->
+                    <div class="wpaip-field" style="grid-column: 1 / -1;">
+                        <label for="wpaip-license-server-url"><?php _e( 'URL do Servidor de Licenças', 'wp-ai-publisher' ); ?></label>
+                        <input
+                            type="url"
+                            id="wpaip-license-server-url"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[license_server_url]"
+                            class="wpaip-input"
+                            value="<?php echo esc_url( WPAIP_Settings::get( 'license_server_url', '' ) ); ?>"
+                            placeholder="https://seu-servidor-licenca.com"
+                        >
+                        <span class="wpaip-field-hint">Insira a URL base de onde você hospedou a pasta <code>license-server</code> (ex: <code>https://meusite.com/license-server</code>).</span>
                     </div>
 
                     <!-- Cache -->
                     <div class="wpaip-field">
-                        <label for="wpaip-asaas-cache"><?php _e( 'Cache de verificação (horas)', 'wp-ai-publisher' ); ?></label>
+                        <label for="wpaip-license-cache"><?php _e( 'Cache de verificação (horas)', 'wp-ai-publisher' ); ?></label>
                         <input
                             type="number"
-                            id="wpaip-asaas-cache"
-                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_cache_hours]"
+                            id="wpaip-license-cache"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[license_cache_hours]"
                             class="wpaip-input"
-                            value="<?php echo esc_attr( WPAIP_Settings::get( 'asaas_cache_hours', 24 ) ); ?>"
+                            value="<?php echo esc_attr( WPAIP_Settings::get( 'license_cache_hours', 24 ) ); ?>"
                             min="1" max="168" step="1"
                         >
-                        <span class="wpaip-field-hint">Evita chamadas excessivas à API. Padrão: 24h.</span>
-                    </div>
-
-                    <!-- Link de pagamento -->
-                    <div class="wpaip-field" style="grid-column: 1 / -1;">
-                        <label for="wpaip-asaas-link"><?php _e( 'Link de assinatura (redirecionamento)', 'wp-ai-publisher' ); ?></label>
-                        <input
-                            type="url"
-                            id="wpaip-asaas-link"
-                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_payment_link]"
-                            class="wpaip-input"
-                            value="<?php echo esc_url( WPAIP_Settings::get( 'asaas_payment_link', '' ) ); ?>"
-                            placeholder="https://www.asaas.com/c/seu-link"
-                        >
-                        <span class="wpaip-field-hint">URL exibida no botão "Assinar agora" da página de bloqueio.</span>
+                        <span class="wpaip-field-hint">Período de cache local antes de consultar o servidor novamente. Padrão: 24h.</span>
                     </div>
 
                     <!-- Bypass admins -->
-                    <div class="wpaip-field" style="grid-column: 1 / -1;">
+                    <div class="wpaip-field" style="grid-column: 1 / -1; margin-top: 15px;">
                         <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                             <input
                                 type="checkbox"
-                                name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[asaas_bypass_admins]"
+                                name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[license_bypass_admins]"
                                 value="1"
-                                <?php checked( WPAIP_Settings::get( 'asaas_bypass_admins', '1' ), '1' ); ?>
+                                <?php checked( WPAIP_Settings::get( 'license_bypass_admins', '1' ), '1' ); ?>
                                 style="width:18px; height:18px; accent-color:#7c3aed; cursor:pointer;"
                             >
                             <span><?php _e( 'Isentar administradores da verificação (recomendado)', 'wp-ai-publisher' ); ?></span>
                         </label>
-                        <span class="wpaip-field-hint" style="margin-left:28px;">Usuários com permissão <code>manage_options</code> nunca serão bloqueados.</span>
+                        <span class="wpaip-field-hint" style="margin-left:28px;">Usuários com capacidade de administrador (<code>manage_options</code>) nunca serão bloqueados.</span>
                     </div>
 
                 </div>
 
                 <!-- Limpar cache manual -->
                 <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,.06); display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                    <button type="button" id="wpaip-asaas-clear-cache" class="button">
-                        <?php _e( 'Limpar meu cache Asaas', 'wp-ai-publisher' ); ?>
+                    <button type="button" id="wpaip-license-clear-cache" class="button">
+                        <?php _e( 'Limpar meu cache de licença', 'wp-ai-publisher' ); ?>
                     </button>
-                    <span id="wpaip-asaas-cache-result" style="font-size:12px; color:#666;"></span>
-                    <span style="font-size:12px; color:#999;"><?php _e( 'Força re-verificação do seu status de pagamento na próxima visita.', 'wp-ai-publisher' ); ?></span>
+                    <span id="wpaip-license-cache-result" style="font-size:12px; color:#666;"></span>
+                    <span style="font-size:12px; color:#999;"><?php _e( 'Força o plugin a consultar o servidor de licenças na próxima geração ou carregamento de página.', 'wp-ai-publisher' ); ?></span>
                 </div>
 
             </div>

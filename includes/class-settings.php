@@ -20,10 +20,10 @@ class WPAIP_Settings {
         add_action( 'wp_ajax_wpaip_list_hf_models', [ __CLASS__, 'ajax_list_hf_models' ] );
         // AJAX: listar modelos do Poe.com
         add_action( 'wp_ajax_wpaip_list_poe_bots',   [ __CLASS__, 'ajax_list_poe_bots'   ] );
-        // AJAX: testar conexão Asaas
-        add_action( 'wp_ajax_wpaip_test_asaas',     [ __CLASS__, 'ajax_test_asaas'     ] );
-        // AJAX: limpar cache Asaas do usuário atual
-        add_action( 'wp_ajax_wpaip_clear_asaas_cache', [ __CLASS__, 'ajax_clear_asaas_cache' ] );
+        // AJAX: ativar/testar licença
+        add_action( 'wp_ajax_wpaip_activate_license',   [ __CLASS__, 'ajax_activate_license'   ] );
+        // AJAX: limpar cache da licença do usuário atual
+        add_action( 'wp_ajax_wpaip_clear_license_cache', [ __CLASS__, 'ajax_clear_license_cache' ] );
         // AJAX: melhorar prompt de sistema global
         add_action( 'wp_ajax_wpaip_improve_prompt', [ 'WPAIP_LLM', 'ajax_improve_prompt' ] );
     }
@@ -90,25 +90,21 @@ class WPAIP_Settings {
             }
         }
 
-        // Asaas API key (criptografada como as demais)
-        if ( ! empty( $input['asaas_api_key'] ) ) {
-            $raw = sanitize_text_field( $input['asaas_api_key'] );
+        // Chave de Licença (salva com criptografia por segurança)
+        if ( ! empty( $input['license_key'] ) ) {
+            $raw = sanitize_text_field( $input['license_key'] );
             if ( $raw !== str_repeat( '*', strlen( $raw ) ) && $raw !== '••••••••••••••••' ) {
-                $clean['asaas_api_key'] = WPAIP_Security::encrypt( $raw );
+                $clean['license_key'] = WPAIP_Security::encrypt( $raw );
             } else {
-                $clean['asaas_api_key'] = $saved['asaas_api_key'] ?? '';
+                $clean['license_key'] = $saved['license_key'] ?? '';
             }
         } else {
-            $clean['asaas_api_key'] = $saved['asaas_api_key'] ?? '';
+            $clean['license_key'] = $saved['license_key'] ?? '';
         }
 
-        // Demais opções Asaas
-        $clean['asaas_environment']  = in_array( $input['asaas_environment'] ?? '', [ 'sandbox', 'production' ], true )
-            ? $input['asaas_environment']
-            : 'sandbox';
-        $clean['asaas_payment_link'] = esc_url_raw( $input['asaas_payment_link'] ?? '' );
-        $clean['asaas_cache_hours']  = max( 1, (int) ( $input['asaas_cache_hours'] ?? 24 ) );
-        $clean['asaas_bypass_admins'] = ! empty( $input['asaas_bypass_admins'] ) ? '1' : '0';
+        $clean['license_server_url']    = esc_url_raw( $input['license_server_url'] ?? '' );
+        $clean['license_cache_hours']   = max( 1, (int) ( $input['license_cache_hours'] ?? 24 ) );
+        $clean['license_bypass_admins'] = ! empty( $input['license_bypass_admins'] ) ? '1' : '0';
 
         // Provider padrão para texto e imagem
         $clean['default_llm']   = sanitize_text_field( $input['default_llm']   ?? 'openai' );
@@ -172,12 +168,11 @@ class WPAIP_Settings {
             'system_prompt'           => 'Você é um redator especialista em SEO e marketing de conteúdo. Escreva em português do Brasil com linguagem clara, objetiva e envolvente.',
             'default_journalistic_style' => 'default',
             'enable_gemini_search'       => '0',
-            // Asaas
-            'asaas_api_key'           => '',
-            'asaas_environment'       => 'sandbox',
-            'asaas_payment_link'      => '',
-            'asaas_cache_hours'       => 24,
-            'asaas_bypass_admins'     => '1',
+            // Licenciamento Externo
+            'license_key'             => '',
+            'license_server_url'      => '',
+            'license_cache_hours'     => 24,
+            'license_bypass_admins'   => '1',
         ];
     }
 
@@ -297,11 +292,20 @@ class WPAIP_Settings {
         wp_send_json_success( [ 'bots' => $bots ] );
     }
 
-    // ── AJAX: Testar conexão Asaas ───────────────────────────────────────────
+    // ── AJAX: Ativar/Testar Licença ───────────────────────────────────────────
 
-    public static function ajax_test_asaas(): void {
+    public static function ajax_activate_license(): void {
         WPAIP_Security::check_ajax( 'manage_options', 'settings' );
-        $result = WPAIP_Asaas::test_connection();
+
+        $license_key = sanitize_text_field( $_POST['license_key'] ?? '' );
+        $server_url  = esc_url_raw( $_POST['license_server_url'] ?? '' );
+
+        if ( empty( $license_key ) || empty( $server_url ) ) {
+            wp_send_json_error( [ 'message' => 'Chave de licença e URL do servidor são obrigatórios.' ] );
+        }
+
+        $result = WPAIP_Paywall::activate_license( $license_key, $server_url );
+
         if ( $result['success'] ) {
             wp_send_json_success( $result );
         } else {
@@ -309,13 +313,13 @@ class WPAIP_Settings {
         }
     }
 
-    // ── AJAX: Limpar cache Asaas ─────────────────────────────────────────────
+    // ── AJAX: Limpar cache Licença ────────────────────────────────────────────
 
-    public static function ajax_clear_asaas_cache(): void {
+    public static function ajax_clear_license_cache(): void {
         WPAIP_Security::check_ajax( 'manage_options', 'settings' );
         $user_id = (int) ( $_POST['user_id'] ?? get_current_user_id() );
-        WPAIP_Asaas::clear_cache( $user_id );
-        wp_send_json_success( [ 'message' => 'Cache limpo para o usuário #' . $user_id ] );
+        WPAIP_Paywall::clear_cache( $user_id );
+        wp_send_json_success( [ 'message' => 'Cache de licença limpo para o usuário #' . $user_id ] );
     }
 
     // ── AJAX: Testar API Key ──────────────────────────────────────────────────

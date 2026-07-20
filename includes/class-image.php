@@ -20,22 +20,98 @@ class WPAIP_Image {
             $provider = WPAIP_Settings::get( 'default_image', 'pollinations' );
         }
 
+        $license_key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
+        $server_url  = WPAIP_Settings::get( 'license_server_url', '' );
+
+        if ( empty( $license_key ) || empty( $server_url ) ) {
+            return [
+                'success' => false,
+                'url'     => '',
+                'message' => __( 'Chave de licença ou URL do servidor de licenças não configurada.', 'wp-ai-publisher' ),
+            ];
+        }
+
+        // Recuperar chave do provedor (se necessário)
+        $api_key = '';
+        if ( $provider === 'dalle3' ) {
+            $api_key = WPAIP_Settings::get_api_key( 'openai' );
+        } elseif ( $provider === 'gemini' ) {
+            $api_key = WPAIP_Settings::get_api_key( 'gemini' );
+        } elseif ( $provider === 'huggingface' ) {
+            $api_key = WPAIP_Settings::get_api_key( 'huggingface' );
+        } elseif ( $provider === 'poe' ) {
+            $api_key = WPAIP_Settings::get_api_key( 'poe' );
+        }
+
+        if ( empty( $api_key ) && $provider !== 'pollinations' ) {
+            return [
+                'success' => false,
+                'url'     => '',
+                'message' => sprintf( __( 'API key para o provedor "%s" não configurada.', 'wp-ai-publisher' ), $provider ),
+            ];
+        }
+
         $prompt = WPAIP_Security::prepare_prompt( $prompt, 1000 );
 
-        switch ( $provider ) {
-            case 'dalle3':
-                return self::call_dalle3( $prompt, $options );
-            case 'gemini':
-                return self::call_gemini_imagen( $prompt, $options );
-            case 'pollinations':
-                return self::call_pollinations( $prompt, $options );
-            case 'huggingface':
-                return self::call_huggingface( $prompt, $options );
-            case 'poe':
-                return self::call_poe( $prompt, $options );
-            default:
-                return [ 'success' => false, 'url' => '', 'message' => 'Provider de imagem desconhecido: ' . $provider ];
+        // Injetar o modelo correto nos options se não vier preenchido
+        if ( empty( $options['model'] ) ) {
+            if ( $provider === 'huggingface' ) {
+                $options['model'] = WPAIP_Settings::get( 'huggingface_image_model', 'black-forest-labs/FLUX.1-schnell' );
+            } elseif ( $provider === 'poe' ) {
+                $options['model'] = WPAIP_Settings::get( 'poe_image_bot', 'FLUX-schnell' );
+            }
         }
+
+        // Roteamento via Gateway do Servidor de Licenças
+        $clean_domain = preg_replace( '/^https?:\/\//i', '', get_site_url() );
+        $clean_domain = rtrim( $clean_domain, '/' );
+
+        $response = wp_remote_post( rtrim( $server_url, '/' ) . '/api/generate.php', [
+            'body'    => [
+                'license_key' => $license_key,
+                'domain'      => $clean_domain,
+                'action'      => 'image',
+                'provider'    => $provider,
+                'api_key'     => $api_key,
+                'prompt'      => $prompt,
+                'options'     => wp_json_encode( $options ),
+            ],
+            'timeout' => 90,
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            return [
+                'success' => false,
+                'url'     => '',
+                'message' => 'Erro de conexão com o servidor de licenças: ' . $response->get_error_message(),
+            ];
+        }
+
+        $code = wp_remote_retrieve_response_code( $response );
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+        if ( $code !== 200 || empty( $body ) ) {
+            $msg = $body['message'] ?? ( 'Erro HTTP ' . $code );
+            return [ 'success' => false, 'url' => '', 'message' => 'Gateway: ' . $msg ];
+        }
+
+        if ( empty( $body['success'] ) ) {
+            return [ 'success' => false, 'url' => '', 'message' => $body['message'] ?? 'Erro desconhecido no gateway.' ];
+        }
+
+        // Se o gateway retornou a imagem em base64 (como Gemini ou Hugging Face)
+        if ( ! empty( $body['base64'] ) ) {
+            $tmp = sys_get_temp_dir() . '/wpaip_gw_' . uniqid() . '.png';
+            file_put_contents( $tmp, base64_decode( $body['base64'] ) );
+            return [ 'success' => true, 'url' => $tmp, 'is_local' => true, 'message' => '' ];
+        }
+
+        // Se retornou uma URL direta (como DALL-E 3, Pollinations ou Poe)
+        return [
+            'success' => true,
+            'url'     => $body['url'] ?? '',
+            'message' => '',
+        ];
     }
 
     // ── AJAX Handlers ─────────────────────────────────────────────────────────

@@ -188,16 +188,21 @@
     // Init
     updateImageModelVisibility($('#wpaip-default-image').val());
 
-    // ── Testar conexão Asaas ──────────────────────────────────────────────────
+    // ── Ativar/Testar Licença ──────────────────────────────────────────────────
 
-    $('#wpaip-asaas-test-btn').on('click', function () {
+    $('#wpaip-license-test-btn').on('click', function () {
         const $btn    = $(this);
-        const $result = $('#wpaip-asaas-test-result');
+        const $result = $('#wpaip-license-test-result');
         const hasSaved = $('.wpaip-badge--ok', $btn.closest('.wpaip-api-row')).length > 0;
-        const apiKey  = $.trim($('#wpaip-asaas-key').val());
+        const licenseKey = $.trim($('#wpaip-license-key').val());
+        const serverUrl  = $.trim($('#wpaip-license-server-url').val());
 
-        if (!apiKey && !hasSaved) {
-            $result.attr('class', 'wpaip-test-result fail').text('Configure a chave Asaas primeiro.');
+        if (!licenseKey && !hasSaved) {
+            $result.attr('class', 'wpaip-test-result fail').text('Configure a chave de licença primeiro.');
+            return;
+        }
+        if (!serverUrl) {
+            $result.attr('class', 'wpaip-test-result fail').text('Preencha a URL do servidor de licenças.');
             return;
         }
 
@@ -205,35 +210,44 @@
         $result.attr('class', 'wpaip-test-result').text('');
 
         $.post(cfg.ajax_url, {
-            action: 'wpaip_test_asaas',
-            nonce:  cfg.nonce,
+            action:             'wpaip_activate_license',
+            nonce:              cfg.nonce,
+            license_key:        licenseKey,
+            license_server_url: serverUrl,
         })
         .done(function (res) {
             if (res.success) {
-                $result.attr('class', 'wpaip-test-result ok').text(res.data.message || 'Conexão OK');
+                $result.attr('class', 'wpaip-test-result ok').text(res.data.message || 'Ativada com sucesso!');
+                // Atualizar o badge de status na tela
+                const $badge = $btn.closest('.wpaip-api-row').find('.wpaip-badge');
+                $badge.attr('class', 'wpaip-badge wpaip-badge--ok').text('Ativada');
             } else {
-                $result.attr('class', 'wpaip-test-result fail').text(res.data.message || 'Falha');
+                $result.attr('class', 'wpaip-test-result fail').text(res.data.message || 'Falha na ativação.');
             }
         })
-        .fail(function () {
-            $result.attr('class', 'wpaip-test-result fail').text(cfg.strings.fail);
+        .fail(function (xhr) {
+            let errorMsg = 'Erro de rede ou servidor.';
+            if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                errorMsg = xhr.responseJSON.data.message;
+            }
+            $result.attr('class', 'wpaip-test-result fail').text('Falha: ' + errorMsg);
         })
         .always(function () {
-            $btn.prop('disabled', false).text('Testar');
+            $btn.prop('disabled', false).text('Ativar Licença');
         });
     });
 
-    // ── Limpar cache Asaas ────────────────────────────────────────────────────
+    // ── Limpar cache Licença ──────────────────────────────────────────────────
 
-    $('#wpaip-asaas-clear-cache').on('click', function () {
+    $('#wpaip-license-clear-cache').on('click', function () {
         const $btn    = $(this);
-        const $result = $('#wpaip-asaas-cache-result');
+        const $result = $('#wpaip-license-cache-result');
 
         $btn.prop('disabled', true).text('Limpando…');
         $result.css('color', '#888').text('');
 
         $.post(cfg.ajax_url, {
-            action: 'wpaip_clear_asaas_cache',
+            action: 'wpaip_clear_license_cache',
             nonce:  cfg.nonce,
         })
         .done(function (res) {
@@ -247,7 +261,7 @@
             $result.css('color', 'red').text('Falha na requisição.');
         })
         .always(function () {
-            $btn.prop('disabled', false).text('Limpar meu cache Asaas');
+            $btn.prop('disabled', false).text('Limpar meu cache de licença');
         });
     });
 
