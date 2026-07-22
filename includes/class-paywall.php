@@ -9,6 +9,7 @@ class WPAIP_Paywall {
 
     const CACHE_META_KEY = 'wpaip_license_access';
     const CACHE_TIME_KEY = 'wpaip_license_access_ts';
+    const DEFAULT_SERVER = 'https://olive-locust-173119.hostingersite.com/license-server-wp-post/';
 
     public static function init(): void {
         add_action( 'admin_init', [ __CLASS__, 'check_access' ] );
@@ -35,19 +36,12 @@ class WPAIP_Paywall {
             return;
         }
 
-
-        // 2. Licença desabilitada? (sem chave configurada) → libera (modo local/grátis)
-        $license_key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
-        if ( empty( $license_key ) ) {
-            return;
-        }
-
-        // 3. Verificar se a licença é válida no servidor externo
+        // 1. Verificar se a licença é ativa no servidor externo
         if ( self::is_license_active( $user_id ) ) {
             return;
         }
 
-        // 4. Bloquear → renderizar paywall e encerrar
+        // 2. Bloquear → renderizar paywall e encerrar
         self::render_blocked_page();
         exit;
     }
@@ -56,20 +50,29 @@ class WPAIP_Paywall {
 
     public static function is_license_active( int $user_id ): bool {
         $license_key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
-        $server_url  = WPAIP_Settings::get( 'license_server_url', '' );
+        $server_url  = WPAIP_Settings::get( 'license_server_url', self::DEFAULT_SERVER );
 
-        if ( empty( $license_key ) || empty( $server_url ) ) {
-            return true; // Sem licença configurada = liberado
+        if ( empty( $server_url ) ) {
+            $server_url = self::DEFAULT_SERVER;
         }
 
-        // Verificar cache local
-        $cache_ts = (int) get_user_meta( $user_id, self::CACHE_TIME_KEY, true );
-        $cache_val = get_user_meta( $user_id, self::CACHE_META_KEY, true );
-        $hours     = max( 1, (int) WPAIP_Settings::get( 'license_cache_hours', 24 ) );
-        $ttl       = $hours * HOUR_IN_SECONDS;
+        // Sem chave de licença configurada = BLOQUEADO (sem acesso)
+        if ( empty( $license_key ) ) {
+            return false;
+        }
 
-        if ( $cache_ts && ( time() - $cache_ts ) < $ttl && $cache_val !== '' ) {
-            return (bool) $cache_val;
+        // Verificar se foi solicitado forçar verificação sem cache (?force_check=1)
+        $force = ! empty( $_GET['force_check'] );
+
+        if ( ! $force ) {
+            $cache_ts  = (int) get_user_meta( $user_id, self::CACHE_TIME_KEY, true );
+            $cache_val = get_user_meta( $user_id, self::CACHE_META_KEY, true );
+            $hours     = max( 1, (int) WPAIP_Settings::get( 'license_cache_hours', 24 ) );
+            $ttl       = $hours * HOUR_IN_SECONDS;
+
+            if ( $cache_ts && ( time() - $cache_ts ) < $ttl && $cache_val !== '' ) {
+                return (bool) $cache_val;
+            }
         }
 
         // Consultar servidor de licenças
@@ -100,9 +103,7 @@ class WPAIP_Paywall {
         ] );
 
         if ( is_wp_error( $response ) ) {
-            // Em caso de erro de rede, podemos opcionalmente falhar de forma segura (liberar)
-            // para não quebrar o site do cliente por instabilidade do nosso servidor de licenças.
-            return true;
+            return false;
         }
 
         $code = wp_remote_retrieve_response_code( $response );
@@ -117,6 +118,10 @@ class WPAIP_Paywall {
     public static function activate_license( string $key, string $server_url ): array {
         $clean_domain = preg_replace( '/^https?:\/\//i', '', get_site_url() );
         $clean_domain = rtrim( $clean_domain, '/' );
+
+        if ( empty( $server_url ) ) {
+            $server_url = self::DEFAULT_SERVER;
+        }
 
         $response = wp_remote_post( rtrim( $server_url, '/' ) . '/api/activate.php', [
             'body'    => [
@@ -154,8 +159,8 @@ class WPAIP_Paywall {
     // ── Página de bloqueio ────────────────────────────────────────────────────
 
     public static function render_blocked_page(): void {
-        // Redireciona o usuário para o servidor de licenças para pagamento/assinatura
-        $payment_link = esc_url( WPAIP_Settings::get( 'license_server_url', '#' ) );
+        $server_url   = WPAIP_Settings::get( 'license_server_url', self::DEFAULT_SERVER );
+        $payment_link = esc_url( rtrim( $server_url ?: self::DEFAULT_SERVER, '/' ) . '/checkout.php' );
         require_once WPAIP_PLUGIN_DIR . 'admin/views/paywall-page.php';
     }
 }

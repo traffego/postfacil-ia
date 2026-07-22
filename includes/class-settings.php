@@ -169,7 +169,7 @@ class WPAIP_Settings {
             'enable_gemini_search'       => '0',
             // Licenciamento Externo
             'license_key'         => '',
-            'license_server_url'  => '',
+            'license_server_url'  => 'https://olive-locust-173119.hostingersite.com/license-server-wp-post/',
             'license_cache_hours' => 24,
         ];
     }
