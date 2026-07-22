@@ -172,7 +172,7 @@ foreach ( $all_providers_keys as $pk ) {
 
     </div>
 
-    <!-- ── FORMULÁRIO PRINCIPAL ── -->
+    <!-- ── FORMULÁRIO PRINCIPAL COM MODAIS DE DESIGN MODERNO ── -->
     <form method="post" action="options.php" id="wpaip-settings-main-form">
         <?php settings_fields( WPAIP_SLUG . '-settings-group' ); ?>
 
@@ -182,62 +182,63 @@ foreach ( $all_providers_keys as $pk ) {
                 <button type="button" class="wpaip-modal-close" onclick="wpaipCloseSettingsModal('modal-api-keys')">×</button>
                 
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span class="dashicons dashicons-admin-network" style="font-size:22px; color:#7c3aed;"></span>
-                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#0f172a;"><?php _e( 'Chaves de API', 'wp-ai-publisher' ); ?></h2>
+                    <span class="dashicons dashicons-admin-network" style="font-size:22px; color:#a78bfa;"></span>
+                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#f8fafc;"><?php _e( 'Chaves de API', 'wp-ai-publisher' ); ?></h2>
                 </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+                <p style="font-size:13px; color:#94a3b8; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
                     <?php _e( 'Credenciais armazenadas com criptografia AES-256. Nunca expostas em texto limpo.', 'wp-ai-publisher' ); ?>
                 </p>
 
                 <div class="wpaip-modal-scroll-area">
                     <?php
                     $providers_meta = [
-                        'openai'      => [ 'label' => 'OpenAI',     'placeholder' => 'sk-...',       'icon' => '' ],
-                        'gemini'      => [ 'label' => 'Google Gemini', 'placeholder' => 'AIza...',    'icon' => '' ],
-                        'anthropic'   => [ 'label' => 'Anthropic',  'placeholder' => 'sk-ant-...',   'icon' => '' ],
-                        'deepseek'    => [ 'label' => 'DeepSeek',   'placeholder' => 'sk-...',       'icon' => '' ],
-                        'huggingface' => [ 'label' => 'Hugging Face (Imagens Grátis)', 'placeholder' => 'hf_...', 'icon' => '' ],
-                        'poe'         => [ 'label' => 'Poe.com',    'placeholder' => 'pb-...',       'icon' => '' ],
+                        'openai'      => [ 'label' => 'OpenAI',     'placeholder' => 'sk-...',       'icon' => '⚡' ],
+                        'gemini'      => [ 'label' => 'Google Gemini', 'placeholder' => 'AIza...',    'icon' => '✨' ],
+                        'anthropic'   => [ 'label' => 'Anthropic (Claude)',  'placeholder' => 'sk-ant-...',   'icon' => '🧠' ],
+                        'deepseek'    => [ 'label' => 'DeepSeek',   'placeholder' => 'sk-...',       'icon' => '🔮' ],
+                        'huggingface' => [ 'label' => 'Hugging Face (Imagens)', 'placeholder' => 'hf_...', 'icon' => '🤗' ],
+                        'poe'         => [ 'label' => 'Poe.com',    'placeholder' => 'pb-...',       'icon' => '🤖' ],
                     ];
 
                     foreach ( $providers_meta as $key => $meta ) :
                         $has_key = ! empty( WPAIP_Settings::get_api_key( $key ) );
                     ?>
-                    <div class="wpaip-api-row" style="margin-bottom:14px; background:#f8fafc; padding:14px; border:1px solid #e2e8f0; border-radius:10px;">
-                        <div class="wpaip-api-label" style="margin-bottom:8px;">
-                            <div>
-                                <strong><?php echo esc_html( $meta['label'] ); ?></strong>
-                                <?php if ( $has_key ) : ?>
-                                    <span class="wpaip-badge wpaip-badge--ok"><?php _e( 'Configurada', 'wp-ai-publisher' ); ?></span>
-                                <?php else : ?>
-                                    <span class="wpaip-badge wpaip-badge--empty"><?php _e( 'Não configurada', 'wp-ai-publisher' ); ?></span>
-                                <?php endif; ?>
+                    <div class="wpaip-modal-row">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span><?php echo $meta['icon']; ?></span>
+                                <strong style="color:#f8fafc; font-size:13px;"><?php echo esc_html( $meta['label'] ); ?></strong>
                             </div>
+                            <?php if ( $has_key ) : ?>
+                                <span class="wpaip-badge-dark wpaip-badge-dark--ok"><?php _e( 'Configurada', 'wp-ai-publisher' ); ?></span>
+                            <?php else : ?>
+                                <span class="wpaip-badge-dark wpaip-badge-dark--empty"><?php _e( 'Pendente', 'wp-ai-publisher' ); ?></span>
+                            <?php endif; ?>
                         </div>
-                        <div class="wpaip-api-input-group" style="display:flex; gap:8px;">
+                        <div style="display:flex; gap:8px;">
                             <input
                                 type="password"
                                 id="wpaip-key-<?php echo esc_attr( $key ); ?>"
                                 name="<?php echo esc_attr( WPAIP_Settings::OPTION_KEY ); ?>[<?php echo esc_attr( $key ); ?>_api_key]"
-                                class="wpaip-input"
+                                class="wpaip-dark-input"
                                 style="flex:1;"
                                 placeholder="<?php echo esc_attr( $has_key ? '••••••••••••••••' : $meta['placeholder'] ); ?>"
                                 autocomplete="new-password"
                             >
                             <button type="button"
-                                class="button wpaip-test-btn"
+                                class="wpaip-dark-btn wpaip-test-btn"
                                 data-provider="<?php echo esc_attr( $key ); ?>"
                                 data-input="#wpaip-key-<?php echo esc_attr( $key ); ?>"
                             ><?php _e( 'Testar', 'wp-ai-publisher' ); ?></button>
                         </div>
-                        <span class="wpaip-test-result" id="wpaip-result-<?php echo esc_attr( $key ); ?>" style="display:block; margin-top:4px; font-size:12px;"></span>
+                        <span class="wpaip-test-result" id="wpaip-result-<?php echo esc_attr( $key ); ?>" style="display:block; margin-top:6px; font-size:12px;"></span>
                     </div>
                     <?php endforeach; ?>
                 </div>
 
-                <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e2e8f0; padding-top:16px;">
-                    <button type="button" class="button" onclick="wpaipCloseSettingsModal('modal-api-keys')"><?php _e( 'Fechar', 'wp-ai-publisher' ); ?></button>
-                    <button type="submit" class="button button-primary" style="background:#7c3aed; border-color:#7c3aed;"><?php _e( 'Salvar Configurações', 'wp-ai-publisher' ); ?></button>
+                <div class="wpaip-modal-footer">
+                    <button type="button" class="wpaip-dark-btn-sec" onclick="wpaipCloseSettingsModal('modal-api-keys')"><?php _e( 'Fechar', 'wp-ai-publisher' ); ?></button>
+                    <button type="submit" class="wpaip-dark-btn-pri"><?php _e( 'Salvar Configurações', 'wp-ai-publisher' ); ?></button>
                 </div>
             </div>
         </div>
@@ -248,18 +249,18 @@ foreach ( $all_providers_keys as $pk ) {
                 <button type="button" class="wpaip-modal-close" onclick="wpaipCloseSettingsModal('modal-text-model')">×</button>
                 
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span class="dashicons dashicons-editor-bold" style="font-size:22px; color:#3b82f6;"></span>
-                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#0f172a;"><?php _e( 'Modelo de Texto', 'wp-ai-publisher' ); ?></h2>
+                    <span class="dashicons dashicons-editor-bold" style="font-size:22px; color:#60a5fa;"></span>
+                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#f8fafc;"><?php _e( 'Modelo de Texto', 'wp-ai-publisher' ); ?></h2>
                 </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+                <p style="font-size:13px; color:#94a3b8; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
                     <?php _e( 'Provider e versão usados para gerar textos no editor de posts.', 'wp-ai-publisher' ); ?>
                 </p>
 
                 <div class="wpaip-modal-scroll-area">
                     <!-- Provider -->
-                    <div class="wpaip-field" style="margin-bottom:16px;">
-                        <label for="wpaip-default-llm" style="font-weight:700; margin-bottom:6px; display:block;"><?php _e( 'Provider Padrão', 'wp-ai-publisher' ); ?></label>
-                        <select id="wpaip-default-llm" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_llm]" class="wpaip-select" style="width:100%;">
+                    <div style="margin-bottom:16px;">
+                        <label for="wpaip-default-llm" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Provider Padrão', 'wp-ai-publisher' ); ?></label>
+                        <select id="wpaip-default-llm" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_llm]" class="wpaip-dark-input" style="width:100%;">
                             <option value="openai"    <?php selected( $opts['default_llm'], 'openai'    ); ?>>GPT (OpenAI)</option>
                             <option value="gemini"    <?php selected( $opts['default_llm'], 'gemini'    ); ?>>Gemini (Google)</option>
                             <option value="anthropic" <?php selected( $opts['default_llm'], 'anthropic' ); ?>>Claude (Anthropic)</option>
@@ -278,9 +279,9 @@ foreach ( $all_providers_keys as $pk ) {
                     foreach ( $model_opts as $field => $meta ) :
                         $is_active = ( $opts['default_llm'] === $meta['provider'] );
                     ?>
-                    <div class="wpaip-field wpaip-model-group" data-provider="<?php echo esc_attr( $meta['provider'] ); ?>" style="<?php echo $is_active ? '' : 'display:none;'; ?> margin-bottom:16px;">
-                        <label style="font-weight:700; margin-bottom:6px; display:block;"><?php printf( __( 'Versão do Modelo (%s)', 'wp-ai-publisher' ), esc_html( $meta['label'] ) ); ?></label>
-                        <select name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[<?php echo esc_attr( $field ); ?>]" class="wpaip-select" style="width:100%;">
+                    <div class="wpaip-model-group" data-provider="<?php echo esc_attr( $meta['provider'] ); ?>" style="<?php echo $is_active ? '' : 'display:none;'; ?> margin-bottom:16px;">
+                        <label style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php printf( __( 'Versão do Modelo (%s)', 'wp-ai-publisher' ), esc_html( $meta['label'] ) ); ?></label>
+                        <select name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[<?php echo esc_attr( $field ); ?>]" class="wpaip-dark-input" style="width:100%;">
                             <?php foreach ( $meta['opts'] as $m ) : ?>
                                 <option value="<?php echo esc_attr( $m ); ?>" <?php selected( $opts[ $field ] ?? '', $m ); ?>>
                                     <?php echo esc_html( $m ); ?>
@@ -291,8 +292,8 @@ foreach ( $all_providers_keys as $pk ) {
                     <?php endforeach; ?>
 
                     <!-- Pesquisa em tempo real via Gemini -->
-                    <div class="wpaip-field" style="margin-top: 15px; border-top: 1px solid #f0f0f0; padding-top: 15px;">
-                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700;">
+                    <div style="margin-top: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px;">
+                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700; color:#f8fafc;">
                             <input
                                 type="checkbox"
                                 name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[enable_gemini_search]"
@@ -300,17 +301,17 @@ foreach ( $all_providers_keys as $pk ) {
                                 <?php checked( WPAIP_Settings::get( 'enable_gemini_search', '0' ), '1' ); ?>
                                 style="width:18px; height:18px; accent-color:#7c3aed; cursor:pointer;"
                             >
-                            <span><?php _e( 'Habilitar pesquisa automática em tempo real via Google Gemini', 'wp-ai-publisher' ); ?></span>
+                            <span><?php _e( 'Habilitar pesquisa em tempo real no Google', 'wp-ai-publisher' ); ?></span>
                         </label>
-                        <span class="wpaip-field-hint" style="margin-left:28px; display:block; margin-top:4px; font-size:12px; color:#64748b;">
-                            <?php _e( 'Pesquisa fatos recentes no Google sobre o tema do post antes de escrever.', 'wp-ai-publisher' ); ?>
+                        <span style="display:block; margin-top:6px; font-size:12px; color:#94a3b8; line-height:1.4;">
+                            <?php _e( 'Pesquisa fatos e informações atualizadas na web antes de estruturar e redigir o artigo.', 'wp-ai-publisher' ); ?>
                         </span>
                     </div>
                 </div>
 
-                <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e2e8f0; padding-top:16px;">
-                    <button type="button" class="button" onclick="wpaipCloseSettingsModal('modal-text-model')"><?php _e( 'Fechar', 'wp-ai-publisher' ); ?></button>
-                    <button type="submit" class="button button-primary" style="background:#3b82f6; border-color:#3b82f6;"><?php _e( 'Salvar Configurações', 'wp-ai-publisher' ); ?></button>
+                <div class="wpaip-modal-footer">
+                    <button type="button" class="wpaip-dark-btn-sec" onclick="wpaipCloseSettingsModal('modal-text-model')"><?php _e( 'Fechar', 'wp-ai-publisher' ); ?></button>
+                    <button type="submit" class="wpaip-dark-btn-pri"><?php _e( 'Salvar Configurações', 'wp-ai-publisher' ); ?></button>
                 </div>
             </div>
         </div>
@@ -321,18 +322,18 @@ foreach ( $all_providers_keys as $pk ) {
                 <button type="button" class="wpaip-modal-close" onclick="wpaipCloseSettingsModal('modal-image-model')">×</button>
                 
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span class="dashicons dashicons-format-image" style="font-size:22px; color:#ec4899;"></span>
-                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#0f172a;"><?php _e( 'Modelo de Imagem', 'wp-ai-publisher' ); ?></h2>
+                    <span class="dashicons dashicons-format-image" style="font-size:22px; color:#f472b6;"></span>
+                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#f8fafc;"><?php _e( 'Modelo de Imagem', 'wp-ai-publisher' ); ?></h2>
                 </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+                <p style="font-size:13px; color:#94a3b8; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
                     <?php _e( 'Provider e modelo usados para gerar imagens no editor de posts.', 'wp-ai-publisher' ); ?>
                 </p>
 
                 <div class="wpaip-modal-scroll-area">
                     <!-- Provider de imagem -->
-                    <div class="wpaip-field" style="margin-bottom:16px;">
-                        <label for="wpaip-default-image" style="font-weight:700; margin-bottom:6px; display:block;"><?php _e( 'Provider de Imagem', 'wp-ai-publisher' ); ?></label>
-                        <select id="wpaip-default-image" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_image]" class="wpaip-select" style="width:100%;">
+                    <div style="margin-bottom:16px;">
+                        <label for="wpaip-default-image" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Provider de Imagem', 'wp-ai-publisher' ); ?></label>
+                        <select id="wpaip-default-image" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_image]" class="wpaip-dark-input" style="width:100%;">
                             <option value="pollinations" <?php selected( $opts['default_image'], 'pollinations' ); ?>>Pollinations AI (Grátis — Sem Chave)</option>
                             <option value="dalle3"       <?php selected( $opts['default_image'], 'dalle3'       ); ?>>DALL-E 3 (OpenAI)</option>
                             <option value="gemini"       <?php selected( $opts['default_image'], 'gemini'       ); ?>>Imagen 4 (Gemini)</option>
@@ -342,13 +343,13 @@ foreach ( $all_providers_keys as $pk ) {
                     </div>
 
                     <!-- Modelo Hugging Face -->
-                    <div class="wpaip-field" id="wpaip-hf-model-wrapper" style="<?php echo ( $opts['default_image'] === 'huggingface' ) ? '' : 'display:none;'; ?> margin-bottom:16px;">
-                        <label for="wpaip-hf-model" style="font-weight:700; margin-bottom:6px; display:block;"><?php _e( 'Modelo Hugging Face', 'wp-ai-publisher' ); ?></label>
+                    <div id="wpaip-hf-model-wrapper" style="<?php echo ( $opts['default_image'] === 'huggingface' ) ? '' : 'display:none;'; ?> margin-bottom:16px;">
+                        <label for="wpaip-hf-model" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Modelo Hugging Face', 'wp-ai-publisher' ); ?></label>
                         <div style="display:flex; gap:8px; align-items:center;">
                             <select
                                 id="wpaip-hf-model"
                                 name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[huggingface_image_model]"
-                                class="wpaip-select"
+                                class="wpaip-dark-input"
                                 style="flex:1;"
                             >
                                 <?php
@@ -367,15 +368,15 @@ foreach ( $all_providers_keys as $pk ) {
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                            <button type="button" id="wpaip-hf-load-models" class="button">Carregar da API</button>
+                            <button type="button" id="wpaip-hf-load-models" class="wpaip-dark-btn">Carregar API</button>
                         </div>
                     </div>
 
                     <!-- Modelo Poe -->
-                    <div class="wpaip-field" id="wpaip-poe-model-wrapper" style="<?php echo ( $opts['default_image'] === 'poe' ) ? '' : 'display:none;'; ?> margin-bottom:16px;">
-                        <label for="wpaip-poe-bot-select" style="font-weight:700; margin-bottom:6px; display:block;"><?php _e( 'Bot de Imagem do Poe.com', 'wp-ai-publisher' ); ?></label>
+                    <div id="wpaip-poe-model-wrapper" style="<?php echo ( $opts['default_image'] === 'poe' ) ? '' : 'display:none;'; ?> margin-bottom:16px;">
+                        <label for="wpaip-poe-bot-select" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Bot de Imagem do Poe.com', 'wp-ai-publisher' ); ?></label>
                         <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-                            <select id="wpaip-poe-bot-select" class="wpaip-select" style="flex:1;">
+                            <select id="wpaip-poe-bot-select" class="wpaip-dark-input" style="flex:1;">
                                 <?php
                                 $saved_poe = $opts['poe_image_bot'] ?? 'FLUX-schnell';
                                 $defaults_poe = [
@@ -396,13 +397,13 @@ foreach ( $all_providers_keys as $pk ) {
                                 <?php endforeach; ?>
                                 <option value="custom" <?php selected( $is_custom, true ); ?>><?php _e( 'Outro bot (Digitar handle)...', 'wp-ai-publisher' ); ?></option>
                             </select>
-                            <button type="button" id="wpaip-poe-load-models" class="button">Carregar da API</button>
+                            <button type="button" id="wpaip-poe-load-models" class="wpaip-dark-btn">Carregar API</button>
                         </div>
                         <input
                             type="text"
                             id="wpaip-poe-bot"
                             name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[poe_image_bot]"
-                            class="wpaip-input"
+                            class="wpaip-dark-input"
                             value="<?php echo esc_attr( $saved_poe ); ?>"
                             placeholder="Ex: FLUX-schnell"
                             style="<?php echo $is_custom ? 'display:block;' : 'display:none;'; ?> width:100%;"
@@ -410,9 +411,9 @@ foreach ( $all_providers_keys as $pk ) {
                     </div>
                 </div>
 
-                <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e2e8f0; padding-top:16px;">
-                    <button type="button" class="button" onclick="wpaipCloseSettingsModal('modal-image-model')"><?php _e( 'Fechar', 'wp-ai-publisher' ); ?></button>
-                    <button type="submit" class="button button-primary" style="background:#ec4899; border-color:#ec4899;"><?php _e( 'Salvar Configurações', 'wp-ai-publisher' ); ?></button>
+                <div class="wpaip-modal-footer">
+                    <button type="button" class="wpaip-dark-btn-sec" onclick="wpaipCloseSettingsModal('modal-image-model')"><?php _e( 'Fechar', 'wp-ai-publisher' ); ?></button>
+                    <button type="submit" class="wpaip-dark-btn-pri"><?php _e( 'Salvar Configurações', 'wp-ai-publisher' ); ?></button>
                 </div>
             </div>
         </div>
@@ -423,34 +424,34 @@ foreach ( $all_providers_keys as $pk ) {
                 <button type="button" class="wpaip-modal-close" onclick="wpaipCloseSettingsModal('modal-system-prompt')">×</button>
                 
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span class="dashicons dashicons-admin-settings" style="font-size:22px; color:#10b981;"></span>
-                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#0f172a;"><?php _e( 'Prompt de Sistema Global', 'wp-ai-publisher' ); ?></h2>
+                    <span class="dashicons dashicons-admin-settings" style="font-size:22px; color:#34d399;"></span>
+                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#f8fafc;"><?php _e( 'Prompt de Sistema Global', 'wp-ai-publisher' ); ?></h2>
                 </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+                <p style="font-size:13px; color:#94a3b8; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
                     <?php _e( 'Instrução base enviada a todos os modelos de inteligência artificial.', 'wp-ai-publisher' ); ?>
                 </p>
 
                 <div class="wpaip-modal-scroll-area">
-                    <div class="wpaip-field" style="margin-bottom:16px;">
-                        <label for="wpaip-system-prompt" style="font-weight:700; margin-bottom:6px; display:block;"><?php _e( 'Prompt de Sistema', 'wp-ai-publisher' ); ?></label>
+                    <div style="margin-bottom:16px;">
+                        <label for="wpaip-system-prompt" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Prompt de Sistema', 'wp-ai-publisher' ); ?></label>
                         <textarea
                             id="wpaip-system-prompt"
                             name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[system_prompt]"
-                            class="wpaip-input wpaip-textarea"
+                            class="wpaip-dark-input"
                             rows="5"
-                            style="width:100%; font-size:13px; line-height:1.4;"
+                            style="width:100%; font-size:13px; line-height:1.5;"
                         ><?php echo esc_textarea( $opts['system_prompt'] ?? '' ); ?></textarea>
-                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
-                            <button type="button" id="wpaip-btn-improve-prompt" class="button button-secondary">
+                        <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                            <button type="button" id="wpaip-btn-improve-prompt" class="wpaip-dark-btn">
                                 <?php _e( '✦ Melhorar Prompt via IA', 'wp-ai-publisher' ); ?>
                             </button>
-                            <span id="wpaip-improve-prompt-status" style="font-size: 11px; color: #888; display: none;"></span>
+                            <span id="wpaip-improve-prompt-status" style="font-size: 12px; color: #94a3b8; display: none;"></span>
                         </div>
                     </div>
 
-                    <div class="wpaip-field" style="margin-top: 15px;">
-                        <label for="wpaip-default-journalistic-style" style="font-weight:700; margin-bottom:6px; display:block;"><?php _e( 'Estilo Jornalístico Padrão', 'wp-ai-publisher' ); ?></label>
-                        <select id="wpaip-default-journalistic-style" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_journalistic_style]" class="wpaip-select" style="width:100%;">
+                    <div style="margin-top: 18px;">
+                        <label for="wpaip-default-journalistic-style" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Estilo Jornalístico Padrão', 'wp-ai-publisher' ); ?></label>
+                        <select id="wpaip-default-journalistic-style" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_journalistic_style]" class="wpaip-dark-input" style="width:100%;">
                             <option value="default" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'default' ); ?>><?php _e( 'Informativo / Padrão (Fatos diretos e linguagem neutra)', 'wp-ai-publisher' ); ?></option>
                             <option value="investigative" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'investigative' ); ?>><?php _e( 'Investigativo (Profundo e analítico)', 'wp-ai-publisher' ); ?></option>
                             <option value="editorial" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'editorial' ); ?>><?php _e( 'Opinativo / Editorial (Argumentativo e defensor de tese)', 'wp-ai-publisher' ); ?></option>
@@ -462,9 +463,9 @@ foreach ( $all_providers_keys as $pk ) {
                     </div>
                 </div>
 
-                <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e2e8f0; padding-top:16px;">
-                    <button type="button" class="button" onclick="wpaipCloseSettingsModal('modal-system-prompt')"><?php _e( 'Fechar', 'wp-ai-publisher' ); ?></button>
-                    <button type="submit" class="button button-primary" style="background:#10b981; border-color:#10b981;"><?php _e( 'Salvar Configurações', 'wp-ai-publisher' ); ?></button>
+                <div class="wpaip-modal-footer">
+                    <button type="button" class="wpaip-dark-btn-sec" onclick="wpaipCloseSettingsModal('modal-system-prompt')"><?php _e( 'Fechar', 'wp-ai-publisher' ); ?></button>
+                    <button type="submit" class="wpaip-dark-btn-pri"><?php _e( 'Salvar Configurações', 'wp-ai-publisher' ); ?></button>
                 </div>
             </div>
         </div>
@@ -475,78 +476,78 @@ foreach ( $all_providers_keys as $pk ) {
                 <button type="button" class="wpaip-modal-close" onclick="wpaipCloseSettingsModal('modal-tutorial')">×</button>
                 
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span class="dashicons dashicons-editor-help" style="font-size:22px; color:#f59e0b;"></span>
-                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#0f172a;"><?php _e( 'Tutorial: Como Obter Suas Chaves de API', 'wp-ai-publisher' ); ?></h2>
+                    <span class="dashicons dashicons-editor-help" style="font-size:22px; color:#fbbf24;"></span>
+                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#f8fafc;"><?php _e( 'Tutorial: Como Obter Suas Chaves de API', 'wp-ai-publisher' ); ?></h2>
                 </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+                <p style="font-size:13px; color:#94a3b8; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
                     <?php _e( 'Instruções para cadastrar e obter chaves em cada provedor.', 'wp-ai-publisher' ); ?>
                 </p>
 
                 <div class="wpaip-modal-scroll-area">
                     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px;">
-                        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc;">
-                            <h4 style="margin:0 0 6px; font-size:13px; color:#0f172a;">OpenAI (GPT & DALL-E)</h4>
-                            <p style="font-size:12px; line-height:1.4; color:#64748b; margin:0;">
-                                1. Acesse <a href="https://platform.openai.com/" target="_blank">platform.openai.com</a>.<br>
+                        <div style="padding:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.03);">
+                            <h4 style="margin:0 0 6px; font-size:13px; color:#c4b5fd;">OpenAI (GPT & DALL-E)</h4>
+                            <p style="font-size:12px; line-height:1.5; color:#cbd5e1; margin:0;">
+                                1. Acesse <a href="https://platform.openai.com/" target="_blank" style="color:#a78bfa;">platform.openai.com</a>.<br>
                                 2. Vá em <strong>API Keys > Create secret key</strong>.<br>
-                                3. Requer recarga em <strong>Billing</strong>.
+                                3. Requer créditos em <strong>Settings > Billing</strong>.
                             </p>
                         </div>
-                        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc;">
-                            <h4 style="margin:0 0 6px; font-size:13px; color:#0f172a;">Google Gemini</h4>
-                            <p style="font-size:12px; line-height:1.4; color:#64748b; margin:0;">
-                                1. Acesse <a href="https://aistudio.google.com/" target="_blank">aistudio.google.com</a>.<br>
+                        <div style="padding:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.03);">
+                            <h4 style="margin:0 0 6px; font-size:13px; color:#c4b5fd;">Google Gemini</h4>
+                            <p style="font-size:12px; line-height:1.5; color:#cbd5e1; margin:0;">
+                                1. Acesse <a href="https://aistudio.google.com/" target="_blank" style="color:#a78bfa;">aistudio.google.com</a>.<br>
                                 2. Clique em <strong>Get API key > Create API Key</strong>.<br>
-                                3. Possui cota gratuita para testes.
+                                3. Cota gratuita para testes.
                             </p>
                         </div>
-                        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc;">
-                            <h4 style="margin:0 0 6px; font-size:13px; color:#0f172a;">Anthropic (Claude)</h4>
-                            <p style="font-size:12px; line-height:1.4; color:#64748b; margin:0;">
-                                1. Acesse <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a>.<br>
-                                2. Clique na aba <strong>API Keys > Create Key</strong>.<br>
+                        <div style="padding:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.03);">
+                            <h4 style="margin:0 0 6px; font-size:13px; color:#c4b5fd;">Anthropic (Claude)</h4>
+                            <p style="font-size:12px; line-height:1.5; color:#cbd5e1; margin:0;">
+                                1. Acesse <a href="https://console.anthropic.com/" target="_blank" style="color:#a78bfa;">console.anthropic.com</a>.<br>
+                                2. Vá em <strong>API Keys > Create Key</strong>.<br>
                                 3. Requer créditos em <strong>Billing</strong>.
                             </p>
                         </div>
-                        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc;">
-                            <h4 style="margin:0 0 6px; font-size:13px; color:#0f172a;">DeepSeek</h4>
-                            <p style="font-size:12px; line-height:1.4; color:#64748b; margin:0;">
-                                1. Acesse <a href="https://platform.deepseek.com/" target="_blank">platform.deepseek.com</a>.<br>
+                        <div style="padding:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.03);">
+                            <h4 style="margin:0 0 6px; font-size:13px; color:#c4b5fd;">DeepSeek</h4>
+                            <p style="font-size:12px; line-height:1.5; color:#cbd5e1; margin:0;">
+                                1. Acesse <a href="https://platform.deepseek.com/" target="_blank" style="color:#a78bfa;">platform.deepseek.com</a>.<br>
                                 2. Vá até <strong>API Keys > Create API Key</strong>.
                             </p>
                         </div>
-                        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc;">
-                            <h4 style="margin:0 0 6px; font-size:13px; color:#0f172a;">Hugging Face (Grátis)</h4>
-                            <p style="font-size:12px; line-height:1.4; color:#64748b; margin:0;">
-                                1. Acesse <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a>.<br>
+                        <div style="padding:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.03);">
+                            <h4 style="margin:0 0 6px; font-size:13px; color:#c4b5fd;">Hugging Face (Grátis)</h4>
+                            <p style="font-size:12px; line-height:1.5; color:#cbd5e1; margin:0;">
+                                1. Acesse <a href="https://huggingface.co/settings/tokens" target="_blank" style="color:#a78bfa;">huggingface.co/settings/tokens</a>.<br>
                                 2. Crie um token com permissão <strong>Read</strong>.<br>
-                                3. Permite imagens grátis via FLUX!
+                                3. Permite gerar imagens grátis.
                             </p>
                         </div>
-                        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc;">
-                            <h4 style="margin:0 0 6px; font-size:13px; color:#0f172a;">Poe.com</h4>
-                            <p style="font-size:12px; line-height:1.4; color:#64748b; margin:0;">
-                                1. Acesse <a href="https://poe.com/api/keys" target="_blank">poe.com/api/keys</a>.<br>
-                                2. Gere seu Token de API do Poe.
+                        <div style="padding:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.03);">
+                            <h4 style="margin:0 0 6px; font-size:13px; color:#c4b5fd;">Poe.com</h4>
+                            <p style="font-size:12px; line-height:1.5; color:#cbd5e1; margin:0;">
+                                1. Acesse <a href="https://poe.com/api/keys" target="_blank" style="color:#a78bfa;">poe.com/api/keys</a>.<br>
+                                2. Crie seu Token de API do Poe.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div style="margin-top:20px; display:flex; justify-content:flex-end; border-top:1px solid #e2e8f0; padding-top:16px;">
-                    <button type="button" class="button button-primary" onclick="wpaipCloseSettingsModal('modal-tutorial')"><?php _e( 'Entendido', 'wp-ai-publisher' ); ?></button>
+                <div class="wpaip-modal-footer">
+                    <button type="button" class="wpaip-dark-btn-pri" onclick="wpaipCloseSettingsModal('modal-tutorial')"><?php _e( 'Entendido', 'wp-ai-publisher' ); ?></button>
                 </div>
             </div>
         </div>
 
-        <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
-            <?php submit_button( __( 'Salvar Todas as Configurações', 'wp-ai-publisher' ), 'primary button-hero', 'submit', false, [ 'style' => 'background:#7c3aed; border-color:#7c3aed; font-weight:700;' ] ); ?>
+        <div style="margin-top:16px; display:flex; justify-content:flex-end; align-items:center;">
+            <?php submit_button( __( 'Salvar Todas as Configurações', 'wp-ai-publisher' ), 'primary button-hero', 'submit', false, [ 'style' => 'background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); border:none; font-weight:700; border-radius:10px; padding:10px 24px; box-shadow: 0 4px 20px rgba(124,58,237,0.4);' ] ); ?>
         </div>
     </form>
 </div>
 
 <style>
-    /* Estilos dos Cards Compactos */
+    /* Estilos dos Cards Compactos no Dashboard */
     .wpaip-compact-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
@@ -561,7 +562,7 @@ foreach ( $all_providers_keys as $pk ) {
     }
     .wpaip-compact-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 24px rgba(124, 58, 237, 0.1);
+        box-shadow: 0 12px 24px rgba(124, 58, 237, 0.12);
         border-color: rgba(124, 58, 237, 0.4);
     }
     .wpaip-compact-icon {
@@ -575,13 +576,13 @@ foreach ( $all_providers_keys as $pk ) {
         flex-shrink: 0;
     }
 
-    /* Estilos dos Modais com Backdrop Blur */
+    /* Modais Ultra-Modernos Dark Glass */
     .wpaip-modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(15, 12, 26, 0.75);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        background: rgba(15, 12, 26, 0.78);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         z-index: 100000;
         display: flex;
         align-items: center;
@@ -596,18 +597,20 @@ foreach ( $all_providers_keys as $pk ) {
         visibility: visible;
     }
     .wpaip-modal-card {
-        background: #ffffff;
-        border-radius: 18px;
-        max-width: 540px;
+        background: #161224;
+        border: 1px solid rgba(124, 58, 237, 0.4);
+        border-radius: 20px;
+        max-width: 560px;
         width: 100%;
-        max-height: 85vh;
+        max-height: 88vh;
         display: flex;
         flex-direction: column;
-        padding: 26px 24px;
+        padding: 28px 24px;
         position: relative;
-        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
-        transform: scale(0.94) translateY(10px);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transform: scale(0.92) translateY(12px);
         transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        color: #f8fafc;
     }
     .wpaip-modal-overlay.active .wpaip-modal-card {
         transform: scale(1) translateY(0);
@@ -616,11 +619,11 @@ foreach ( $all_providers_keys as $pk ) {
         position: absolute;
         top: 18px;
         right: 20px;
-        background: #f1f5f9;
-        border: none;
-        color: #64748b;
-        width: 30px;
-        height: 30px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(248, 250, 252, 0.6);
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         font-size: 18px;
         cursor: pointer;
@@ -630,13 +633,104 @@ foreach ( $all_providers_keys as $pk ) {
         transition: all 0.2s;
     }
     .wpaip-modal-close:hover {
-        background: #fee2e2;
+        background: rgba(239, 68, 68, 0.25);
         color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.4);
     }
     .wpaip-modal-scroll-area {
         overflow-y: auto;
         max-height: 60vh;
-        padding-right: 4px;
+        padding-right: 6px;
+    }
+
+    /* Elementos Internos dos Modais */
+    .wpaip-modal-row {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+    .wpaip-dark-input {
+        background: #1f1a33 !important;
+        border: 1px solid rgba(124, 58, 237, 0.35) !important;
+        border-radius: 8px !important;
+        color: #ffffff !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+        outline: none !important;
+        transition: border-color 0.2s, box-shadow 0.2s !important;
+    }
+    .wpaip-dark-input:focus {
+        border-color: #7c3aed !important;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3) !important;
+    }
+    .wpaip-dark-btn {
+        background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        padding: 8px 16px !important;
+        cursor: pointer !important;
+        font-size: 13px !important;
+        transition: opacity 0.2s !important;
+    }
+    .wpaip-dark-btn:hover {
+        opacity: 0.9 !important;
+    }
+    .wpaip-dark-btn-pri {
+        background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+        color: #ffffff;
+        border: none;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 13px;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+    }
+    .wpaip-dark-btn-sec {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #94a3b8;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 10px 18px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .wpaip-dark-btn-sec:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.14);
+    }
+    .wpaip-modal-footer {
+        margin-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 16px;
+    }
+
+    /* Badges nos Modais */
+    .wpaip-badge-dark {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.04em;
+    }
+    .wpaip-badge-dark--ok {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .wpaip-badge-dark--empty {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.4);
     }
 </style>
 
