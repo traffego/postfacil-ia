@@ -23,13 +23,16 @@ class WPAIP_LLM {
         }
 
         $license_key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
-        $server_url  = WPAIP_Settings::get( 'license_server_url', '' );
+        $server_url  = WPAIP_Settings::get( 'license_server_url', WPAIP_Paywall::DEFAULT_SERVER );
+        if ( empty( $server_url ) ) {
+            $server_url = WPAIP_Paywall::DEFAULT_SERVER;
+        }
 
-        if ( empty( $license_key ) || empty( $server_url ) ) {
+        if ( empty( $license_key ) ) {
             return [
                 'success' => false,
                 'text'    => '',
-                'message' => __( 'Chave de licença ou URL do servidor de licenças não configurada.', 'wp-ai-publisher' ),
+                'message' => __( 'Chave de licença não configurada. Por favor, ative sua licença.', 'wp-ai-publisher' ),
             ];
         }
 

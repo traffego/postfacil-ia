@@ -21,13 +21,16 @@ class WPAIP_Image {
         }
 
         $license_key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
-        $server_url  = WPAIP_Settings::get( 'license_server_url', '' );
+        $server_url  = WPAIP_Settings::get( 'license_server_url', WPAIP_Paywall::DEFAULT_SERVER );
+        if ( empty( $server_url ) ) {
+            $server_url = WPAIP_Paywall::DEFAULT_SERVER;
+        }
 
-        if ( empty( $license_key ) || empty( $server_url ) ) {
+        if ( empty( $license_key ) ) {
             return [
                 'success' => false,
                 'url'     => '',
-                'message' => __( 'Chave de licença ou URL do servidor de licenças não configurada.', 'wp-ai-publisher' ),
+                'message' => __( 'Chave de licença não configurada. Por favor, ative sua licença.', 'wp-ai-publisher' ),
             ];
         }
 
@@ -196,28 +199,43 @@ class WPAIP_Image {
         ] );
     }
 
-    // ── DALL-E 3 ──────────────────────────────────────────────────────────────
+    // ── OpenAI Image Models (DALL-E 3, DALL-E 2, GPT Image 2) ──────────────────
 
     private static function call_dalle3( string $prompt, array $opts ): array {
+        return self::call_openai_image( $prompt, $opts );
+    }
+
+    private static function call_openai_image( string $prompt, array $opts ): array {
         $api_key = WPAIP_Settings::get_api_key( 'openai' );
         if ( empty( $api_key ) ) {
             return [ 'success' => false, 'url' => '', 'message' => 'API key OpenAI não configurada.' ];
         }
 
-        $body = wp_json_encode( [
-            'model'   => 'dall-e-3',
-            'prompt'  => $prompt,
-            'n'       => 1,
-            'size'    => $opts['size']    ?? '1792x1024',
-            'quality' => $opts['quality'] ?? 'standard',
-        ] );
+        $model = $opts['model'] ?? WPAIP_Settings::get( 'openai_image_model', 'dall-e-3' );
+
+        $payload = [
+            'model'  => $model,
+            'prompt' => $prompt,
+            'n'      => 1,
+        ];
+
+        if ( $model === 'dall-e-2' ) {
+            $payload['size'] = $opts['size'] ?? '1024x1024';
+        } elseif ( $model === 'gpt-image-2' ) {
+            $payload['size']    = $opts['size'] ?? '1024x1024';
+            $payload['quality'] = $opts['quality'] ?? 'high';
+        } else {
+            // dall-e-3
+            $payload['size']    = $opts['size'] ?? '1792x1024';
+            $payload['quality'] = $opts['quality'] ?? 'standard';
+        }
 
         $response = wp_remote_post( 'https://api.openai.com/v1/images/generations', [
             'headers' => [
                 'Authorization' => 'Bearer ' . $api_key,
                 'Content-Type'  => 'application/json',
             ],
-            'body'    => $body,
+            'body'    => wp_json_encode( $payload ),
             'timeout' => 90,
         ] );
 
@@ -234,8 +252,12 @@ class WPAIP_Image {
         }
 
         $url = $data['data'][0]['url'] ?? '';
+        if ( empty( $url ) && ! empty( $data['data'][0]['b64_json'] ) ) {
+            $url = 'data:image/png;base64,' . $data['data'][0]['b64_json'];
+        }
+
         if ( empty( $url ) ) {
-            return [ 'success' => false, 'url' => '', 'message' => 'URL de imagem não retornada pelo DALL-E.' ];
+            return [ 'success' => false, 'url' => '', 'message' => 'URL de imagem não retornada pela OpenAI.' ];
         }
 
         return [ 'success' => true, 'url' => $url, 'message' => '' ];

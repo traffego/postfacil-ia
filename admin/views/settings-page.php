@@ -335,10 +335,26 @@ foreach ( $all_providers_keys as $pk ) {
                         <label for="wpaip-default-image" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Provider de Imagem', 'wp-ai-publisher' ); ?></label>
                         <select id="wpaip-default-image" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_image]" class="wpaip-dark-input" style="width:100%;">
                             <option value="pollinations" <?php selected( $opts['default_image'], 'pollinations' ); ?>>Pollinations AI (Grátis — Sem Chave)</option>
-                            <option value="dalle3"       <?php selected( $opts['default_image'], 'dalle3'       ); ?>>DALL-E 3 (OpenAI)</option>
+                            <option value="dalle3"       <?php selected( $opts['default_image'], 'dalle3'       ); ?>>OpenAI (DALL-E 3 / DALL-E 2 / GPT Image 2)</option>
                             <option value="gemini"       <?php selected( $opts['default_image'], 'gemini'       ); ?>>Imagen 4 (Gemini)</option>
                             <option value="huggingface"  <?php selected( $opts['default_image'], 'huggingface'  ); ?>>Hugging Face (Grátis — Com Chave)</option>
                             <option value="poe"          <?php selected( $opts['default_image'], 'poe'          ); ?>>Poe.com (Com Chave)</option>
+                        </select>
+                    </div>
+
+                    <!-- Modelo OpenAI Image -->
+                    <div id="wpaip-openai-image-model-wrapper" style="<?php echo ( $opts['default_image'] === 'dalle3' || $opts['default_image'] === 'openai' ) ? '' : 'display:none;'; ?> margin-bottom:16px;">
+                        <label for="wpaip-openai-image-model" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Modelo de Imagem OpenAI', 'wp-ai-publisher' ); ?></label>
+                        <select
+                            id="wpaip-openai-image-model"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[openai_image_model]"
+                            class="wpaip-dark-input"
+                            style="width:100%;"
+                        >
+                            <?php $saved_openai_img = $opts['openai_image_model'] ?? 'dall-e-3'; ?>
+                            <option value="dall-e-3" <?php selected( $saved_openai_img, 'dall-e-3' ); ?>>DALL-E 3 (Alta Definição — 1792x1024)</option>
+                            <option value="dall-e-2" <?php selected( $saved_openai_img, 'dall-e-2' ); ?>>DALL-E 2 (Rápido e Econômico — 1024x1024)</option>
+                            <option value="gpt-image-2" <?php selected( $saved_openai_img, 'gpt-image-2' ); ?>>GPT Image 2 (Nova Geração Multimodal)</option>
                         </select>
                     </div>
 

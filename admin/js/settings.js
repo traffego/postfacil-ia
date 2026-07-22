@@ -169,15 +169,16 @@
     // ── Modelos de imagem visíveis condicionalmente (Hugging Face / Poe) ─────
 
     function updateImageModelVisibility(provider) {
+        $('#wpaip-hf-model-wrapper').hide();
+        $('#wpaip-poe-model-wrapper').hide();
+        $('#wpaip-openai-image-model-wrapper').hide();
+
         if (provider === 'huggingface') {
             $('#wpaip-hf-model-wrapper').show();
-            $('#wpaip-poe-model-wrapper').hide();
         } else if (provider === 'poe') {
-            $('#wpaip-hf-model-wrapper').hide();
             $('#wpaip-poe-model-wrapper').show();
-        } else {
-            $('#wpaip-hf-model-wrapper').hide();
-            $('#wpaip-poe-model-wrapper').hide();
+        } else if (provider === 'dalle3' || provider === 'openai') {
+            $('#wpaip-openai-image-model-wrapper').show();
         }
     }
 

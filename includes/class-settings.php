@@ -114,6 +114,7 @@ class WPAIP_Settings {
         $clean['gemini_model']          = sanitize_text_field( $input['gemini_model']          ?? 'gemini-3.5-flash' );
         $clean['anthropic_model']       = sanitize_text_field( $input['anthropic_model']       ?? 'claude-sonnet-4-5' );
         $clean['deepseek_model']        = sanitize_text_field( $input['deepseek_model']        ?? 'deepseek-chat' );
+        $clean['openai_image_model']    = sanitize_text_field( $input['openai_image_model']    ?? 'dall-e-3' );
         $clean['huggingface_image_model'] = sanitize_text_field( $input['huggingface_image_model'] ?? 'black-forest-labs/FLUX.1-schnell' );
         $clean['poe_image_bot']         = sanitize_text_field( $input['poe_image_bot']         ?? 'FLUX-schnell' );
 
@@ -162,6 +163,7 @@ class WPAIP_Settings {
             'gemini_model'            => 'gemini-3.5-flash',
             'anthropic_model'         => 'claude-sonnet-4-5',
             'deepseek_model'          => 'deepseek-chat',
+            'openai_image_model'      => 'dall-e-3',
             'huggingface_image_model' => 'black-forest-labs/FLUX.1-schnell',
             'poe_image_bot'           => 'FLUX-schnell',
             'system_prompt'           => 'Você é um redator especialista em SEO e marketing de conteúdo. Escreva em português do Brasil com linguagem clara, objetiva e envolvente.',
