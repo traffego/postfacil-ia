@@ -73,14 +73,14 @@ defined( 'ABSPATH' ) || exit;
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border-radius: 24px;
-            padding: 56px 48px;
-            max-width: 520px;
+            border-radius: 20px;
+            padding: 32px 28px;
+            max-width: 440px;
             width: 90%;
             text-align: center;
             box-shadow:
                 0 0 0 1px rgba(124, 58, 237, 0.15),
-                0 32px 64px rgba(0, 0, 0, 0.5),
+                0 24px 48px rgba(0, 0, 0, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.08);
             animation: cardIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
@@ -92,22 +92,22 @@ defined( 'ABSPATH' ) || exit;
 
         /* Ícone cadeado */
         .lock-icon {
-            width: 80px;
-            height: 80px;
+            width: 56px;
+            height: 56px;
             background: linear-gradient(135deg, #7c3aed, #ec4899);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 28px;
-            font-size: 36px;
-            box-shadow: 0 0 40px rgba(124, 58, 237, 0.5);
+            margin: 0 auto 16px;
+            font-size: 26px;
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.5);
             animation: pulse 3s ease-in-out infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 40px rgba(124, 58, 237, 0.5); }
-            50%       { box-shadow: 0 0 60px rgba(236, 72, 153, 0.7), 0 0 80px rgba(124, 58, 237, 0.3); }
+            0%, 100% { box-shadow: 0 0 30px rgba(124, 58, 237, 0.5); }
+            50%       { box-shadow: 0 0 45px rgba(236, 72, 153, 0.7), 0 0 60px rgba(124, 58, 237, 0.3); }
         }
 
         /* Badge */
@@ -118,22 +118,22 @@ defined( 'ABSPATH' ) || exit;
             background: rgba(124, 58, 237, 0.15);
             border: 1px solid rgba(124, 58, 237, 0.35);
             color: #c4b5fd;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 100px;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         /* Título */
         .paywall-title {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 800;
             color: #f8fafc;
             line-height: 1.2;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             background: linear-gradient(135deg, #f8fafc 0%, #c4b5fd 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -141,16 +141,16 @@ defined( 'ABSPATH' ) || exit;
         }
 
         .paywall-subtitle {
-            font-size: 15px;
+            font-size: 13px;
             color: rgba(248, 250, 252, 0.55);
-            line-height: 1.6;
-            margin-bottom: 36px;
+            line-height: 1.5;
+            margin-bottom: 20px;
         }
 
         /* Features list */
         .features {
             list-style: none;
-            margin-bottom: 36px;
+            margin-bottom: 24px;
             text-align: left;
         }
 
@@ -159,8 +159,8 @@ defined( 'ABSPATH' ) || exit;
             align-items: flex-start;
             gap: 10px;
             color: rgba(248, 250, 252, 0.75);
-            font-size: 14px;
-            padding: 8px 0;
+            font-size: 13px;
+            padding: 6px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
@@ -168,14 +168,14 @@ defined( 'ABSPATH' ) || exit;
 
         .features li .check {
             flex-shrink: 0;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             background: linear-gradient(135deg, #7c3aed, #ec4899);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 10px;
             margin-top: 1px;
         }
 
@@ -184,19 +184,19 @@ defined( 'ABSPATH' ) || exit;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            padding: 16px 32px;
+            padding: 13px 24px;
             background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
             color: #fff;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
-            border-radius: 12px;
+            border-radius: 10px;
             text-decoration: none;
             border: none;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
-            box-shadow: 0 8px 30px rgba(124, 58, 237, 0.45);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
             letter-spacing: 0.01em;
         }
 
