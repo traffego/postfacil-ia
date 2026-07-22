@@ -16,6 +16,55 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
         </div>
     <?php endif; ?>
 
+    <?php
+    $decrypted_lic_key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
+    $masked_key        = ! empty( $decrypted_lic_key ) ? substr( $decrypted_lic_key, 0, 10 ) . '••••-••••-' . substr( $decrypted_lic_key, -4 ) : 'Sem Licença Ativa';
+    $buy_url           = 'https://olive-locust-173119.hostingersite.com/license-server-wp-post/checkout.php';
+    $clean_domain      = preg_replace( '/^https?:\/\//i', '', get_site_url() );
+    ?>
+
+    <!-- ── Card de Status da Assinatura ── -->
+    <div class="wpaip-card" style="border-top: 4px solid #10b981; background: #ffffff; margin-bottom: 24px;">
+        <div class="wpaip-card-header" style="background: linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(124,58,237,0.04) 100%); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 20px 24px;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="dashicons dashicons-shield-alt" style="font-size: 22px; color: #10b981; width:22px; height:22px;"></span>
+                    <h2 style="font-size: 1.1rem; margin: 0; font-weight: 700; color: #1e1b4b;"><?php _e( 'Status da Assinatura & Licença', 'wp-ai-publisher' ); ?></h2>
+                    <span style="background: rgba(16,185,129,0.15); color: #047857; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em;">
+                        ✓ Licença Ativa
+                    </span>
+                </div>
+                <p class="wpaip-card-desc" style="margin-top: 4px; margin-bottom: 0; color: #64748b;">
+                    <?php _e( 'Sua licença está validada e ativa neste domínio.', 'wp-ai-publisher' ); ?>
+                </p>
+            </div>
+            <div>
+                <a href="<?php echo esc_url( $buy_url ); ?>" target="_blank" class="button button-primary" style="background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); border: none; font-weight: 700; padding: 8px 18px; height: auto; font-size: 13px; border-radius: 8px; box-shadow: 0 4px 12px rgba(124,58,237,0.3); color:#fff; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                    ⚡ Comprar licença para outros domínios
+                </a>
+            </div>
+        </div>
+        <div class="wpaip-card-body" style="padding: 20px 24px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">Chave de Licença</div>
+                    <div style="font-family: monospace; font-size: 13px; font-weight: 700; color: #334155; word-break: break-all;"><?php echo esc_html( $masked_key ); ?></div>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">Domínio Autorizado</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #0f172a;"><?php echo esc_html( $clean_domain ); ?></div>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">Status da Validação</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #10b981; display:flex; align-items:center; gap:6px;">
+                        <span style="display:inline-block; width:8px; height:8px; background:#10b981; border-radius:50%;"></span>
+                        Ativa e Válida
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ── Tutorial/Ajuda para Obter Chaves de API ── -->
     <div class="wpaip-card">
         <div class="wpaip-card-header" style="background: #fafafa; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="const body = document.getElementById('wpaip-tutorial-body'); body.style.display = body.style.display === 'none' ? 'block' : 'none';">
