@@ -92,8 +92,9 @@ class WPAIP_Paywall {
      * Consulta o servidor externo para verificar se a licença é ativa.
      */
     private static function verify_on_server( string $key, string $server_url ): bool {
-        $clean_domain = preg_replace( '/^https?:\/\//i', '', get_site_url() );
-        $clean_domain = rtrim( $clean_domain, '/' );
+        $clean_domain = strtolower( preg_replace( '/^https?:\/\//i', '', get_site_url() ) );
+        $clean_domain = explode( '/', $clean_domain )[0];
+        $clean_domain = explode( ':', $clean_domain )[0];
 
         $response = wp_remote_post( rtrim( $server_url, '/' ) . '/api/verify.php', [
             'body'    => [
@@ -117,8 +118,9 @@ class WPAIP_Paywall {
      * Ativa a licença no servidor externo (chamado via AJAX).
      */
     public static function activate_license( string $key, string $server_url ): array {
-        $clean_domain = preg_replace( '/^https?:\/\//i', '', get_site_url() );
-        $clean_domain = rtrim( $clean_domain, '/' );
+        $clean_domain = strtolower( preg_replace( '/^https?:\/\//i', '', get_site_url() ) );
+        $clean_domain = explode( '/', $clean_domain )[0];
+        $clean_domain = explode( ':', $clean_domain )[0];
 
         if ( empty( $server_url ) ) {
             $server_url = self::DEFAULT_SERVER;
@@ -145,8 +147,13 @@ class WPAIP_Paywall {
             $opts['license_key'] = WPAIP_Security::encrypt( $key );
             update_option( WPAIP_Settings::OPTION_KEY, $opts );
 
-            // Limpa o cache do usuário atual para forçar verificação
-            self::clear_cache( get_current_user_id() );
+            // Gravar o cache do usuário como ATIVO (1) imediatamente
+            $user_id = get_current_user_id();
+            if ( $user_id ) {
+                update_user_meta( $user_id, self::CACHE_META_KEY, 1 );
+                update_user_meta( $user_id, self::CACHE_TIME_KEY, time() );
+            }
+
             return [ 'success' => true, 'message' => $body['message'] ?? 'Licença ativada com sucesso!' ];
         }
 
