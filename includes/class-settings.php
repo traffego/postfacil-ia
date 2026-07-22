@@ -132,7 +132,17 @@ class WPAIP_Settings {
 
     public static function get( string $key, $fallback = '' ) {
         $opts = self::get_options();
-        return $opts[ $key ] ?? $fallback;
+        $val  = $opts[ $key ] ?? $fallback;
+
+        // Migração automática de modelos depreciados salvos no banco de dados
+        if ( $key === 'gemini_image_model' && ( empty( $val ) || strpos( $val, 'imagen' ) !== false ) ) {
+            return 'gemini-2.5-flash-image';
+        }
+        if ( $key === 'gemini_model' && ( empty( $val ) || $val === 'gemini-3.5-flash' ) ) {
+            return 'gemini-2.5-flash';
+        }
+
+        return $val;
     }
 
     /**

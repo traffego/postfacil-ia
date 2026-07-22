@@ -56,8 +56,8 @@ class WPAIP_Image {
 
         $prompt = WPAIP_Security::prepare_prompt( $prompt, 1000 );
 
-        // Injetar o modelo correto nos options se não vier preenchido
-        if ( empty( $options['model'] ) ) {
+        // Injetar o modelo correto nos options se não vier preenchido ou for depreciado
+        if ( empty( $options['model'] ) || strpos( $options['model'], 'imagen' ) !== false ) {
             if ( $provider === 'huggingface' ) {
                 $options['model'] = WPAIP_Settings::get( 'huggingface_image_model', 'black-forest-labs/FLUX.1-schnell' );
             } elseif ( $provider === 'poe' ) {
