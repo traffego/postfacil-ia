@@ -63,7 +63,7 @@ class WPAIP_Image {
             } elseif ( $provider === 'poe' ) {
                 $options['model'] = WPAIP_Settings::get( 'poe_image_bot', 'FLUX-schnell' );
             } elseif ( $provider === 'gemini' ) {
-                $options['model'] = WPAIP_Settings::get( 'gemini_image_model', 'imagen-3.0-generate-002' );
+                $options['model'] = WPAIP_Settings::get( 'gemini_image_model', 'gemini-2.5-flash-image' );
             }
         }
 
