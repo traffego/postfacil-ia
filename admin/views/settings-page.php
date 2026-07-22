@@ -286,7 +286,7 @@ foreach ( $all_providers_keys as $pk ) {
                             // Legacy
                             'gpt-3.5-turbo',
                         ] ],
-                        'gemini_model'    => [ 'label' => 'Gemini',  'provider' => 'gemini',    'opts' => [ 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash' ] ],
+                        'gemini_model'    => [ 'label' => 'Gemini',  'provider' => 'gemini',    'opts' => [ 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro' ] ],
                         'anthropic_model' => [ 'label' => 'Claude',  'provider' => 'anthropic', 'opts' => [ 'claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-3-5' ] ],
                         'deepseek_model'  => [ 'label' => 'DeepSeek','provider' => 'deepseek',  'opts' => [ 'deepseek-chat', 'deepseek-reasoner' ] ],
                     ];
@@ -350,7 +350,7 @@ foreach ( $all_providers_keys as $pk ) {
                         <select id="wpaip-default-image" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_image]" class="wpaip-dark-input" style="width:100%;">
                             <option value="pollinations" <?php selected( $opts['default_image'], 'pollinations' ); ?>>Pollinations AI (Grátis — Sem Chave)</option>
                             <option value="dalle3"       <?php selected( $opts['default_image'], 'dalle3'       ); ?>>OpenAI (DALL-E 3 / DALL-E 2 / GPT Image 2)</option>
-                            <option value="gemini"       <?php selected( $opts['default_image'], 'gemini'       ); ?>>Imagen 4 (Gemini)</option>
+                            <option value="gemini"       <?php selected( $opts['default_image'], 'gemini'       ); ?>>Imagen 3 (Gemini)</option>
                             <option value="huggingface"  <?php selected( $opts['default_image'], 'huggingface'  ); ?>>Hugging Face (Grátis — Com Chave)</option>
                             <option value="poe"          <?php selected( $opts['default_image'], 'poe'          ); ?>>Poe.com (Com Chave)</option>
                         </select>

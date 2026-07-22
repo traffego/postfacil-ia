@@ -62,6 +62,8 @@ class WPAIP_Image {
                 $options['model'] = WPAIP_Settings::get( 'huggingface_image_model', 'black-forest-labs/FLUX.1-schnell' );
             } elseif ( $provider === 'poe' ) {
                 $options['model'] = WPAIP_Settings::get( 'poe_image_bot', 'FLUX-schnell' );
+            } elseif ( $provider === 'gemini' ) {
+                $options['model'] = WPAIP_Settings::get( 'gemini_image_model', 'imagen-3.0-generate-002' );
             }
         }
 

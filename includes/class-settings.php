@@ -104,7 +104,8 @@ class WPAIP_Settings {
 
         // Modelo padrão por provider
         $clean['openai_model']          = sanitize_text_field( $input['openai_model']          ?? 'gpt-4o' );
-        $clean['gemini_model']          = sanitize_text_field( $input['gemini_model']          ?? 'gemini-3.5-flash' );
+        $clean['gemini_model']          = sanitize_text_field( $input['gemini_model']          ?? 'gemini-2.5-flash' );
+        $clean['gemini_image_model']    = sanitize_text_field( $input['gemini_image_model']    ?? 'imagen-3.0-generate-002' );
         $clean['anthropic_model']       = sanitize_text_field( $input['anthropic_model']       ?? 'claude-sonnet-4-5' );
         $clean['deepseek_model']        = sanitize_text_field( $input['deepseek_model']        ?? 'deepseek-chat' );
         $clean['openai_image_model']    = sanitize_text_field( $input['openai_image_model']    ?? 'dall-e-3' );
@@ -153,7 +154,8 @@ class WPAIP_Settings {
             'default_llm'             => 'openai',
             'default_image'           => 'pollinations',
             'openai_model'            => 'gpt-4o',
-            'gemini_model'            => 'gemini-3.5-flash',
+            'gemini_model'            => 'gemini-2.5-flash',
+            'gemini_image_model'      => 'imagen-3.0-generate-002',
             'anthropic_model'         => 'claude-sonnet-4-5',
             'deepseek_model'          => 'deepseek-chat',
             'openai_image_model'      => 'dall-e-3',
