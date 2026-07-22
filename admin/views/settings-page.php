@@ -425,21 +425,6 @@ $providers = [ 'openai', 'gemini', 'anthropic', 'deepseek' ];
                         <span class="wpaip-field-hint">Período de cache local antes de consultar o servidor novamente. Padrão: 24h.</span>
                     </div>
 
-                    <!-- Bypass admins -->
-                    <div class="wpaip-field" style="grid-column: 1 / -1; margin-top: 15px;">
-                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                            <input
-                                type="checkbox"
-                                name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[license_bypass_admins]"
-                                value="1"
-                                <?php checked( WPAIP_Settings::get( 'license_bypass_admins', '1' ), '1' ); ?>
-                                style="width:18px; height:18px; accent-color:#7c3aed; cursor:pointer;"
-                            >
-                            <span><?php _e( 'Isentar administradores da verificação (recomendado)', 'wp-ai-publisher' ); ?></span>
-                        </label>
-                        <span class="wpaip-field-hint" style="margin-left:28px;">Usuários com capacidade de administrador (<code>manage_options</code>) nunca serão bloqueados.</span>
-                    </div>
-
                 </div>
 
                 <!-- Limpar cache manual -->

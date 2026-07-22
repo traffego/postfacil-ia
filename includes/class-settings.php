@@ -102,9 +102,8 @@ class WPAIP_Settings {
             $clean['license_key'] = $saved['license_key'] ?? '';
         }
 
-        $clean['license_server_url']    = esc_url_raw( $input['license_server_url'] ?? '' );
-        $clean['license_cache_hours']   = max( 1, (int) ( $input['license_cache_hours'] ?? 24 ) );
-        $clean['license_bypass_admins'] = ! empty( $input['license_bypass_admins'] ) ? '1' : '0';
+        $clean['license_server_url']  = esc_url_raw( $input['license_server_url'] ?? '' );
+        $clean['license_cache_hours'] = max( 1, (int) ( $input['license_cache_hours'] ?? 24 ) );
 
         // Provider padrão para texto e imagem
         $clean['default_llm']   = sanitize_text_field( $input['default_llm']   ?? 'openai' );
@@ -169,10 +168,9 @@ class WPAIP_Settings {
             'default_journalistic_style' => 'default',
             'enable_gemini_search'       => '0',
             // Licenciamento Externo
-            'license_key'             => '',
-            'license_server_url'      => '',
-            'license_cache_hours'     => 24,
-            'license_bypass_admins'   => '1',
+            'license_key'         => '',
+            'license_server_url'  => '',
+            'license_cache_hours' => 24,
         ];
     }
 
