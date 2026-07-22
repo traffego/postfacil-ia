@@ -35,11 +35,6 @@ class WPAIP_Paywall {
             return;
         }
 
-        // 1. Admin sempre isentado (se opção ativa)
-        $bypass_admins = WPAIP_Settings::get( 'license_bypass_admins', '1' );
-        if ( $bypass_admins && current_user_can( 'manage_options' ) ) {
-            return;
-        }
 
         // 2. Licença desabilitada? (sem chave configurada) → libera (modo local/grátis)
         $license_key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
