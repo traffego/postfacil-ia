@@ -66,8 +66,9 @@ class WPAIP_Image {
         }
 
         // Roteamento via Gateway do Servidor de Licenças
-        $clean_domain = preg_replace( '/^https?:\/\//i', '', get_site_url() );
-        $clean_domain = rtrim( $clean_domain, '/' );
+        $clean_domain = strtolower( preg_replace( '/^https?:\/\//i', '', get_site_url() ) );
+        $clean_domain = explode( '/', $clean_domain )[0];
+        $clean_domain = explode( ':', $clean_domain )[0];
 
         $response = wp_remote_post( rtrim( $server_url, '/' ) . '/api/generate.php', [
             'body'    => [

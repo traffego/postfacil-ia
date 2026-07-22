@@ -81,21 +81,34 @@ class WPAIP_Security {
     }
 
     /**
-     * Descriptografa uma API key salva no banco.
+     * Descriptografa uma API key ou chave de licença salva no banco.
      */
     public static function decrypt( string $encrypted ): string {
         if ( empty( $encrypted ) ) {
             return '';
         }
 
+        // Se for uma chave de licença em texto limpo (ex: WPAIP-... ou DEV-...)
+        if ( strpos( $encrypted, 'WPAIP-' ) === 0 || strpos( $encrypted, 'DEV-' ) === 0 ) {
+            return trim( $encrypted );
+        }
+
         $key  = self::get_encryption_key();
-        $data = base64_decode( $encrypted );
+        $data = base64_decode( $encrypted, true );
+        if ( false === $data || strlen( $data ) <= 16 ) {
+            return trim( $encrypted );
+        }
+
         $iv   = substr( $data, 0, 16 );
         $text = substr( $data, 16 );
 
         $result = openssl_decrypt( $text, 'AES-256-CBC', $key, 0, $iv );
 
-        return $result !== false ? $result : '';
+        if ( false === $result || empty( $result ) ) {
+            return trim( $encrypted );
+        }
+
+        return trim( $result );
     }
 
     /**
