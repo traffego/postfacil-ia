@@ -90,19 +90,12 @@ class WPAIP_Settings {
             }
         }
 
-        // Chave de Licença (salva com criptografia por segurança)
-        if ( ! empty( $input['license_key'] ) ) {
-            $raw = sanitize_text_field( $input['license_key'] );
-            if ( $raw !== str_repeat( '*', strlen( $raw ) ) && $raw !== '••••••••••••••••' ) {
-                $clean['license_key'] = WPAIP_Security::encrypt( $raw );
-            } else {
-                $clean['license_key'] = $saved['license_key'] ?? '';
-            }
-        } else {
-            $clean['license_key'] = $saved['license_key'] ?? '';
-        }
+        // Chave de Licença — preserva sempre o que foi salvo pelo activate_license (nunca re-encripta via form)
+        $clean['license_key'] = $saved['license_key'] ?? '';
 
-        $clean['license_server_url']  = esc_url_raw( $input['license_server_url'] ?? '' );
+        // URL do Servidor de Licenças — preserva URL existente, usa DEFAULT_SERVER se estiver vazia
+        $url_input = esc_url_raw( $input['license_server_url'] ?? '' );
+        $clean['license_server_url'] = ! empty( $url_input ) ? $url_input : ( $saved['license_server_url'] ?? WPAIP_Paywall::DEFAULT_SERVER );
         $clean['license_cache_hours'] = max( 1, (int) ( $input['license_cache_hours'] ?? 24 ) );
 
         // Provider padrão para texto e imagem

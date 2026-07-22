@@ -82,21 +82,59 @@ class WPAIP_Security {
 
     /**
      * Descriptografa uma API key ou chave de licença salva no banco.
+     * Suporta até 3 camadas de encriptação para compatibilidade retroativa.
      */
     public static function decrypt( string $encrypted ): string {
         if ( empty( $encrypted ) ) {
             return '';
         }
 
-        // Se for uma chave de licença em texto limpo (ex: WPAIP-... ou DEV-...)
-        if ( strpos( $encrypted, 'WPAIP-' ) === 0 || strpos( $encrypted, 'DEV-' ) === 0 ) {
-            return trim( $encrypted );
+        $value = $encrypted;
+
+        // Tentar até 3 rounds de descriptografia
+        for ( $i = 0; $i < 3; $i++ ) {
+            // Se o valor parece uma chave de licença ou API key válida, retornar
+            if ( self::looks_like_plain_key( $value ) ) {
+                return trim( $value );
+            }
+
+            // Tentar descriptografar
+            $result = self::decrypt_once( $value );
+
+            if ( $result === false || $result === '' ) {
+                // Falhou — retornar o valor atual (melhor esforço)
+                return trim( $value );
+            }
+
+            $value = $result;
         }
 
+        return trim( $value );
+    }
+
+    /**
+     * Verifica se string parece uma chave de licença ou API key em texto limpo.
+     */
+    private static function looks_like_plain_key( string $value ): bool {
+        if ( empty( $value ) ) return false;
+        // Padrões conhecidos de chaves
+        $patterns = [ 'WPAIP-', 'DEV-', 'sk-', 'AIza', 'hf_', 'pb-', 'sk-ant-' ];
+        foreach ( $patterns as $prefix ) {
+            if ( strpos( $value, $prefix ) === 0 ) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Executa uma única rodada de descriptografia AES-256-CBC.
+     * Retorna false em caso de falha.
+     */
+    private static function decrypt_once( string $encrypted ) {
         $key  = self::get_encryption_key();
         $data = base64_decode( $encrypted, true );
+
         if ( false === $data || strlen( $data ) <= 16 ) {
-            return trim( $encrypted );
+            return false;
         }
 
         $iv   = substr( $data, 0, 16 );
@@ -104,8 +142,8 @@ class WPAIP_Security {
 
         $result = openssl_decrypt( $text, 'AES-256-CBC', $key, 0, $iv );
 
-        if ( false === $result || empty( $result ) ) {
-            return trim( $encrypted );
+        if ( false === $result || $result === '' ) {
+            return false;
         }
 
         return trim( $result );
