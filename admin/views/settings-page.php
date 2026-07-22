@@ -271,7 +271,21 @@ foreach ( $all_providers_keys as $pk ) {
                     <!-- Versão por provider -->
                     <?php
                     $model_opts = [
-                        'openai_model'    => [ 'label' => 'OpenAI',  'provider' => 'openai',    'opts' => [ 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1-mini' ] ],
+                        'openai_model'    => [ 'label' => 'OpenAI',  'provider' => 'openai',    'opts' => [
+                            // GPT-5 (mais recentes)
+                            'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna',
+                            'gpt-5.5-pro', 'gpt-5.5',
+                            'gpt-5.4-pro', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.4-nano',
+                            'gpt-5-pro', 'gpt-5', 'gpt-5-mini', 'gpt-5-nano',
+                            // GPT-4.1
+                            'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
+                            // GPT-4o
+                            'gpt-4o', 'gpt-4o-mini',
+                            // Raciocínio (Reasoning)
+                            'o3', 'o3-mini', 'o4-mini', 'o1',
+                            // Legacy
+                            'gpt-3.5-turbo',
+                        ] ],
                         'gemini_model'    => [ 'label' => 'Gemini',  'provider' => 'gemini',    'opts' => [ 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash' ] ],
                         'anthropic_model' => [ 'label' => 'Claude',  'provider' => 'anthropic', 'opts' => [ 'claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-3-5' ] ],
                         'deepseek_model'  => [ 'label' => 'DeepSeek','provider' => 'deepseek',  'opts' => [ 'deepseek-chat', 'deepseek-reasoner' ] ],
