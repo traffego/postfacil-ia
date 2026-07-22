@@ -340,10 +340,22 @@ class WPAIP_LLM {
         // Monta prompt baseado no modo e estilo jornalístico
         $final_prompt = self::build_prompt( $prompt, $mode, $ref_urls, $ref_texts, $paragraphs, $journalistic_style );
 
-        // Só passa 'model' se vier preenchido; caso vazio, cada call_* usa o valor das configurações
+        // Só passa 'model' se vier preenchido; caso vazio, busca o modelo configurado para o provider
         $options = [];
         if ( ! empty( $model ) ) {
             $options['model'] = $model;
+        } else {
+            // Resolve o provider para obter o modelo correto das configurações
+            $resolved_provider = ! empty( $provider ) ? $provider : WPAIP_Settings::get( 'default_llm', 'openai' );
+            $model_key = $resolved_provider . '_model';
+            $model_defaults = [
+                'openai'    => 'gpt-4o',
+                'gemini'    => 'gemini-2.0-flash',
+                'anthropic' => 'claude-sonnet-4-5',
+                'deepseek'  => 'deepseek-chat',
+            ];
+            $default_model = $model_defaults[ $resolved_provider ] ?? 'gpt-4o';
+            $options['model'] = WPAIP_Settings::get( $model_key, $default_model );
         }
         $result = self::generate( $final_prompt, $provider, $options );
 
