@@ -13,6 +13,7 @@ class WPAIP_Paywall {
 
     public static function init(): void {
         add_action( 'admin_init', [ __CLASS__, 'check_access' ] );
+        add_action( 'wp_ajax_wpaip_activate_paywall_license', [ __CLASS__, 'ajax_activate_paywall_license' ] );
     }
 
     // ── Verificação de acesso ─────────────────────────────────────────────────
@@ -139,6 +140,11 @@ class WPAIP_Paywall {
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( $code === 200 && ! empty( $body['success'] ) ) {
+            // Salvar a chave ativada nas configurações do plugin
+            $opts = WPAIP_Settings::get_options();
+            $opts['license_key'] = WPAIP_Security::encrypt( $key );
+            update_option( WPAIP_Settings::OPTION_KEY, $opts );
+
             // Limpa o cache do usuário atual para forçar verificação
             self::clear_cache( get_current_user_id() );
             return [ 'success' => true, 'message' => $body['message'] ?? 'Licença ativada com sucesso!' ];
@@ -146,6 +152,27 @@ class WPAIP_Paywall {
 
         $msg = $body['message'] ?? ( 'Erro HTTP ' . $code );
         return [ 'success' => false, 'message' => $msg ];
+    }
+
+    /**
+     * Endpoint AJAX para ativar licença diretamente da página de paywall.
+     */
+    public static function ajax_activate_paywall_license(): void {
+        check_ajax_referer( 'wpaip_paywall_nonce', 'nonce' );
+
+        $key = sanitize_text_field( $_POST['license_key'] ?? '' );
+        if ( empty( $key ) ) {
+            wp_send_json_error( [ 'message' => 'Por favor, informe uma chave de licença válida.' ] );
+        }
+
+        $server_url = WPAIP_Settings::get( 'license_server_url', self::DEFAULT_SERVER );
+        $result     = self::activate_license( $key, $server_url );
+
+        if ( $result['success'] ) {
+            wp_send_json_success( $result );
+        } else {
+            wp_send_json_error( $result );
+        }
     }
 
     /**

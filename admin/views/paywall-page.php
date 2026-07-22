@@ -297,10 +297,102 @@ defined( 'ABSPATH' ) || exit;
             </a>
         <?php endif; ?>
 
+        <!-- Botão para ativar chave existente -->
+        <div style="margin-top: 14px;">
+            <button type="button" id="toggle-key-form-btn" style="background: none; border: none; color: #c4b5fd; font-size: 12px; cursor: pointer; text-decoration: underline; padding: 4px;">
+                🔑 Já tem uma chave? Clique aqui para ativar
+            </button>
+        </div>
+
+        <!-- Formulário de Ativação por Chave (Oculto por padrão) -->
+        <div id="key-activation-box" style="display: none; margin-top: 14px; padding: 14px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 12px; text-align: left;">
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #c4b5fd; margin-bottom: 6px;">Digite sua Chave de Licença:</label>
+            <input type="text" id="paywall-license-key-input" placeholder="WPAIP-XXXX-XXXX-XXXX" style="width: 100%; padding: 10px 12px; background: rgba(15, 12, 26, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #fff; font-size: 13px; font-family: monospace; outline: none; margin-bottom: 10px;">
+            
+            <div id="paywall-alert-msg" style="display: none; padding: 8px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 10px;"></div>
+
+            <button type="button" id="submit-paywall-license-btn" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);">
+                Ativar e Acessar Plugin
+            </button>
+        </div>
+
         <a href="<?php echo esc_url( admin_url() ); ?>" class="back-link">
             ← Voltar ao painel
         </a>
 
     </div>
+
+    <script>
+        document.getElementById('toggle-key-form-btn').addEventListener('click', function() {
+            const box = document.getElementById('key-activation-box');
+            if (box.style.display === 'none') {
+                box.style.display = 'block';
+                document.getElementById('paywall-license-key-input').focus();
+            } else {
+                box.style.display = 'none';
+            }
+        });
+
+        document.getElementById('submit-paywall-license-btn').addEventListener('click', function() {
+            const keyInput = document.getElementById('paywall-license-key-input');
+            const key = keyInput.value.trim();
+            const alertMsg = document.getElementById('paywall-alert-msg');
+            const btn = this;
+
+            alertMsg.style.display = 'none';
+
+            if (!key) {
+                alertMsg.style.display = 'block';
+                alertMsg.style.background = 'rgba(239, 68, 68, 0.2)';
+                alertMsg.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+                alertMsg.style.color = '#f87171';
+                alertMsg.innerText = 'Por favor, digite a chave de licença.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Ativando...';
+
+            const formData = new FormData();
+            formData.append('action', 'wpaip_activate_paywall_license');
+            formData.append('license_key', key);
+            formData.append('nonce', '<?php echo wp_create_nonce("wpaip_paywall_nonce"); ?>');
+
+            fetch('<?php echo admin_url("admin-ajax.php"); ?>', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerText = 'Ativar e Acessar Plugin';
+
+                alertMsg.style.display = 'block';
+                if (data.success) {
+                    alertMsg.style.background = 'rgba(16, 185, 129, 0.2)';
+                    alertMsg.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+                    alertMsg.style.color = '#34d399';
+                    alertMsg.innerText = data.data.message || 'Licença ativada com sucesso! Redirecionando...';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    alertMsg.style.background = 'rgba(239, 68, 68, 0.2)';
+                    alertMsg.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+                    alertMsg.style.color = '#f87171';
+                    alertMsg.innerText = data.data.message || 'Erro ao ativar licença.';
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerText = 'Ativar e Acessar Plugin';
+                alertMsg.style.display = 'block';
+                alertMsg.style.background = 'rgba(239, 68, 68, 0.2)';
+                alertMsg.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+                alertMsg.style.color = '#f87171';
+                alertMsg.innerText = 'Erro de comunicação com o servidor.';
+            });
+        });
+    </script>
 </body>
 </html>
