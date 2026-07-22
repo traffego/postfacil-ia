@@ -104,6 +104,34 @@ class WPAIP_LLM {
     public static function register_ajax(): void {
         add_action( 'wp_ajax_wpaip_generate_text',    [ __CLASS__, 'ajax_generate_text'    ] );
         add_action( 'wp_ajax_wpaip_fetch_references', [ __CLASS__, 'ajax_fetch_references' ] );
+        add_action( 'wp_ajax_wpaip_debug_license',    [ __CLASS__, 'ajax_debug_license'    ] );
+    }
+
+    /**
+     * Diagnóstico temporário — mostra o que seria enviado ao servidor de licenças.
+     */
+    public static function ajax_debug_license(): void {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => 'Sem permissão.' ] );
+        }
+
+        $raw_stored   = WPAIP_Settings::get( 'license_key', '' );
+        $decrypted    = WPAIP_Security::decrypt( $raw_stored );
+        $server_url   = WPAIP_Settings::get( 'license_server_url', WPAIP_Paywall::DEFAULT_SERVER );
+
+        $clean_domain = strtolower( preg_replace( '/^https?:\/\//i', '', get_site_url() ) );
+        $clean_domain = explode( '/', $clean_domain )[0];
+        $clean_domain = explode( ':', $clean_domain )[0];
+
+        wp_send_json_success( [
+            'raw_stored_length' => strlen( $raw_stored ),
+            'raw_stored_preview' => substr( $raw_stored, 0, 20 ) . '...',
+            'decrypted_key'     => $decrypted,
+            'decrypted_length'  => strlen( $decrypted ),
+            'domain_sent'       => $clean_domain,
+            'server_url'        => $server_url,
+            'auth_key_defined'  => defined( 'AUTH_KEY' ) ? substr( AUTH_KEY, 0, 10 ) . '...' : 'NÃO DEFINIDA',
+        ] );
     }
 
     // ── AJAX: Fetch References ─────────────────────────────────────────────────
