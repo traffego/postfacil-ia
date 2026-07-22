@@ -152,6 +152,7 @@ class WPAIP_Metabox {
                     <div class="wpaip-prompt-header">
                         <label class="wpaip-label" for="wpaip-prompt">PROMPT</label>
                         <div class="wpaip-para-btns">
+                            <span class="wpaip-para-label"><?php _e( 'Parágrafos', 'wp-ai-publisher' ); ?></span>
                             <button type="button" class="wpaip-para-btn" data-val="1">1</button>
                             <button type="button" class="wpaip-para-btn" data-val="2">2</button>
                             <button type="button" class="wpaip-para-btn" data-val="3">3</button>
