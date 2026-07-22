@@ -237,6 +237,76 @@ defined( 'ABSPATH' ) || exit;
         }
 
         .user-info strong { color: rgba(248, 250, 252, 0.85); }
+
+        /* Modal de Ativação de Chave */
+        .activation-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .activation-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .activation-modal-card {
+            background: #161224;
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            border-radius: 20px;
+            padding: 28px 24px;
+            max-width: 420px;
+            width: 100%;
+            text-align: left;
+            position: relative;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: scale(0.92) translateY(15px);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .activation-modal-overlay.active .activation-modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(248, 250, 252, 0.6);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        @media (max-width: 480px) {
+            .paywall-card { padding: 24px 18px; }
+            .activation-modal-card { padding: 22px 18px; }
+            .paywall-title { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -297,22 +367,10 @@ defined( 'ABSPATH' ) || exit;
             </a>
         <?php endif; ?>
 
-        <!-- Botão para ativar chave existente -->
+        <!-- Botão para abrir o Modal de Ativação -->
         <div style="margin-top: 14px;">
-            <button type="button" id="toggle-key-form-btn" style="background: none; border: none; color: #c4b5fd; font-size: 12px; cursor: pointer; text-decoration: underline; padding: 4px;">
+            <button type="button" id="open-key-modal-btn" style="background: none; border: none; color: #c4b5fd; font-size: 12px; cursor: pointer; text-decoration: underline; padding: 4px;">
                 🔑 Já tem uma chave? Clique aqui para ativar
-            </button>
-        </div>
-
-        <!-- Formulário de Ativação por Chave (Oculto por padrão) -->
-        <div id="key-activation-box" style="display: none; margin-top: 14px; padding: 14px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 12px; text-align: left;">
-            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #c4b5fd; margin-bottom: 6px;">Digite sua Chave de Licença:</label>
-            <input type="text" id="paywall-license-key-input" placeholder="WPAIP-XXXX-XXXX-XXXX" style="width: 100%; padding: 10px 12px; background: rgba(15, 12, 26, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #fff; font-size: 13px; font-family: monospace; outline: none; margin-bottom: 10px;">
-            
-            <div id="paywall-alert-msg" style="display: none; padding: 8px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 10px;"></div>
-
-            <button type="button" id="submit-paywall-license-btn" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);">
-                Ativar e Acessar Plugin
             </button>
         </div>
 
@@ -322,23 +380,64 @@ defined( 'ABSPATH' ) || exit;
 
     </div>
 
+    <!-- Modal Overlay de Ativação de Chave -->
+    <div id="activation-modal-overlay" class="activation-modal-overlay">
+        <div class="activation-modal-card">
+            <button type="button" class="modal-close-btn" id="close-key-modal-btn">×</button>
+            
+            <h3 style="font-size: 18px; font-weight: 700; color: #f8fafc; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                🔑 Ativar Licença
+            </h3>
+            <p style="font-size: 12px; color: rgba(248, 250, 252, 0.55); margin-bottom: 16px; line-height: 1.4;">
+                Insira a chave recebida após a compra para ativar o plugin neste site.
+            </p>
+
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #c4b5fd; margin-bottom: 6px;">Chave de Licença:</label>
+            <input type="text" id="paywall-license-key-input" placeholder="WPAIP-XXXX-XXXX-XXXX" style="width: 100%; padding: 12px 14px; background: rgba(15, 12, 26, 0.9); border: 1px solid rgba(124, 58, 237, 0.4); border-radius: 10px; color: #fff; font-size: 14px; font-family: monospace; outline: none; margin-bottom: 12px; transition: border-color 0.2s;">
+            
+            <div id="paywall-alert-msg" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px;"></div>
+
+            <button type="button" id="submit-paywall-license-btn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4); transition: transform 0.2s;">
+                Ativar e Liberar Acesso
+            </button>
+        </div>
+    </div>
+
     <script>
-        document.getElementById('toggle-key-form-btn').addEventListener('click', function() {
-            const box = document.getElementById('key-activation-box');
-            if (box.style.display === 'none') {
-                box.style.display = 'block';
-                document.getElementById('paywall-license-key-input').focus();
-            } else {
-                box.style.display = 'none';
+        const modalOverlay = document.getElementById('activation-modal-overlay');
+        const openModalBtn = document.getElementById('open-key-modal-btn');
+        const closeModalBtn = document.getElementById('close-key-modal-btn');
+        const keyInput     = document.getElementById('paywall-license-key-input');
+        const submitBtn    = document.getElementById('submit-paywall-license-btn');
+        const alertMsg     = document.getElementById('paywall-alert-msg');
+
+        function openModal() {
+            modalOverlay.classList.add('active');
+            keyInput.focus();
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            alertMsg.style.display = 'none';
+        }
+
+        if (openModalBtn) openModalBtn.addEventListener('click', openModal);
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+
+        // Fechar ao clicar fora do card
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) closeModal();
+        });
+
+        // Fechar ao pressionar a tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                closeModal();
             }
         });
 
-        document.getElementById('submit-paywall-license-btn').addEventListener('click', function() {
-            const keyInput = document.getElementById('paywall-license-key-input');
+        submitBtn.addEventListener('click', function() {
             const key = keyInput.value.trim();
-            const alertMsg = document.getElementById('paywall-alert-msg');
-            const btn = this;
-
             alertMsg.style.display = 'none';
 
             if (!key) {
@@ -350,8 +449,8 @@ defined( 'ABSPATH' ) || exit;
                 return;
             }
 
-            btn.disabled = true;
-            btn.innerText = 'Ativando...';
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Ativando...';
 
             const formData = new FormData();
             formData.append('action', 'wpaip_activate_paywall_license');
@@ -364,8 +463,8 @@ defined( 'ABSPATH' ) || exit;
             })
             .then(r => r.json())
             .then(data => {
-                btn.disabled = false;
-                btn.innerText = 'Ativar e Acessar Plugin';
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Ativar e Liberar Acesso';
 
                 alertMsg.style.display = 'block';
                 if (data.success) {
@@ -384,8 +483,8 @@ defined( 'ABSPATH' ) || exit;
                 }
             })
             .catch(err => {
-                btn.disabled = false;
-                btn.innerText = 'Ativar e Acessar Plugin';
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Ativar e Liberar Acesso';
                 alertMsg.style.display = 'block';
                 alertMsg.style.background = 'rgba(239, 68, 68, 0.2)';
                 alertMsg.style.border = '1px solid rgba(239, 68, 68, 0.4)';
