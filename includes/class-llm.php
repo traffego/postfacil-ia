@@ -377,15 +377,30 @@ class WPAIP_LLM {
             wp_send_json_error( [ 'message' => $result['message'] ] );
         }
 
-        // Modo draft: tenta extrair título do H1 gerado
+        // Modo draft: tenta extrair título do H1 gerado, Markdown ou JSON
         $title = '';
         $text  = $result['text'];
 
         if ( $mode === 'draft' ) {
+            // 1. Extração por <h1>...</h1>
             if ( preg_match( '/<h1[^>]*>(.*?)<\/h1>/is', $text, $m ) ) {
                 $title = wp_strip_all_tags( $m[1] );
                 $text  = preg_replace( '/<h1[^>]*>.*?<\/h1>/is', '', $text, 1 );
                 $text  = trim( $text );
+            }
+            // 2. Extração por Markdown # Título
+            elseif ( preg_match( '/^#\s+(.+)$/m', $text, $m ) ) {
+                $title = wp_strip_all_tags( $m[1] );
+                $text  = preg_replace( '/^#\s+.+$/m', '', $text, 1 );
+                $text  = trim( $text );
+            }
+            // 3. Extração via JSON
+            else {
+                $extracted_text = self::extract_draft_content( $text, $extracted_title );
+                if ( ! empty( $extracted_title ) ) {
+                    $title = $extracted_title;
+                    $text  = $extracted_text;
+                }
             }
         }
 
@@ -640,6 +655,7 @@ class WPAIP_LLM {
                 return "Crie um artigo de blog sobre o tema abaixo. "
                      . "ESTILO DE ESCRITA OBRIGATÓRIO: {$style_instruction} "
                      . "TAMANHO OBRIGATÓRIO: {$size_desc}. "
+                     . "INSTRUÇÃO DE TÍTULO OBRIGATÓRIA: Crie e inclua um título forte, chamativo e otimizado para SEO na PRIMEIRA LINHA do artigo envolvido obrigatoriamente pela tag <h1>Título do Post</h1>. "
                      . 'Use linguagem clara, acessível e otimizada para SEO. '
                      . 'Retorne SOMENTE o HTML do artigo (sem markdown, sem ```html, sem texto extra fora do HTML). '
                      . "Tema:\n\n{$input}{$ref_block}";
