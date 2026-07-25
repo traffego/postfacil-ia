@@ -56,6 +56,22 @@ class WPAIP_Image {
 
         $prompt = WPAIP_Security::prepare_prompt( $prompt, 1000 );
 
+        // ── Aprimoramento automático do prompt de imagem via LLM ──────────────────────
+        $llm_provider = WPAIP_Settings::get( 'default_llm', 'openai' );
+        $llm_key      = WPAIP_Settings::get_api_key( $llm_provider );
+
+        if ( ! empty( $llm_key ) ) {
+            $enhancer_system = 'You are an expert AI prompt engineer specialized in text-to-image models (like FLUX, DALL-E 3, Stable Diffusion). Convert the user input into a highly detailed, photorealistic, descriptive prompt in ENGLISH. Specify lighting, composition, mood, textures, colors, and camera details. Return ONLY the final raw prompt text in English, with no quotes, no markdown, and no explanations.';
+            $llm_res         = WPAIP_LLM::generate( $prompt, $llm_provider, [
+                'system'     => $enhancer_system,
+                'max_tokens' => 300,
+            ] );
+
+            if ( $llm_res['success'] && ! empty( $llm_res['text'] ) ) {
+                $prompt = trim( $llm_res['text'] );
+            }
+        }
+
         // Injetar o modelo correto nos options se não vier preenchido ou for depreciado
         if ( empty( $options['model'] ) || strpos( $options['model'], 'imagen' ) !== false ) {
             if ( $provider === 'huggingface' ) {
