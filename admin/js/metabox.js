@@ -483,10 +483,30 @@
     $(document).on('click', '.wpaip-popup-btn', function (e) {
         e.preventDefault();
         var provider = $(this).data('provider') || 'dalle3';
+        var prompt   = $.trim($('#wpaip-image-prompt').val()) || $.trim($('#title').val()) || 'imagem fotorrealista de alta qualidade';
+        var style    = $('#wpaip-image-style').val() || 'photo';
 
-        var targetUrl = (provider === 'gemini') ? 'https://gemini.google.com' : 'https://chatgpt.com';
+        var stylePrefix = 'Crie uma imagem fotorrealista e detalhada de: ';
+        if (style === 'cinematic') stylePrefix = 'Crie uma imagem estilo cinematográfico de filme de: ';
+        else if (style === 'illustration_3d') stylePrefix = 'Crie uma ilustração 3D moderna de: ';
+        else if (style === 'digital_art') stylePrefix = 'Crie uma arte digital conceitual de: ';
+        else if (style === 'vector') stylePrefix = 'Crie um vetor minimalista de: ';
+        else if (style === 'anime') stylePrefix = 'Crie uma arte estilo anime de: ';
+        else if (style === 'vintage') stylePrefix = 'Crie uma imagem estilo retrô vintage de: ';
 
-        var width  = 650;
+        var fullPrompt = stylePrefix + prompt;
+
+        // Copia prompt formatado para a área de transferência (Clipboard)
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(fullPrompt);
+        }
+
+        var targetUrl = 'https://chatgpt.com/?q=' + encodeURIComponent(fullPrompt);
+        if (provider === 'gemini') {
+            targetUrl = 'https://gemini.google.com/app';
+        }
+
+        var width  = 680;
         var height = 800;
         var left   = screen.width ? (screen.width - width - 50) : 800;
         var top    = 50;
