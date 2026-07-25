@@ -292,12 +292,39 @@
 
     // ── Geração de Texto ───────────────────────────────────────────────────────
 
+    var progressSimulationTimer = null;
+
+    function startProgressOverlay(title, sub, icon) {
+        if (progressSimulationTimer) clearInterval(progressSimulationTimer);
+        $('#wpaip-dropzone-icon').text(icon || '📝');
+        var currentPct = 10;
+        setUploadProgress(currentPct, title, sub);
+
+        progressSimulationTimer = setInterval(function () {
+            if (currentPct < 90) {
+                currentPct += Math.floor(Math.random() * 5) + 3;
+                setUploadProgress(Math.min(90, currentPct), title, sub);
+            }
+        }, 450);
+    }
+
+    function stopProgressOverlay(successMsg) {
+        if (progressSimulationTimer) clearInterval(progressSimulationTimer);
+        setUploadProgress(100, successMsg || '✅ Concluído!', 'Finalizando...');
+        setTimeout(function () {
+            $('#wpaip-fullscreen-dropzone').fadeOut(250, function () {
+                resetDropzoneState();
+            });
+        }, 350);
+    }
+
     /**
      * Dispara o AJAX de geração com as referências já resolvidas.
      * provider e model são enviados vazios: o PHP usa o padrão das configurações.
      */
     function doGenerate(prompt, mode, refUrls, refTexts, $status) {
         setStatus($status, 'loading', cfg.strings.generating);
+        startProgressOverlay('📝 Gerando Artigo com IA...', 'A Inteligência Artificial está escrevendo e formatando o post...', '⚡');
 
         $.post(cfg.ajax_url, {
             action:     'wpaip_generate_text',
@@ -320,12 +347,15 @@
                     console.error(res.data.search_warning);
                 }
                 setStatus($status, 'success', cfg.strings.success);
+                stopProgressOverlay('✅ Artigo gerado e inserido no editor!');
             } else {
                 setStatus($status, 'error', cfg.strings.error + (res.data.message || 'Erro desconhecido'));
+                stopProgressOverlay('❌ Erro ao gerar artigo.');
             }
         })
         .fail(function () {
             setStatus($status, 'error', cfg.strings.error + 'Falha na requisição.');
+            stopProgressOverlay('❌ Falha na conexão ao gerar artigo.');
         })
         .always(function () {
             disableBtns(false);
@@ -360,6 +390,7 @@
         // Com referências: busca conteúdo e sempre gera depois (mesmo se fetch falhar)
         var $refSt = $('#wpaip-ref-status');
         setStatus($refSt, 'loading', cfg.strings.ref_fetching);
+        startProgressOverlay('🔍 Buscando Referências...', 'Lendo o conteúdo dos links informados...', '🌐');
 
         $.post(cfg.ajax_url, {
             action: 'wpaip_fetch_references',
@@ -407,6 +438,7 @@
 
         disableBtns(true);
         setStatus($status, 'loading', cfg.strings.gen_image);
+        startProgressOverlay('🎨 Gerando Imagem de Capa com IA...', 'Criando imagem em alta definição...', '🖼️');
 
         $.post(cfg.ajax_url, {
             action:   'wpaip_generate_featured_image',
@@ -430,12 +462,15 @@
                 }
 
                 setStatus($status, 'success', cfg.strings.success);
+                stopProgressOverlay('✅ Capa gerada e definida com sucesso!');
             } else {
                 setStatus($status, 'error', cfg.strings.error + (res.data.message || ''));
+                stopProgressOverlay('❌ Erro ao gerar imagem.');
             }
         })
         .fail(function () {
             setStatus($status, 'error', cfg.strings.error + 'Falha na requisição.');
+            stopProgressOverlay('❌ Falha na conexão ao gerar imagem.');
         })
         .always(function () {
             disableBtns(false);
