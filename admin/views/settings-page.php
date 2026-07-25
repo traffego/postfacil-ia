@@ -198,6 +198,7 @@ foreach ( $all_providers_keys as $pk ) {
                         'deepseek'    => [ 'label' => 'DeepSeek',   'placeholder' => 'sk-...',       'icon' => '🔮' ],
                         'huggingface' => [ 'label' => 'Hugging Face (Imagens)', 'placeholder' => 'hf_...', 'icon' => '🤗' ],
                         'poe'         => [ 'label' => 'Poe.com',    'placeholder' => 'pb-...',       'icon' => '🤖' ],
+                        'apiframe'    => [ 'label' => 'APIFrame.ai (Midjourney / Grok)', 'placeholder' => 'afk_...', 'icon' => '🖼️' ],
                     ];
 
                     foreach ( $providers_meta as $key => $meta ) :
@@ -353,6 +354,23 @@ foreach ( $all_providers_keys as $pk ) {
                             <option value="gemini"       <?php selected( $opts['default_image'], 'gemini'       ); ?>>Imagen 3 (Gemini)</option>
                             <option value="huggingface"  <?php selected( $opts['default_image'], 'huggingface'  ); ?>>Hugging Face (Grátis — Com Chave)</option>
                             <option value="poe"          <?php selected( $opts['default_image'], 'poe'          ); ?>>Poe.com (Com Chave)</option>
+                            <option value="apiframe"     <?php selected( $opts['default_image'], 'apiframe'     ); ?>>APIFrame.ai (Midjourney v6 / Grok / FLUX 2)</option>
+                        </select>
+                    </div>
+
+                    <!-- Modelo APIFrame.ai -->
+                    <div id="wpaip-apiframe-model-wrapper" style="<?php echo ( $opts['default_image'] === 'apiframe' ) ? '' : 'display:none;'; ?> margin-bottom:16px;">
+                        <label for="wpaip-apiframe-model" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Modelo APIFrame.ai', 'wp-ai-publisher' ); ?></label>
+                        <select
+                            id="wpaip-apiframe-model"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[apiframe_image_model]"
+                            class="wpaip-dark-input"
+                            style="width:100%;"
+                        >
+                            <?php $saved_apiframe = $opts['apiframe_image_model'] ?? 'midjourney'; ?>
+                            <option value="midjourney" <?php selected( $saved_apiframe, 'midjourney' ); ?>>Midjourney v6 (Qualidade máxima)</option>
+                            <option value="grok-imagine-image" <?php selected( $saved_apiframe, 'grok-imagine-image' ); ?>>Grok Imagine (xAI / Rápido)</option>
+                            <option value="flux-2-pro" <?php selected( $saved_apiframe, 'flux-2-pro' ); ?>>FLUX 2 Pro (Fotorrealismo avançado)</option>
                         </select>
                     </div>
 

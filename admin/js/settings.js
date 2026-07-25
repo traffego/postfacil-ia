@@ -172,6 +172,7 @@
         $('#wpaip-hf-model-wrapper').hide();
         $('#wpaip-poe-model-wrapper').hide();
         $('#wpaip-openai-image-model-wrapper').hide();
+        $('#wpaip-apiframe-model-wrapper').hide();
 
         if (provider === 'huggingface') {
             $('#wpaip-hf-model-wrapper').show();
@@ -179,6 +180,8 @@
             $('#wpaip-poe-model-wrapper').show();
         } else if (provider === 'dalle3' || provider === 'openai') {
             $('#wpaip-openai-image-model-wrapper').show();
+        } else if (provider === 'apiframe') {
+            $('#wpaip-apiframe-model-wrapper').show();
         }
     }
 

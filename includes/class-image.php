@@ -44,6 +44,8 @@ class WPAIP_Image {
             $api_key = WPAIP_Settings::get_api_key( 'huggingface' );
         } elseif ( $provider === 'poe' ) {
             $api_key = WPAIP_Settings::get_api_key( 'poe' );
+        } elseif ( $provider === 'apiframe' ) {
+            $api_key = WPAIP_Settings::get_api_key( 'apiframe' );
         }
 
         if ( empty( $api_key ) && $provider !== 'pollinations' ) {
@@ -111,6 +113,8 @@ class WPAIP_Image {
                 $options['model'] = WPAIP_Settings::get( 'poe_image_bot', 'FLUX-schnell' );
             } elseif ( $provider === 'gemini' ) {
                 $options['model'] = WPAIP_Settings::get( 'gemini_image_model', 'gemini-2.5-flash-image' );
+            } elseif ( $provider === 'apiframe' ) {
+                $options['model'] = WPAIP_Settings::get( 'apiframe_image_model', 'midjourney' );
             }
         }
 

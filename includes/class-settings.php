@@ -75,7 +75,7 @@ class WPAIP_Settings {
         $saved = self::get_options();
 
         // LLM providers
-        foreach ( [ 'openai', 'gemini', 'anthropic', 'deepseek', 'huggingface', 'poe' ] as $provider ) {
+        foreach ( [ 'openai', 'gemini', 'anthropic', 'deepseek', 'huggingface', 'poe', 'apiframe' ] as $provider ) {
             $key = $provider . '_api_key';
             if ( ! empty( $input[ $key ] ) ) {
                 $raw = sanitize_text_field( $input[ $key ] );
@@ -108,9 +108,10 @@ class WPAIP_Settings {
         $clean['gemini_image_model']    = sanitize_text_field( $input['gemini_image_model']    ?? 'imagen-3.0-generate-002' );
         $clean['anthropic_model']       = sanitize_text_field( $input['anthropic_model']       ?? 'claude-sonnet-4-5' );
         $clean['deepseek_model']        = sanitize_text_field( $input['deepseek_model']        ?? 'deepseek-chat' );
-        $clean['openai_image_model']    = sanitize_text_field( $input['openai_image_model']    ?? 'dall-e-3' );
+        $clean['openai_image_model']      = sanitize_text_field( $input['openai_image_model']      ?? 'dall-e-3' );
         $clean['huggingface_image_model'] = sanitize_text_field( $input['huggingface_image_model'] ?? 'black-forest-labs/FLUX.1-schnell' );
-        $clean['poe_image_bot']         = sanitize_text_field( $input['poe_image_bot']         ?? 'FLUX-schnell' );
+        $clean['poe_image_bot']           = sanitize_text_field( $input['poe_image_bot']           ?? 'FLUX-schnell' );
+        $clean['apiframe_image_model']    = sanitize_text_field( $input['apiframe_image_model']    ?? 'midjourney' );
 
         // Prompt de sistema global
         $clean['system_prompt'] = sanitize_textarea_field( $input['system_prompt'] ?? '' );
@@ -161,16 +162,18 @@ class WPAIP_Settings {
             'deepseek_api_key'        => '',
             'huggingface_api_key'     => '',
             'poe_api_key'             => '',
+            'apiframe_api_key'        => '',
             'default_llm'             => 'openai',
             'default_image'           => 'pollinations',
             'openai_model'            => 'gpt-4o',
             'gemini_model'            => 'gemini-2.5-flash',
-            'gemini_image_model'      => 'imagen-3.0-generate-002',
+            'gemini_image_model'      => 'gemini-2.5-flash-image',
             'anthropic_model'         => 'claude-sonnet-4-5',
             'deepseek_model'          => 'deepseek-chat',
             'openai_image_model'      => 'dall-e-3',
             'huggingface_image_model' => 'black-forest-labs/FLUX.1-schnell',
             'poe_image_bot'           => 'FLUX-schnell',
+            'apiframe_image_model'    => 'midjourney',
             'system_prompt'           => 'Você é um redator especialista em SEO e marketing de conteúdo. Escreva em português do Brasil com linguagem clara, objetiva e envolvente.',
             'default_journalistic_style' => 'default',
             'enable_gemini_search'       => '0',
