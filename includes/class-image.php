@@ -183,6 +183,7 @@ class WPAIP_Image {
         add_action( 'wp_ajax_wpaip_generate_featured_image', [ __CLASS__, 'ajax_generate_featured' ] );
         add_action( 'wp_ajax_wpaip_generate_inline_image',   [ __CLASS__, 'ajax_generate_inline'   ] );
         add_action( 'wp_ajax_wpaip_image_popup_view',       [ __CLASS__, 'ajax_popup_view'        ] );
+        add_action( 'wp_ajax_wpaip_upload_pasted_image',    [ __CLASS__, 'ajax_upload_pasted_image' ] );
     }
 
     /**
@@ -260,6 +261,114 @@ class WPAIP_Image {
                 $attachment_id
             ),
         ] );
+    }
+
+    /**
+     * Recebe imagem enviada via Drag & Drop ou Ctrl+V e define como capa.
+     */
+    public static function ajax_upload_pasted_image(): void {
+        WPAIP_Security::check_ajax( 'edit_posts' );
+
+        $post_id = (int) ( $_POST['post_id'] ?? 0 );
+
+        // 1. Envio de arquivo multipart
+        if ( ! empty( $_FILES['image_file']['tmp_name'] ) ) {
+            $file = $_FILES['image_file'];
+            $tmp  = $file['tmp_name'];
+            $name = sanitize_file_name( $file['name'] ?? ( 'capa-' . time() . '.png' ) );
+
+            $upload_dir = wp_upload_dir();
+            $target     = $upload_dir['path'] . '/' . $name;
+            if ( move_uploaded_file( $tmp, $target ) || copy( $tmp, $target ) ) {
+                $filetype   = wp_check_filetype( $name, null );
+                $attachment = [
+                    'post_mime_type' => $filetype['type'] ?: 'image/png',
+                    'post_title'     => sanitize_file_name( $name ),
+                    'post_content'   => '',
+                    'post_status'    => 'inherit',
+                ];
+
+                require_once ABSPATH . 'wp-admin/includes/image.php';
+                $attach_id   = wp_insert_attachment( $attachment, $target, $post_id ?: null );
+                $attach_data = wp_generate_attachment_metadata( $attach_id, $target );
+                wp_update_attachment_metadata( $attach_id, $attach_data );
+
+                if ( $post_id ) {
+                    set_post_thumbnail( $post_id, $attach_id );
+                }
+
+                $thumb_url = wp_get_attachment_image_url( $attach_id, 'medium' );
+
+                wp_send_json_success( [
+                    'attachment_id' => $attach_id,
+                    'thumb_url'     => $thumb_url,
+                    'message'       => 'Imagem enviada com sucesso.',
+                ] );
+            }
+        }
+
+        // 2. Envio de string Base64
+        $base64_data = $_POST['base64_data'] ?? '';
+        if ( ! empty( $base64_data ) ) {
+            if ( preg_match( '/^data:image\/(\w+);base64,/', $base64_data, $type ) ) {
+                $base64_data = substr( $base64_data, strpos( $base64_data, ',' ) + 1 );
+                $ext         = strtolower( $type[1] );
+            } else {
+                $ext = 'png';
+            }
+
+            $data = base64_decode( $base64_data );
+            if ( $data !== false && strlen( $data ) > 100 ) {
+                $upload_dir = wp_upload_dir();
+                $filename   = 'capa-' . ( $post_id ?: 'ia' ) . '-' . time() . '.' . $ext;
+                $file_path  = $upload_dir['path'] . '/' . $filename;
+                file_put_contents( $file_path, $data );
+
+                $filetype   = wp_check_filetype( $filename, null );
+                $attachment = [
+                    'post_mime_type' => $filetype['type'] ?: 'image/png',
+                    'post_title'     => sanitize_file_name( $filename ),
+                    'post_content'   => '',
+                    'post_status'    => 'inherit',
+                ];
+
+                require_once ABSPATH . 'wp-admin/includes/image.php';
+                $attach_id   = wp_insert_attachment( $attachment, $file_path, $post_id ?: null );
+                $attach_data = wp_generate_attachment_metadata( $attach_id, $file_path );
+                wp_update_attachment_metadata( $attach_id, $attach_data );
+
+                if ( $post_id ) {
+                    set_post_thumbnail( $post_id, $attach_id );
+                }
+
+                $thumb_url = wp_get_attachment_image_url( $attach_id, 'medium' );
+
+                wp_send_json_success( [
+                    'attachment_id' => $attach_id,
+                    'thumb_url'     => $thumb_url,
+                    'message'       => 'Imagem colada enviada com sucesso.',
+                ] );
+            }
+        }
+
+        // 3. Envio de URL externa
+        $image_url = esc_url_raw( $_POST['image_url'] ?? '' );
+        if ( ! empty( $image_url ) ) {
+            $attach_id = WPAIP_Media::upload_from_url( $image_url, $post_id ?: null, 'Capa' );
+            if ( ! is_wp_error( $attach_id ) ) {
+                if ( $post_id ) {
+                    set_post_thumbnail( $post_id, $attach_id );
+                }
+                $thumb_url = wp_get_attachment_image_url( $attach_id, 'medium' );
+                wp_send_json_success( [
+                    'attachment_id' => $attach_id,
+                    'thumb_url'     => $thumb_url,
+                    'message'       => 'Imagem capturada com sucesso.',
+                ] );
+            }
+        }
+
+        wp_send_json_error( [ 'message' => 'Nenhuma imagem válida recebida.' ] );
     }
 
     // ── OpenAI Image Models (DALL-E 3, DALL-E 2, GPT Image 2) ──────────────────

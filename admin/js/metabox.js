@@ -509,4 +509,111 @@
         insertImageInEditor(html);
     };
 
+    // ── Suporte a Drag & Drop e Ctrl+V (Paste) no Dropzone e Documento ──────
+    var $dropzone = $('#wpaip-dropzone');
+    var $fileInput = $('#wpaip-dropzone-file');
+
+    $dropzone.on('click', function () {
+        $fileInput.click();
+    });
+
+    $fileInput.on('change', function () {
+        if (this.files && this.files[0]) {
+            uploadPastedFile(this.files[0]);
+        }
+    });
+
+    $dropzone.on('dragover dragenter', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).css({ 'border-color': '#6366f1', 'background': 'rgba(99, 102, 241, 0.2)' });
+    });
+
+    $dropzone.on('dragleave drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).css({ 'border-color': '#475569', 'background': 'rgba(30, 41, 59, 0.4)' });
+    });
+
+    $dropzone.on('drop', function (e) {
+        var dt = e.originalEvent.dataTransfer;
+        if (dt && dt.files && dt.files.length) {
+            uploadPastedFile(dt.files[0]);
+        } else if (dt && dt.getData('text/html')) {
+            var html = dt.getData('text/html');
+            var match = html.match(/src=["'](https?:\/\/[^"']+)["']/i);
+            if (match && match[1]) {
+                uploadPastedUrl(match[1]);
+            }
+        }
+    });
+
+    $(document).on('paste', function (e) {
+        var items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData)).items;
+        if (!items) return;
+
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                var file = items[i].getAsFile();
+                if (file) {
+                    uploadPastedFile(file);
+                    break;
+                }
+            }
+        }
+    });
+
+    function uploadPastedFile(file) {
+        var $status = $('#wpaip-image-status');
+        setStatus($status, 'loading', 'Enviando imagem...');
+
+        var formData = new FormData();
+        formData.append('action', 'wpaip_upload_pasted_image');
+        formData.append('_ajax_nonce', cfg.nonce);
+        formData.append('post_id', cfg.post_id || $('#post_ID').val() || 0);
+        formData.append('image_file', file);
+
+        $.ajax({
+            url: cfg.ajax_url,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+        })
+        .done(function (res) {
+            if (res.success) {
+                window.wpaipSetFeaturedFromPopup(res.data.attachment_id, res.data.thumb_url);
+                setStatus($status, 'success', 'Capa atualizada com sucesso!');
+            } else {
+                setStatus($status, 'error', res.data.message || 'Falha ao enviar imagem.');
+            }
+        })
+        .fail(function () {
+            setStatus($status, 'error', 'Erro de conexão ao enviar imagem.');
+        });
+    }
+
+    function uploadPastedUrl(url) {
+        var $status = $('#wpaip-image-status');
+        setStatus($status, 'loading', 'Baixando imagem...');
+
+        $.post(cfg.ajax_url, {
+            action: 'wpaip_upload_pasted_image',
+            _ajax_nonce: cfg.nonce,
+            post_id: cfg.post_id || $('#post_ID').val() || 0,
+            image_url: url
+        })
+        .done(function (res) {
+            if (res.success) {
+                window.wpaipSetFeaturedFromPopup(res.data.attachment_id, res.data.thumb_url);
+                setStatus($status, 'success', 'Capa atualizada com sucesso!');
+            } else {
+                setStatus($status, 'error', res.data.message || 'Falha ao capturar imagem.');
+            }
+        })
+        .fail(function () {
+            setStatus($status, 'error', 'Erro de conexão ao baixar imagem.');
+        });
+    }
+
 }(jQuery));

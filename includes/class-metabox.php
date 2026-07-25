@@ -225,6 +225,14 @@ class WPAIP_Metabox {
                     </button>
                 </div>
 
+                <!-- Zona de Arrastar / Colar (Ctrl+V) -->
+                <div id="wpaip-dropzone" style="border:2px dashed #475569; border-radius:8px; padding:12px; text-align:center; background:rgba(30,41,59,0.4); cursor:pointer; margin-top:10px; transition:all 0.2s;">
+                    <span style="font-size:18px; display:block; margin-bottom:2px;">📥</span>
+                    <strong style="color:#f8fafc; font-size:12px; display:block;"><?php _e( 'Arraste ou cole (Ctrl+V) uma imagem aqui', 'wp-ai-publisher' ); ?></strong>
+                    <span style="color:#94a3b8; font-size:11px;"><?php _e( 'Envio direto para capa do post', 'wp-ai-publisher' ); ?></span>
+                    <input type="file" id="wpaip-dropzone-file" accept="image/*" style="display:none;" />
+                </div>
+
                 <div id="wpaip-image-status" class="wpaip-status" style="display:none;"></div>
 
             <?php endif; ?>
