@@ -56,13 +56,28 @@ class WPAIP_Image {
 
         $prompt = WPAIP_Security::prepare_prompt( $prompt, 1000 );
 
-        // ── Aprimoramento automático do prompt de imagem via LLM ──────────────────────
+        // ── Aprimoramento automático do prompt de imagem via LLM + Busca Web de Referências ──
         $llm_provider = WPAIP_Settings::get( 'default_llm', 'openai' );
         $llm_key      = WPAIP_Settings::get_api_key( $llm_provider );
 
         if ( ! empty( $llm_key ) ) {
-            $enhancer_system = 'You are an expert AI prompt engineer specialized in text-to-image models. Convert the user input into a highly detailed, photorealistic, descriptive prompt in ENGLISH. IMPORTANT: Maintain absolute subject accuracy. If the subject is a real animal or object (like a platypus), describe its exact real anatomical features (e.g., duck-like bill, brown fur, beaver-like tail, webbed feet) and natural habitat so the image model never confuses it with fantasy creatures. Specify lighting, composition, textures, colors, and camera details. Return ONLY the final raw prompt text in English, with no quotes, no markdown, and no explanations.';
-            $llm_res         = WPAIP_LLM::generate( $prompt, $llm_provider, [
+            // Passo 1: Se houver chave do Gemini configurada, realiza busca na web por referências visuais reais
+            $web_reference = '';
+            $gemini_key    = WPAIP_Settings::get_api_key( 'gemini' );
+            if ( ! empty( $gemini_key ) ) {
+                $search_query  = "fotografia real características visuais exatas aparência física de: {$prompt}";
+                $web_reference = WPAIP_LLM::fetch_web_context_via_gemini( $search_query );
+            }
+
+            // Passo 2: Otimiza o prompt combinando as referências reais da web
+            $enhancer_system = 'You are an expert AI prompt engineer specialized in text-to-image models. Convert the user input into a highly detailed, photorealistic, descriptive prompt in ENGLISH. IMPORTANT: Maintain absolute subject accuracy. Use the provided real-world reference facts to describe exact physical features (fur, bill, body shape, natural environment) so the model generates a real-world realistic image, NEVER a cartoon or fantasy creature. Return ONLY the final raw prompt text in English, with no quotes, no markdown, and no explanations.';
+            
+            $user_content = "Target Subject: {$prompt}";
+            if ( ! empty( $web_reference ) ) {
+                $user_content .= "\n\nReal-World Reference Facts from Web Search:\n{$web_reference}";
+            }
+
+            $llm_res = WPAIP_LLM::generate( $user_content, $llm_provider, [
                 'system'     => $enhancer_system,
                 'max_tokens' => 350,
             ] );
