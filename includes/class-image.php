@@ -61,10 +61,10 @@ class WPAIP_Image {
         $llm_key      = WPAIP_Settings::get_api_key( $llm_provider );
 
         if ( ! empty( $llm_key ) ) {
-            $enhancer_system = 'You are an expert AI prompt engineer specialized in text-to-image models (like FLUX, DALL-E 3, Stable Diffusion). Convert the user input into a highly detailed, photorealistic, descriptive prompt in ENGLISH. Specify lighting, composition, mood, textures, colors, and camera details. Return ONLY the final raw prompt text in English, with no quotes, no markdown, and no explanations.';
+            $enhancer_system = 'You are an expert AI prompt engineer specialized in text-to-image models. Convert the user input into a highly detailed, photorealistic, descriptive prompt in ENGLISH. IMPORTANT: Maintain absolute subject accuracy. If the subject is a real animal or object (like a platypus), describe its exact real anatomical features (e.g., duck-like bill, brown fur, beaver-like tail, webbed feet) and natural habitat so the image model never confuses it with fantasy creatures. Specify lighting, composition, textures, colors, and camera details. Return ONLY the final raw prompt text in English, with no quotes, no markdown, and no explanations.';
             $llm_res         = WPAIP_LLM::generate( $prompt, $llm_provider, [
                 'system'     => $enhancer_system,
-                'max_tokens' => 300,
+                'max_tokens' => 350,
             ] );
 
             if ( $llm_res['success'] && ! empty( $llm_res['text'] ) ) {
