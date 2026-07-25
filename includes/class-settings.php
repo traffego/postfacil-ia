@@ -386,6 +386,13 @@ class WPAIP_Settings {
                 'url'     => 'https://huggingface.co/api/whoami-v2',
                 'headers' => [ 'Authorization' => 'Bearer ' . $api_key ],
             ],
+            'apiframe' => [
+                'url'     => 'https://api.apiframe.ai/v2/jobs',
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $api_key,
+                    'X-API-Key'     => $api_key,
+                ],
+            ],
         ];
 
         if ( ! isset( $endpoints[ $provider ] ) ) {
@@ -404,7 +411,7 @@ class WPAIP_Settings {
 
         $code = wp_remote_retrieve_response_code( $response );
 
-        if ( $code === 200 ) {
+        if ( $code === 200 || ( $provider === 'apiframe' && $code === 400 ) ) {
             return [ 'success' => true, 'message' => 'Conexão OK — provider: ' . $provider ];
         }
 
