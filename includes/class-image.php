@@ -473,9 +473,8 @@ class WPAIP_Image {
 
             if ( $code !== 200 ) {
                 $last_msg = $data['error']['message'] ?? ( 'Erro HTTP ' . $code );
-                $is_quota_error = ( $code === 429 ) || ( stripos( $last_msg, 'RESOURCE_EXHAUSTED' ) !== false ) || ( stripos( $last_msg, 'quota' ) !== false );
-                if ( $is_quota_error && $total_keys > 1 && $index < $total_keys - 1 ) {
-                    error_log( sprintf( 'WP AI Publisher — Cota do Gemini Imagen excedida na chave #%d. Alternando para a próxima chave...', $index + 1 ) );
+                if ( $total_keys > 1 && $index < $total_keys - 1 ) {
+                    error_log( sprintf( 'WP AI Publisher — Falha no Gemini Imagen com a chave #%d (%s). Alternando para a próxima chave...', $index + 1, substr( $last_msg, 0, 100 ) ) );
                     continue;
                 }
                 break;

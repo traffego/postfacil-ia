@@ -745,15 +745,10 @@ class WPAIP_LLM {
             $last_res = $parsed;
             $msg      = $parsed['message'] ?? '';
 
-            // Detecta cota excedida (429, RESOURCE_EXHAUSTED, quota, rate limit)
-            $is_quota_error = ( strpos( $msg, '429' ) !== false )
-                           || ( stripos( $msg, 'RESOURCE_EXHAUSTED' ) !== false )
-                           || ( stripos( $msg, 'quota' ) !== false )
-                           || ( stripos( $msg, 'rate' ) !== false )
-                           || ( stripos( $msg, 'limit' ) !== false );
-
-            if ( $is_quota_error && $total_keys > 1 && $index < $total_keys - 1 ) {
-                error_log( sprintf( 'WP AI Publisher — Cota do Gemini excedida na chave #%d. Alternando automaticamente para a próxima chave de API...', $index + 1 ) );
+            // Se houver mais de uma chave cadastrada e esta chave falhou (cota, 429, limite ou erro de API), 
+            // alterna silenciosamente para a próxima chave de API cadastrada!
+            if ( $total_keys > 1 && $index < $total_keys - 1 ) {
+                error_log( sprintf( 'WP AI Publisher — Falha na chave Gemini #%d (%s). Alternando para a próxima chave de API...', $index + 1, substr( $msg, 0, 100 ) ) );
                 continue;
             }
 
