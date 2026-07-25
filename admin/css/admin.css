@@ -693,7 +693,7 @@
     position: fixed;
     bottom: 85px;
     right: 25px;
-    width: 350px;
+    width: 370px;
     max-height: calc(100vh - 120px);
     overflow: hidden; /* Header e rodapé ficam fixos */
     background: #111827;
