@@ -582,6 +582,17 @@
         }
     });
 
+    function focusMain() {
+        if (externalPopup && !externalPopup.closed) {
+            try {
+                externalPopup.blur();
+            } catch (e) {}
+        }
+        try {
+            window.focus();
+        } catch (e) {}
+    }
+
     $(window).on('drop', function (e) {
         if (isInternalDrag) {
             isInternalDrag = false;
@@ -591,6 +602,7 @@
         e.preventDefault();
         dragCounter = 0;
         $overlay.hide();
+        focusMain();
 
         var dt = e.originalEvent.dataTransfer;
         if (!dt) return;
@@ -636,6 +648,7 @@
     var pendingChoiceUrl      = '';
 
     function showDropChoiceModal(attachId, url) {
+        focusMain();
         pendingChoiceAttachId = attachId;
         pendingChoiceUrl      = url;
         $('#wpaip-choice-img-preview').attr('src', url);
@@ -643,6 +656,7 @@
     }
 
     $(document).on('click', '#wpaip-choice-btn-featured', function () {
+        focusMain();
         if (pendingChoiceAttachId && pendingChoiceUrl) {
             window.wpaipSetFeaturedFromPopup(pendingChoiceAttachId, pendingChoiceUrl);
             $('#wpaip-drop-choice-modal').fadeOut(200);
@@ -651,6 +665,7 @@
     });
 
     $(document).on('click', '#wpaip-choice-btn-inline', function () {
+        focusMain();
         if (pendingChoiceUrl) {
             var html = '<img src="' + pendingChoiceUrl + '" class="aligncenter size-large wp-image-' + pendingChoiceAttachId + '" />';
             insertImageInEditor(html);
