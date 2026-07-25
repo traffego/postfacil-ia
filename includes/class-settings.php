@@ -68,7 +68,7 @@ class WPAIP_Settings {
         $saved = self::get_options();
 
         // LLM providers
-        foreach ( [ 'openai', 'gemini', 'anthropic', 'deepseek', 'huggingface', 'poe', 'apiframe', 'pollinations' ] as $provider ) {
+        foreach ( [ 'openai', 'anthropic', 'deepseek', 'huggingface', 'poe', 'apiframe', 'pollinations' ] as $provider ) {
             $key = $provider . '_api_key';
             if ( ! empty( $input[ $key ] ) ) {
                 $raw = sanitize_text_field( $input[ $key ] );
@@ -81,6 +81,22 @@ class WPAIP_Settings {
             } else {
                 $clean[ $key ] = $saved[ $key ] ?? '';
             }
+        }
+
+        // Gemini: suporta múltiplas chaves de API (uma por linha ou separadas por vírgula)
+        if ( ! empty( $input['gemini_api_key'] ) ) {
+            $raw_gemini = trim( $input['gemini_api_key'] );
+            if ( strpos( $raw_gemini, '***' ) === false && strpos( $raw_gemini, '••••' ) === false ) {
+                $clean['gemini_api_keys'] = WPAIP_Security::encrypt( $raw_gemini );
+                $lines = array_map( 'trim', preg_split( '/[\r\n,]+/', $raw_gemini ) );
+                $clean['gemini_api_key']  = WPAIP_Security::encrypt( $lines[0] ?? '' );
+            } else {
+                $clean['gemini_api_keys'] = $saved['gemini_api_keys'] ?? '';
+                $clean['gemini_api_key']  = $saved['gemini_api_key']  ?? '';
+            }
+        } else {
+            $clean['gemini_api_keys'] = '';
+            $clean['gemini_api_key']  = '';
         }
 
         // Chave de Licença — preserva sempre o que foi salvo pelo activate_license (nunca re-encripta via form)
@@ -173,6 +189,24 @@ class WPAIP_Settings {
 
         $encrypted = self::get( $provider . '_api_key', '' );
         return WPAIP_Security::decrypt( $encrypted );
+    }
+
+    /**
+     * Retorna todas as API keys do Gemini cadastradas (suporta múltiplas chaves para rotação de cota).
+     */
+    public static function get_gemini_api_keys(): array {
+        $raw_enc = self::get( 'gemini_api_keys', '' );
+        if ( ! empty( $raw_enc ) ) {
+            $decrypted = WPAIP_Security::decrypt( $raw_enc );
+            $keys = array_map( 'trim', preg_split( '/[\r\n,]+/', $decrypted ) );
+            $keys = array_values( array_filter( $keys ) );
+            if ( ! empty( $keys ) ) {
+                return $keys;
+            }
+        }
+
+        $single = self::get_api_key( 'gemini' );
+        return ! empty( $single ) ? [ $single ] : [];
     }
 
     public static function get_defaults(): array {
@@ -369,6 +403,11 @@ class WPAIP_Settings {
         // e nós já temos uma chave salva no banco, testamos a chave salva!
         if ( empty( $api_key ) || $api_key === '••••••••••••••••' || $api_key === str_repeat( '*', strlen( $api_key ) ) ) {
             $api_key = self::get_api_key( $provider );
+        }
+
+        if ( $provider === 'gemini' && ! empty( $api_key ) ) {
+            $lines   = array_map( 'trim', preg_split( '/[\r\n,]+/', $api_key ) );
+            $api_key = $lines[0] ?? '';
         }
 
         if ( empty( $provider ) || empty( $api_key ) ) {

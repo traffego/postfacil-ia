@@ -438,51 +438,61 @@ class WPAIP_Image {
     // ── Gemini Imagen ─────────────────────────────────────────────────────────
 
     private static function call_gemini_imagen( string $prompt, array $opts ): array {
-        $api_key = WPAIP_Settings::get_api_key( 'gemini' );
-        if ( empty( $api_key ) ) {
+        $keys = WPAIP_Settings::get_gemini_api_keys();
+        if ( empty( $keys ) ) {
             return [ 'success' => false, 'url' => '', 'message' => 'API key Gemini não configurada.' ];
         }
 
-        $model = $opts['model'] ?? 'imagen-4.0-generate-001';
-        $url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:predict?key={$api_key}";
-
-        $body = wp_json_encode( [
+        $model      = $opts['model'] ?? 'imagen-4.0-generate-001';
+        $body       = wp_json_encode( [
             'instances'  => [ [ 'prompt' => $prompt ] ],
             'parameters' => [
-                'sampleCount'  => 1,
-                'aspectRatio'  => $opts['aspect_ratio'] ?? '16:9',
+                'sampleCount' => 1,
+                'aspectRatio' => $opts['aspect_ratio'] ?? '16:9',
             ],
         ] );
+        $last_msg   = '';
+        $total_keys = count( $keys );
 
-        $response = wp_remote_post( $url, [
-            'headers' => [ 'Content-Type' => 'application/json' ],
-            'body'    => $body,
-            'timeout' => 90,
-        ] );
+        foreach ( $keys as $index => $current_key ) {
+            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:predict?key={$current_key}";
 
-        if ( is_wp_error( $response ) ) {
-            return [ 'success' => false, 'url' => '', 'message' => $response->get_error_message() ];
+            $response = wp_remote_post( $url, [
+                'headers' => [ 'Content-Type' => 'application/json' ],
+                'body'    => $body,
+                'timeout' => 90,
+            ] );
+
+            if ( is_wp_error( $response ) ) {
+                $last_msg = $response->get_error_message();
+                continue;
+            }
+
+            $code = wp_remote_retrieve_response_code( $response );
+            $data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+            if ( $code !== 200 ) {
+                $last_msg = $data['error']['message'] ?? ( 'Erro HTTP ' . $code );
+                $is_quota_error = ( $code === 429 ) || ( stripos( $last_msg, 'RESOURCE_EXHAUSTED' ) !== false ) || ( stripos( $last_msg, 'quota' ) !== false );
+                if ( $is_quota_error && $total_keys > 1 && $index < $total_keys - 1 ) {
+                    error_log( sprintf( 'WP AI Publisher — Cota do Gemini Imagen excedida na chave #%d. Alternando para a próxima chave...', $index + 1 ) );
+                    continue;
+                }
+                break;
+            }
+
+            $b64 = $data['predictions'][0]['bytesBase64Encoded'] ?? '';
+            if ( empty( $b64 ) ) {
+                return [ 'success' => false, 'url' => '', 'message' => 'Imagem não retornada pelo Gemini Imagen.' ];
+            }
+
+            $tmp = sys_get_temp_dir() . '/wpaip_gemini_' . uniqid() . '.png';
+            file_put_contents( $tmp, base64_decode( $b64 ) );
+
+            return [ 'success' => true, 'url' => $tmp, 'is_local' => true, 'message' => '' ];
         }
 
-        $code = wp_remote_retrieve_response_code( $response );
-        $data = json_decode( wp_remote_retrieve_body( $response ), true );
-
-        if ( $code !== 200 ) {
-            $msg = $data['error']['message'] ?? ( 'Erro HTTP ' . $code );
-            return [ 'success' => false, 'url' => '', 'message' => $msg ];
-        }
-
-        // Gemini retorna base64; salvar como arquivo temporário
-        $b64 = $data['predictions'][0]['bytesBase64Encoded'] ?? '';
-        if ( empty( $b64 ) ) {
-            return [ 'success' => false, 'url' => '', 'message' => 'Imagem não retornada pelo Gemini Imagen.' ];
-        }
-
-        // Salvar em temp e retornar caminho como "url" (WPAIP_Media sabe lidar)
-        $tmp  = sys_get_temp_dir() . '/wpaip_gemini_' . uniqid() . '.png';
-        file_put_contents( $tmp, base64_decode( $b64 ) );
-
-        return [ 'success' => true, 'url' => $tmp, 'is_local' => true, 'message' => '' ];
+        return [ 'success' => false, 'url' => '', 'message' => 'Gemini Imagen Error: ' . $last_msg ];
     }
 
     private static function call_pollinations( string $prompt, array $opts ): array {

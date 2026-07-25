@@ -217,6 +217,31 @@ foreach ( $all_providers_keys as $pk ) {
                                 <span class="wpaip-badge-dark wpaip-badge-dark--empty"><?php _e( 'Pendente', 'wp-ai-publisher' ); ?></span>
                             <?php endif; ?>
                         </div>
+                        <?php if ( $key === 'gemini' ) :
+                            $gemini_keys_list = WPAIP_Settings::get_gemini_api_keys();
+                            $gemini_count     = count( $gemini_keys_list );
+                        ?>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <textarea
+                                id="wpaip-key-gemini"
+                                name="<?php echo esc_attr( WPAIP_Settings::OPTION_KEY ); ?>[gemini_api_key]"
+                                class="wpaip-dark-input"
+                                rows="3"
+                                style="width:100%; font-size:12px; font-family:monospace; line-height:1.4;"
+                                placeholder="<?php esc_attr_e( "Cole várias chaves do Gemini (uma por linha):\nAIzaSy...\nAIzaSy...", 'wp-ai-publisher' ); ?>"
+                            ><?php echo esc_textarea( implode( "\n", $gemini_keys_list ) ); ?></textarea>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:11px; color:#94a3b8;">
+                                    <?php printf( __( 'Suporta múltiplas chaves (%d ativa(s)). Se a cota (429) de uma esgotar, usará a próxima.', 'wp-ai-publisher' ), $gemini_count ); ?>
+                                </span>
+                                <button type="button"
+                                    class="wpaip-dark-btn wpaip-test-btn"
+                                    data-provider="gemini"
+                                    data-input="#wpaip-key-gemini"
+                                ><?php _e( 'Testar Conexão', 'wp-ai-publisher' ); ?></button>
+                            </div>
+                        </div>
+                        <?php else : ?>
                         <div style="display:flex; gap:8px;">
                             <input
                                 type="password"
@@ -233,6 +258,7 @@ foreach ( $all_providers_keys as $pk ) {
                                 data-input="#wpaip-key-<?php echo esc_attr( $key ); ?>"
                             ><?php _e( 'Testar', 'wp-ai-publisher' ); ?></button>
                         </div>
+                        <?php endif; ?>
                         <span class="wpaip-test-result" id="wpaip-result-<?php echo esc_attr( $key ); ?>" style="display:block; margin-top:6px; font-size:12px;"></span>
                     </div>
                     <?php endforeach; ?>

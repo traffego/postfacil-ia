@@ -700,32 +700,67 @@ class WPAIP_LLM {
     // ── Google Gemini ─────────────────────────────────────────────────────────
 
     private static function call_gemini( string $key, string $prompt, string $system, array $opts ): array {
-        $model = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'gemini_model', 'gemini-2.0-flash' );
-        $url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$key}";
+        $keys = WPAIP_Settings::get_gemini_api_keys();
+        if ( empty( $keys ) && ! empty( $key ) ) {
+            $keys = [ $key ];
+        }
 
-        // Combina instrução de sistema com o prompt para evitar problemas de compatibilidade de campos no JSON do v1
+        if ( empty( $keys ) ) {
+            return [ 'success' => false, 'text' => '', 'message' => 'Nenhuma API Key do Gemini configurada.' ];
+        }
+
+        $model = ( ! empty( $opts['model'] ) ) ? $opts['model'] : WPAIP_Settings::get( 'gemini_model', 'gemini-2.0-flash' );
         $combined_prompt = "Instruções do Sistema:\n{$system}\n\nTarefa:\n{$prompt}";
 
         $body_data = [
-            'contents'           => [ [ 'parts' => [ [ 'text' => $combined_prompt ] ] ] ],
-            'generationConfig'   => [ 'maxOutputTokens' => $opts['max_tokens'] ?? 8000 ],
+            'contents'         => [ [ 'parts' => [ [ 'text' => $combined_prompt ] ] ] ],
+            'generationConfig' => [ 'maxOutputTokens' => $opts['max_tokens'] ?? 8000 ],
         ];
 
         if ( ! empty( $opts['tools'] ) ) {
             $body_data['tools'] = $opts['tools'];
         }
 
-        $body = wp_json_encode( $body_data );
+        $body       = wp_json_encode( $body_data );
+        $last_res   = [ 'success' => false, 'text' => '', 'message' => 'Erro ao conectar ao Gemini.' ];
+        $total_keys = count( $keys );
 
-        $response = wp_remote_post( $url, [
-            'headers' => [ 'Content-Type' => 'application/json' ],
-            'body'    => $body,
-            'timeout' => 120,
-        ] );
+        foreach ( $keys as $index => $current_key ) {
+            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$current_key}";
 
-        return self::parse_response( $response, function ( array $data ): string {
-            return $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-        } );
+            $response = wp_remote_post( $url, [
+                'headers' => [ 'Content-Type' => 'application/json' ],
+                'body'    => $body,
+                'timeout' => 120,
+            ] );
+
+            $parsed = self::parse_response( $response, function ( array $data ): string {
+                return $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            } );
+
+            if ( $parsed['success'] ) {
+                return $parsed;
+            }
+
+            $last_res = $parsed;
+            $msg      = $parsed['message'] ?? '';
+
+            // Detecta cota excedida (429, RESOURCE_EXHAUSTED, quota, rate limit)
+            $is_quota_error = ( strpos( $msg, '429' ) !== false )
+                           || ( stripos( $msg, 'RESOURCE_EXHAUSTED' ) !== false )
+                           || ( stripos( $msg, 'quota' ) !== false )
+                           || ( stripos( $msg, 'rate' ) !== false )
+                           || ( stripos( $msg, 'limit' ) !== false );
+
+            if ( $is_quota_error && $total_keys > 1 && $index < $total_keys - 1 ) {
+                error_log( sprintf( 'WP AI Publisher — Cota do Gemini excedida na chave #%d. Alternando automaticamente para a próxima chave de API...', $index + 1 ) );
+                continue;
+            }
+
+            break;
+        }
+
+        return $last_res;
     }
 
     // ── Anthropic Claude ──────────────────────────────────────────────────────
