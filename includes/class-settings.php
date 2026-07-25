@@ -88,7 +88,7 @@ class WPAIP_Settings {
             $raw_gemini = trim( $input['gemini_api_key'] );
             if ( strpos( $raw_gemini, '***' ) === false && strpos( $raw_gemini, '••••' ) === false ) {
                 $clean['gemini_api_keys'] = WPAIP_Security::encrypt( $raw_gemini );
-                $lines = array_map( 'trim', preg_split( '/[\r\n,]+/', $raw_gemini ) );
+                $lines = array_values( array_filter( array_map( 'trim', preg_split( '/[\r\n,\s]+/', $raw_gemini ) ) ) );
                 $clean['gemini_api_key']  = WPAIP_Security::encrypt( $lines[0] ?? '' );
             } else {
                 $clean['gemini_api_keys'] = $saved['gemini_api_keys'] ?? '';
@@ -198,7 +198,7 @@ class WPAIP_Settings {
         $raw_enc = self::get( 'gemini_api_keys', '' );
         if ( ! empty( $raw_enc ) ) {
             $decrypted = WPAIP_Security::decrypt( $raw_enc );
-            $keys = array_map( 'trim', preg_split( '/[\r\n,]+/', $decrypted ) );
+            $keys = array_map( 'trim', preg_split( '/[\r\n,\s]+/', $decrypted ) );
             $keys = array_values( array_filter( $keys ) );
             if ( ! empty( $keys ) ) {
                 return $keys;
@@ -206,7 +206,12 @@ class WPAIP_Settings {
         }
 
         $single = self::get_api_key( 'gemini' );
-        return ! empty( $single ) ? [ $single ] : [];
+        if ( ! empty( $single ) ) {
+            $keys = array_map( 'trim', preg_split( '/[\r\n,\s]+/', $single ) );
+            return array_values( array_filter( $keys ) );
+        }
+
+        return [];
     }
 
     public static function get_defaults(): array {
@@ -397,7 +402,8 @@ class WPAIP_Settings {
         WPAIP_Security::check_ajax( 'manage_options', 'settings' );
 
         $provider = sanitize_text_field( $_POST['provider'] ?? '' );
-        $api_key  = sanitize_text_field( $_POST['api_key']  ?? '' );
+        $raw_key  = $_POST['api_key']  ?? '';
+        $api_key  = ( $provider === 'gemini' ) ? sanitize_textarea_field( $raw_key ) : sanitize_text_field( $raw_key );
 
         // Se o input de chave vier vazio ou com o placeholder de bolinhas, 
         // e nós já temos uma chave salva no banco, testamos a chave salva!
@@ -406,7 +412,7 @@ class WPAIP_Settings {
         }
 
         if ( $provider === 'gemini' && ! empty( $api_key ) ) {
-            $lines   = array_map( 'trim', preg_split( '/[\r\n,]+/', $api_key ) );
+            $lines   = array_values( array_filter( array_map( 'trim', preg_split( '/[\r\n,\s]+/', $api_key ) ) ) );
             $api_key = $lines[0] ?? '';
         }
 
