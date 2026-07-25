@@ -479,4 +479,37 @@
         });
     });
 
+    // ── Geradores Flutuantes (GPT ⚡ e Nano Banana 🍌) ────────────────────────
+    $(document).on('click', '.wpaip-popup-btn', function (e) {
+        e.preventDefault();
+        var provider = $(this).data('provider') || 'dalle3';
+        var style    = $('#wpaip-image-style').val() || 'photo';
+        var prompt   = $.trim($('#wpaip-image-prompt').val()) || $.trim($('#title').val()) || '';
+        var postId   = $('#post_ID').val() || cfg.post_id || 0;
+
+        var width  = 540;
+        var height = 720;
+        var left   = (screen.width ? (screen.width - width) / 2 : 100);
+        var top    = (screen.height ? (screen.height - height) / 2 : 100);
+
+        var popupUrl = cfg.ajax_url + '?action=wpaip_image_popup_view&provider=' + encodeURIComponent(provider) + '&style=' + encodeURIComponent(style) + '&prompt=' + encodeURIComponent(prompt) + '&post_id=' + postId;
+
+        window.open(popupUrl, 'wpaip_image_popup', 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+    });
+
+    // Global Callbacks acessíveis pela janela popup (window.opener)
+    window.wpaipSetFeaturedFromPopup = function (attachId, thumbUrl) {
+        if (thumbUrl) {
+            $('#wpaip-featured-img').attr('src', thumbUrl);
+            $('#wpaip-featured-preview').slideDown();
+        }
+        if (attachId && typeof wp !== 'undefined' && wp.media && wp.media.featuredImage) {
+            wp.media.featuredImage.set(attachId);
+        }
+    };
+
+    window.wpaipInsertInlineFromPopup = function (html) {
+        insertImageInEditor(html);
+    };
+
 }(jQuery));

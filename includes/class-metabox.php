@@ -177,7 +177,17 @@ class WPAIP_Metabox {
                 <div id="wpaip-text-status" class="wpaip-status" style="display:none;"></div>
 
                 <!-- ── Imagem Destacada ── -->
-                <div class="wpaip-section-title"><?php _e( 'Imagem de Capa', 'wp-ai-publisher' ); ?></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div class="wpaip-section-title" style="margin:0;"><?php _e( 'Imagem de Capa', 'wp-ai-publisher' ); ?></div>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button type="button" class="wpaip-popup-btn" data-provider="dalle3" title="<?php esc_attr_e( 'Abrir gerador flutuante GPT', 'wp-ai-publisher' ); ?>" style="background:#10a37f; color:#fff; border:none; border-radius:6px; padding:4px 8px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:700; transition:transform 0.1s;">
+                            ⚡ <span style="font-size:11px;">GPT</span>
+                        </button>
+                        <button type="button" class="wpaip-popup-btn" data-provider="gemini" title="<?php esc_attr_e( 'Abrir gerador flutuante Nano Banana', 'wp-ai-publisher' ); ?>" style="background:#f59e0b; color:#fff; border:none; border-radius:6px; padding:4px 8px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:700; transition:transform 0.1s;">
+                            🍌 <span style="font-size:11px;">Nano Banana</span>
+                        </button>
+                    </div>
+                </div>
 
                 <div class="wpaip-field">
                     <label class="wpaip-label" for="wpaip-image-style">

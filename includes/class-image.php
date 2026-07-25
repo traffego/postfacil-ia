@@ -182,6 +182,7 @@ class WPAIP_Image {
     public static function register_ajax(): void {
         add_action( 'wp_ajax_wpaip_generate_featured_image', [ __CLASS__, 'ajax_generate_featured' ] );
         add_action( 'wp_ajax_wpaip_generate_inline_image',   [ __CLASS__, 'ajax_generate_inline'   ] );
+        add_action( 'wp_ajax_wpaip_image_popup_view',       [ __CLASS__, 'ajax_popup_view'        ] );
     }
 
     /**
@@ -503,5 +504,235 @@ class WPAIP_Image {
         $image_url = trim( $image_url, '()"\' ' );
 
         return [ 'success' => true, 'url' => $image_url, 'message' => '' ];
+    }
+
+    /**
+     * Renderiza o HTML da janela flutuante dos geradores GPT e Nano Banana.
+     */
+    public static function ajax_popup_view(): void {
+        if ( ! current_user_can( 'edit_posts' ) ) {
+            wp_die( __( 'Acesso negado.', 'wp-ai-publisher' ) );
+        }
+
+        $provider = sanitize_text_field( $_GET['provider'] ?? 'dalle3' );
+        $style    = sanitize_text_field( $_GET['style']    ?? 'photo' );
+        $prompt   = sanitize_textarea_field( $_GET['prompt'] ?? '' );
+        $post_id  = (int) ( $_GET['post_id'] ?? 0 );
+
+        $is_gpt   = ( $provider === 'dalle3' || $provider === 'openai' );
+        $icon     = $is_gpt ? '⚡' : '🍌';
+        $title    = $is_gpt ? 'Gerador Flutuante GPT (OpenAI)' : 'Gerador Flutuante Nano Banana (Gemini)';
+        $badge_bg = $is_gpt ? '#10a37f' : '#f59e0b';
+
+        header( 'Content-Type: text/html; charset=UTF-8' );
+        ?>
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <title><?php echo esc_html( $title ); ?></title>
+            <style>
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                    background: #0f172a;
+                    color: #f8fafc;
+                    padding: 20px;
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 100vh;
+                }
+                .header {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding-bottom: 15px;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                    margin-bottom: 20px;
+                }
+                .header .icon-badge {
+                    background: <?php echo $badge_bg; ?>;
+                    color: #fff;
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 20px;
+                    font-weight: bold;
+                }
+                .header h1 { font-size: 16px; font-weight: 700; }
+                .field { margin-bottom: 16px; }
+                label { display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em; }
+                textarea, select {
+                    width: 100%;
+                    background: #1e293b;
+                    border: 1px solid #334155;
+                    color: #f8fafc;
+                    padding: 10px 12px;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    outline: none;
+                }
+                textarea:focus, select:focus { border-color: #6366f1; }
+                .btn {
+                    width: 100%;
+                    background: linear-gradient(135deg, #6366f1, #4f46e5);
+                    color: #fff;
+                    border: none;
+                    padding: 12px;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    transition: opacity 0.2s;
+                }
+                .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+                .status {
+                    margin-top: 12px;
+                    font-size: 13px;
+                    padding: 10px;
+                    border-radius: 6px;
+                    display: none;
+                }
+                .status.info { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+                .status.error { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+                .preview-card {
+                    margin-top: 20px;
+                    background: #1e293b;
+                    border-radius: 12px;
+                    padding: 14px;
+                    display: none;
+                    border: 1px solid #334155;
+                }
+                .preview-card img { width: 100%; border-radius: 8px; display: block; margin-bottom: 12px; }
+                .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+                .action-btn {
+                    background: #334155;
+                    color: #f8fafc;
+                    border: none;
+                    padding: 10px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+                .action-btn:hover { background: #475569; }
+                .action-btn.primary { background: #10b981; color: #fff; }
+                .action-btn.primary:hover { background: #059669; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="icon-badge"><?php echo $icon; ?></div>
+                <div>
+                    <h1><?php echo esc_html( $title ); ?></h1>
+                    <span style="font-size:12px; color:#94a3b8;">Gerador flutuante conectado ao WordPress</span>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Prompt Visual</label>
+                <textarea id="prompt" rows="3" placeholder="Descreva a imagem que deseja gerar..."><?php echo esc_textarea( $prompt ); ?></textarea>
+            </div>
+
+            <div class="field">
+                <label>Estilo da Imagem</label>
+                <select id="style">
+                    <option value="photo" <?php selected( $style, 'photo' ); ?>>📷 Fotojornalístico / Realista</option>
+                    <option value="cinematic" <?php selected( $style, 'cinematic' ); ?>>🎬 Cinematográfico</option>
+                    <option value="illustration_3d" <?php selected( $style, 'illustration_3d' ); ?>>🎨 Ilustração 3D</option>
+                    <option value="digital_art" <?php selected( $style, 'digital_art' ); ?>>🖌 Arte Digital</option>
+                    <option value="vector" <?php selected( $style, 'vector' ); ?>>✏️ Vetor / Minimalista</option>
+                    <option value="anime" <?php selected( $style, 'anime' ); ?>>⛩️ Anime / Manga</option>
+                    <option value="vintage" <?php selected( $style, 'vintage' ); ?>>🎞️ Retrô / Vintage</option>
+                </select>
+            </div>
+
+            <button id="btn-generate" class="btn">
+                <span>✨ Gerar Imagem</span>
+            </button>
+
+            <div id="status" class="status"></div>
+
+            <div id="preview" class="preview-card">
+                <img id="img-result" src="" alt="Resultado">
+                <div class="action-btns">
+                    <button id="btn-featured" class="action-btn primary">📌 Definir como Capa</button>
+                    <button id="btn-inline" class="action-btn">📝 Inserir no Texto</button>
+                </div>
+            </div>
+
+            <script src="<?php echo esc_url( includes_url( 'js/jquery/jquery.min.js' ) ); ?>"></script>
+            <script>
+                var ajaxurl = <?php echo json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
+                var nonce   = <?php echo json_encode( wp_create_nonce( 'wpaip_ajax_nonce' ) ); ?>;
+                var provider = <?php echo json_encode( $provider ); ?>;
+                var postId   = <?php echo json_encode( $post_id ); ?>;
+                var currentAttachId = 0;
+                var currentUrl = '';
+
+                $('#btn-generate').on('click', function() {
+                    var pText = $.trim($('#prompt').val());
+                    var pStyle = $('#style').val();
+                    if (!pText) { alert('Digite um prompt!'); return; }
+
+                    $('#btn-generate').prop('disabled', true).text('⏳ Gerando Imagem...');
+                    $('#status').attr('class', 'status info').text('Gerando imagem via ' + provider + '... Aguarde.').show();
+                    $('#preview').hide();
+
+                    $.post(ajaxurl, {
+                        action: 'wpaip_generate_inline_image',
+                        _ajax_nonce: nonce,
+                        post_id: postId,
+                        prompt: pText,
+                        provider: provider,
+                        style: pStyle
+                    }).done(function(res) {
+                        if (res.success) {
+                            currentAttachId = res.data.attachment_id;
+                            currentUrl = res.data.url;
+                            $('#img-result').attr('src', currentUrl);
+                            $('#preview').slideDown();
+                            $('#status').attr('class', 'status info').text('Imagem gerada com sucesso! Escolha como utilizar abaixo.').show();
+                        } else {
+                            $('#status').attr('class', 'status error').text(res.data.message || 'Falha ao gerar imagem.').show();
+                        }
+                    }).fail(function() {
+                        $('#status').attr('class', 'status error').text('Erro de conexão ao gerar imagem.').show();
+                    }).always(function() {
+                        $('#btn-generate').prop('disabled', false).html('<span>✨ Gerar Nova Imagem</span>');
+                    });
+                });
+
+                $('#btn-featured').on('click', function() {
+                    if (window.opener && window.opener.wpaipSetFeaturedFromPopup) {
+                        window.opener.wpaipSetFeaturedFromPopup(currentAttachId, currentUrl);
+                        window.close();
+                    } else {
+                        alert('Janela principal do WordPress não foi encontrada.');
+                    }
+                });
+
+                $('#btn-inline').on('click', function() {
+                    if (window.opener && window.opener.wpaipInsertInlineFromPopup) {
+                        var html = '<img src="' + currentUrl + '" class="aligncenter size-large wp-image-' + currentAttachId + '" />';
+                        window.opener.wpaipInsertInlineFromPopup(html);
+                        window.close();
+                    } else {
+                        alert('Janela principal do WordPress não foi encontrada.');
+                    }
+                });
+            </script>
+        </body>
+        </html>
+        <?php
+        exit;
     }
 }
