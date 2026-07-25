@@ -225,12 +225,13 @@ class WPAIP_Metabox {
                     </button>
                 </div>
 
-                <!-- Zona de Arrastar / Colar (Ctrl+V) -->
-                <div id="wpaip-dropzone" style="border:2px dashed #475569; border-radius:8px; padding:12px; text-align:center; background:rgba(30,41,59,0.4); cursor:pointer; margin-top:10px; transition:all 0.2s;">
-                    <span style="font-size:18px; display:block; margin-bottom:2px;">📥</span>
-                    <strong style="color:#f8fafc; font-size:12px; display:block;"><?php _e( 'Arraste ou cole (Ctrl+V) uma imagem aqui', 'wp-ai-publisher' ); ?></strong>
-                    <span style="color:#94a3b8; font-size:11px;"><?php _e( 'Envio direto para capa do post', 'wp-ai-publisher' ); ?></span>
-                    <input type="file" id="wpaip-dropzone-file" accept="image/*" style="display:none;" />
+                <!-- Overlay de Arrastar e Soltar na Tela Inteira (Fullscreen Dropzone) -->
+                <div id="wpaip-fullscreen-dropzone" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.88); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:999999; justify-content:center; align-items:center; flex-direction:column; color:#f8fafc; border:4px dashed #6366f1; pointer-events:auto;">
+                    <div style="text-align:center; padding:24px; max-width:480px; background:rgba(30,41,59,0.8); border-radius:16px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+                        <span style="font-size:56px; display:block; margin-bottom:12px;">📥</span>
+                        <h2 style="font-size:22px; font-weight:800; margin-bottom:8px; color:#fff;"><?php _e( 'Solte a imagem para definir a Capa', 'wp-ai-publisher' ); ?></h2>
+                        <p style="font-size:13px; color:#c4b5fd; line-height:1.4;"><?php _e( 'A imagem será enviada para a biblioteca e associada ao post automaticamente.', 'wp-ai-publisher' ); ?></p>
+                    </div>
                 </div>
 
                 <div id="wpaip-image-status" class="wpaip-status" style="display:none;"></div>

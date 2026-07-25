@@ -509,45 +509,62 @@
         insertImageInEditor(html);
     };
 
-    // ── Suporte a Drag & Drop e Ctrl+V (Paste) no Dropzone e Documento ──────
-    var $dropzone = $('#wpaip-dropzone');
-    var $fileInput = $('#wpaip-dropzone-file');
+    // ── Overlay de Drag & Drop na Tela Inteira ──────────────────────────────
+    var $overlay = $('#wpaip-fullscreen-dropzone');
+    var dragCounter = 0;
 
-    $dropzone.on('click', function () {
-        $fileInput.click();
-    });
-
-    $fileInput.on('change', function () {
-        if (this.files && this.files[0]) {
-            uploadPastedFile(this.files[0]);
+    $(window).on('dragenter', function (e) {
+        e.preventDefault();
+        var types = e.originalEvent.dataTransfer ? e.originalEvent.dataTransfer.types : [];
+        if (types && (types.indexOf('Files') !== -1 || types.indexOf('text/html') !== -1 || types.indexOf('text/uri-list') !== -1)) {
+            dragCounter++;
+            $overlay.css('display', 'flex');
         }
     });
 
-    $dropzone.on('dragover dragenter', function (e) {
+    $(window).on('dragover', function (e) {
         e.preventDefault();
-        e.stopPropagation();
-        $(this).css({ 'border-color': '#6366f1', 'background': 'rgba(99, 102, 241, 0.2)' });
     });
 
-    $dropzone.on('dragleave drop', function (e) {
+    $(window).on('dragleave', function (e) {
         e.preventDefault();
-        e.stopPropagation();
-        $(this).css({ 'border-color': '#475569', 'background': 'rgba(30, 41, 59, 0.4)' });
+        dragCounter--;
+        if (dragCounter <= 0) {
+            dragCounter = 0;
+            $overlay.hide();
+        }
     });
 
-    $dropzone.on('drop', function (e) {
+    $(window).on('drop', function (e) {
+        e.preventDefault();
+        dragCounter = 0;
+        $overlay.hide();
+
         var dt = e.originalEvent.dataTransfer;
-        if (dt && dt.files && dt.files.length) {
-            uploadPastedFile(dt.files[0]);
-        } else if (dt && dt.getData('text/html')) {
+        if (!dt) return;
+
+        if (dt.files && dt.files.length) {
+            for (var i = 0; i < dt.files.length; i++) {
+                if (dt.files[i].type.indexOf('image') !== -1) {
+                    uploadPastedFile(dt.files[i]);
+                    break;
+                }
+            }
+        } else if (dt.getData('text/html')) {
             var html = dt.getData('text/html');
             var match = html.match(/src=["'](https?:\/\/[^"']+)["']/i);
             if (match && match[1]) {
                 uploadPastedUrl(match[1]);
             }
+        } else if (dt.getData('text/uri-list')) {
+            var uri = dt.getData('text/uri-list');
+            if (uri) {
+                uploadPastedUrl(uri);
+            }
         }
     });
 
+    // Suporte a Ctrl + V (Paste) em qualquer lugar da tela
     $(document).on('paste', function (e) {
         var items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData)).items;
         if (!items) return;
