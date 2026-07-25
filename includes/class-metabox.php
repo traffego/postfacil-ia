@@ -70,11 +70,12 @@ class WPAIP_Metabox {
 
         // Dados passados ao JS
         wp_localize_script( 'wpaip-metabox', 'wpaipMetabox', [
-            'ajax_url'     => admin_url( 'admin-ajax.php' ),
-            'nonce'        => WPAIP_Security::create_nonce(),
-            'post_id'      => get_the_ID(),
-            'is_gutenberg' => self::is_gutenberg(),
-            'strings'      => [
+            'ajax_url'            => admin_url( 'admin-ajax.php' ),
+            'nonce'               => WPAIP_Security::create_nonce(),
+            'post_id'             => get_the_ID(),
+            'is_gutenberg'        => self::is_gutenberg(),
+            'image_system_prompt' => WPAIP_Settings::get( 'image_system_prompt', 'Crie uma imagem fotorrealista e detalhada de alta qualidade de: ' ),
+            'strings'             => [
                 'generating'     => __( 'Gerando…', 'wp-ai-publisher' ),
                 'gen_image'      => __( 'Gerando imagem…', 'wp-ai-publisher' ),
                 'uploading'      => __( 'Enviando para biblioteca…', 'wp-ai-publisher' ),

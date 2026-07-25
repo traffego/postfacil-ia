@@ -562,6 +562,21 @@ foreach ( $all_providers_keys as $pk ) {
                     </div>
 
                     <div style="margin-top: 18px;">
+                        <label for="wpaip-image-system-prompt" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Pré-prompt de Imagem (Global)', 'wp-ai-publisher' ); ?></label>
+                        <textarea
+                            id="wpaip-image-system-prompt"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[image_system_prompt]"
+                            class="wpaip-dark-input"
+                            rows="3"
+                            style="width:100%; font-size:13px; line-height:1.5;"
+                            placeholder="<?php esc_attr_e( 'Ex: Crie uma imagem fotorrealista e detalhada de alta qualidade de: ', 'wp-ai-publisher' ); ?>"
+                        ><?php echo esc_textarea( $opts['image_system_prompt'] ?? 'Crie uma imagem fotorrealista e detalhada de alta qualidade de: ' ); ?></textarea>
+                        <p style="font-size:11px; color:#94a3b8; margin-top:4px;">
+                            <?php _e( 'Instrução prévia enviada aos geradores de imagem da API e botões flutuantes do ChatGPT e Gemini.', 'wp-ai-publisher' ); ?>
+                        </p>
+                    </div>
+
+                    <div style="margin-top: 18px;">
                         <label for="wpaip-default-journalistic-style" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Estilo Jornalístico Padrão', 'wp-ai-publisher' ); ?></label>
                         <select id="wpaip-default-journalistic-style" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_journalistic_style]" class="wpaip-dark-input" style="width:100%;">
                             <option value="default" <?php selected( $opts['default_journalistic_style'] ?? 'default', 'default' ); ?>><?php _e( 'Informativo / Padrão (Fatos diretos e linguagem neutra)', 'wp-ai-publisher' ); ?></option>

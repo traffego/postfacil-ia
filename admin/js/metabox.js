@@ -535,7 +535,11 @@
         var prompt   = $.trim($('#wpaip-image-prompt').val()) || $.trim($('#title').val()) || 'imagem fotorrealista de alta qualidade';
         var style    = $('#wpaip-image-style').val() || 'photo';
 
-        var stylePrefix = 'Crie uma imagem fotorrealista e detalhada de: ';
+        var basePreprompt = (wpaipMetabox && wpaipMetabox.image_system_prompt)
+            ? $.trim(wpaipMetabox.image_system_prompt) + ' '
+            : 'Crie uma imagem fotorrealista e detalhada de alta qualidade de: ';
+
+        var stylePrefix = basePreprompt;
         if (style === 'cinematic') stylePrefix = 'Crie uma imagem estilo cinematográfico de filme de: ';
         else if (style === 'illustration_3d') stylePrefix = 'Crie uma ilustração 3D moderna de: ';
         else if (style === 'digital_art') stylePrefix = 'Crie uma arte digital conceitual de: ';
