@@ -479,6 +479,8 @@
         });
     });
 
+    var externalPopup = null;
+
     // ── Geradores Flutuantes para Sites Oficiais (GPT ⚡ e Nano Banana 🍌) ─────
     $(document).on('click', '.wpaip-popup-btn', function (e) {
         e.preventDefault();
@@ -511,7 +513,17 @@
         var left   = screen.width ? (screen.width - width - 50) : 800;
         var top    = 50;
 
-        window.open(targetUrl, 'wpaip_external_' + provider, 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+        externalPopup = window.open(targetUrl, 'wpaip_external_' + provider, 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+    });
+
+    // Quando o usuário clica ou interage com a página do WordPress, traz o WordPress para frente
+    $(document).on('mousedown focus click', function () {
+        if (externalPopup && !externalPopup.closed) {
+            try {
+                externalPopup.blur();
+                window.focus();
+            } catch (err) {}
+        }
     });
 
     // Global Callbacks acessíveis pela janela popup (window.opener)
