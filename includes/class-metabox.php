@@ -47,9 +47,16 @@ class WPAIP_Metabox {
         $js_ver   = file_exists( $js_file )  ? filemtime( $js_file )  : time();
 
         wp_enqueue_style(
+            'font-awesome',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+            [],
+            '6.5.1'
+        );
+
+        wp_enqueue_style(
             'wpaip-admin',
             WPAIP_PLUGIN_URL . 'admin/css/admin.css',
-            [],
+            [ 'font-awesome' ],
             $css_ver
         );
 
@@ -192,21 +199,14 @@ class WPAIP_Metabox {
                             <span class="wpaip-card-icon">🎨</span>
                             <strong class="wpaip-card-title"><?php _e( 'Imagem & Capa', 'wp-ai-publisher' ); ?></strong>
                         </div>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <button type="button" class="wpaip-popup-btn" data-provider="dalle3" title="<?php esc_attr_e( 'Abrir ChatGPT (GPT-4o)', 'wp-ai-publisher' ); ?>" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition:transform 0.15s;">
-                                <img src="<?php echo esc_url( plugins_url( 'admin/img/chatGpt.webp', WPAIP_FILE ) ); ?>" alt="ChatGPT" style="width:100%; height:100%; object-fit:cover; border-radius:7px;" />
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <button type="button" class="wpaip-popup-btn" data-provider="dalle3" title="<?php esc_attr_e( 'Abrir ChatGPT (GPT-4o)', 'wp-ai-publisher' ); ?>" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:3px 8px; cursor:pointer; display:flex; align-items:center; gap:5px; box-shadow:0 1px 2px rgba(0,0,0,0.06); transition:all 0.15s;">
+                                <i class="fa-brands fa-openai" style="font-size:14px; color:#10a37f;"></i>
+                                <span style="font-size:10px; font-weight:700; color:#334155; letter-spacing:0.2px;">Chat GPT</span>
                             </button>
-                            <button type="button" class="wpaip-popup-btn" data-provider="gemini" title="<?php esc_attr_e( 'Abrir Google Gemini (Nano Banana)', 'wp-ai-publisher' ); ?>" style="background:linear-gradient(135deg, #1e293b, #0f172a); border:1px solid rgba(255,255,255,0.2); border-radius:8px; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2); transition:transform 0.15s;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <defs>
-                                        <linearGradient id="wpaip-gemini-spark-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stop-color="#4285F4"/>
-                                            <stop offset="50%" stop-color="#9B51E0"/>
-                                            <stop offset="100%" stop-color="#D946EF"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z" fill="url(#wpaip-gemini-spark-grad)"/>
-                                </svg>
+                            <button type="button" class="wpaip-popup-btn" data-provider="gemini" title="<?php esc_attr_e( 'Abrir Google Gemini (Nano Banana)', 'wp-ai-publisher' ); ?>" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:3px 8px; cursor:pointer; display:flex; align-items:center; gap:5px; box-shadow:0 1px 2px rgba(0,0,0,0.06); transition:all 0.15s;">
+                                <span style="font-size:13px; line-height:1;">🍌</span>
+                                <span style="font-size:10px; font-weight:700; color:#334155; letter-spacing:0.2px;">Nano banana</span>
                             </button>
                         </div>
                     </div>
