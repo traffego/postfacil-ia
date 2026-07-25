@@ -40,11 +40,8 @@ require_once WPAIP_PLUGIN_DIR . 'includes/class-llm.php';
 require_once WPAIP_PLUGIN_DIR . 'includes/class-image.php';
 require_once WPAIP_PLUGIN_DIR . 'includes/class-media.php';
 require_once WPAIP_PLUGIN_DIR . 'includes/class-metabox.php';
-require_once WPAIP_PLUGIN_DIR . 'includes/class-cron.php';
 
 // ── Hooks de ciclo de vida ────────────────────────────────────────────────────
-register_activation_hook( __FILE__,   [ 'WPAIP_Cron',     'on_activate'   ] );
-register_deactivation_hook( __FILE__, [ 'WPAIP_Cron',     'on_deactivate' ] );
 register_uninstall_hook( __FILE__,    'wpaip_uninstall' );
 
 function wpaip_uninstall(): void {
@@ -58,5 +55,4 @@ add_action( 'plugins_loaded', function (): void {
     WPAIP_Settings::init();
     WPAIP_Paywall::init();
     WPAIP_Metabox::init();
-    WPAIP_Cron::init();
 } );

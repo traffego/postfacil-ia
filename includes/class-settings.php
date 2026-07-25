@@ -49,15 +49,6 @@ class WPAIP_Settings {
             WPAIP_SLUG,
             [ __CLASS__, 'render_settings_page' ]
         );
-
-        add_submenu_page(
-            WPAIP_SLUG,
-            __( 'Agendamentos', 'wp-ai-publisher' ),
-            __( 'Agendamentos', 'wp-ai-publisher' ),
-            'manage_options',
-            WPAIP_SLUG . '-cron',
-            [ 'WPAIP_Cron', 'render_cron_page' ]
-        );
     }
 
     // ── Register Settings ─────────────────────────────────────────────────────
