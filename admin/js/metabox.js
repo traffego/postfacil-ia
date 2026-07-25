@@ -554,6 +554,20 @@
         isInternalDrag = false;
     });
 
+    $(document).on('click', '.wpaip-overlay-close-btn', function () {
+        $('#wpaip-fullscreen-dropzone').hide();
+        $('#wpaip-drop-choice-modal').fadeOut(150);
+        dragCounter = 0;
+    });
+
+    $(document).on('keydown', function (e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            $('#wpaip-fullscreen-dropzone').hide();
+            $('#wpaip-drop-choice-modal').fadeOut(150);
+            dragCounter = 0;
+        }
+    });
+
     $(window).on('dragenter', function (e) {
         if (isInternalDrag) return;
 

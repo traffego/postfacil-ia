@@ -8,8 +8,9 @@ defined( 'ABSPATH' ) || exit;
 class WPAIP_Metabox {
 
     public static function init(): void {
-        add_action( 'add_meta_boxes',        [ __CLASS__, 'register_metabox'  ] );
-        add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets'    ] );
+        add_action( 'add_meta_boxes',        [ __CLASS__, 'register_metabox'       ] );
+        add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets'         ] );
+        add_action( 'admin_footer',          [ __CLASS__, 'render_global_overlays' ] );
 
         // AJAX handlers
         WPAIP_LLM::register_ajax();
@@ -225,40 +226,53 @@ class WPAIP_Metabox {
                     </button>
                 </div>
 
-                <!-- Overlay de Arrastar e Soltar na Tela Inteira (Fullscreen Dropzone) -->
-                <div id="wpaip-fullscreen-dropzone" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.88); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:999999; justify-content:center; align-items:center; flex-direction:column; color:#f8fafc; border:4px dashed #6366f1; pointer-events:auto;">
-                    <div style="text-align:center; padding:24px; max-width:480px; background:rgba(30,41,59,0.8); border-radius:16px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
-                        <span style="font-size:56px; display:block; margin-bottom:12px;">📥</span>
-                        <h2 style="font-size:22px; font-weight:800; margin-bottom:8px; color:#fff;"><?php _e( 'Solte a imagem aqui', 'wp-ai-publisher' ); ?></h2>
-                        <p style="font-size:13px; color:#c4b5fd; line-height:1.4;"><?php _e( 'Envie a imagem para usar como Capa do Post ou inserir no Texto', 'wp-ai-publisher' ); ?></p>
-                    </div>
-                </div>
-
-                <!-- Modal de Escolha da Destinação da Imagem -->
-                <div id="wpaip-drop-choice-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:999999; justify-content:center; align-items:center;">
-                    <div style="background:#1e293b; border:1px solid #334155; border-radius:16px; padding:24px; max-width:420px; width:90%; text-align:center; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); color:#f8fafc;">
-                        <h3 style="font-size:18px; font-weight:700; margin-bottom:6px; color:#fff;"><?php _e( 'Onde deseja utilizar a imagem?', 'wp-ai-publisher' ); ?></h3>
-                        <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;"><?php _e( 'Escolha se a imagem enviada será a capa do post ou inserida no corpo do texto na posição do cursor.', 'wp-ai-publisher' ); ?></p>
-
-                        <div style="margin-bottom:16px;">
-                            <img id="wpaip-choice-img-preview" src="" style="max-height:160px; width:auto; border-radius:8px; border:1px solid #475569; display:inline-block;" />
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                            <button type="button" id="wpaip-choice-btn-featured" style="background:#10b981; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">
-                                📌 <?php _e( 'Como Capa', 'wp-ai-publisher' ); ?>
-                            </button>
-                            <button type="button" id="wpaip-choice-btn-inline" style="background:#6366f1; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">
-                                📝 <?php _e( 'Inserir no Texto', 'wp-ai-publisher' ); ?>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <div id="wpaip-image-status" class="wpaip-status" style="display:none;"></div>
 
             <?php endif; ?>
 
+        </div>
+        <?php
+    }
+
+    /**
+     * Renderiza o Overlay de Drag & Drop e o Modal de Escolha no footer de todas as páginas de edição de posts.
+     */
+    public static function render_global_overlays(): void {
+        $screen = get_current_screen();
+        if ( ! $screen || ! in_array( $screen->base, [ 'post' ], true ) ) {
+            return;
+        }
+        ?>
+        <!-- Overlay de Arrastar e Soltar na Tela Inteira (Fullscreen Dropzone) -->
+        <div id="wpaip-fullscreen-dropzone" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.88); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:999999; justify-content:center; align-items:center; flex-direction:column; color:#f8fafc; border:4px dashed #6366f1; pointer-events:auto;">
+            <button type="button" class="wpaip-overlay-close-btn" style="position:absolute; top:24px; right:28px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:28px; width:44px; height:44px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">×</button>
+            <div style="text-align:center; padding:28px; max-width:480px; background:rgba(30,41,59,0.85); border-radius:20px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); position:relative;">
+                <span style="font-size:56px; display:block; margin-bottom:12px;">📥</span>
+                <h2 style="font-size:22px; font-weight:800; margin-bottom:8px; color:#fff;"><?php _e( 'Solte a imagem aqui', 'wp-ai-publisher' ); ?></h2>
+                <p style="font-size:13px; color:#c4b5fd; line-height:1.4;"><?php _e( 'Envie a imagem para usar como Capa do Post ou inserir no Texto', 'wp-ai-publisher' ); ?></p>
+            </div>
+        </div>
+
+        <!-- Modal de Escolha da Destinação da Imagem -->
+        <div id="wpaip-drop-choice-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:999999; justify-content:center; align-items:center;">
+            <div style="background:#1e293b; border:1px solid #334155; border-radius:16px; padding:24px; max-width:420px; width:90%; text-align:center; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); color:#f8fafc; position:relative;">
+                <button type="button" class="wpaip-overlay-close-btn" style="position:absolute; top:12px; right:14px; background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">×</button>
+                <h3 style="font-size:18px; font-weight:700; margin-bottom:6px; color:#fff;"><?php _e( 'Onde deseja utilizar a imagem?', 'wp-ai-publisher' ); ?></h3>
+                <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;"><?php _e( 'Escolha se a imagem enviada será a capa do post ou inserida no corpo do texto na posição do cursor.', 'wp-ai-publisher' ); ?></p>
+
+                <div style="margin-bottom:16px;">
+                    <img id="wpaip-choice-img-preview" src="" style="max-height:160px; width:auto; border-radius:8px; border:1px solid #475569; display:inline-block;" />
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <button type="button" id="wpaip-choice-btn-featured" style="background:#10b981; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">
+                        📌 <?php _e( 'Como Capa', 'wp-ai-publisher' ); ?>
+                    </button>
+                    <button type="button" id="wpaip-choice-btn-inline" style="background:#6366f1; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">
+                        📝 <?php _e( 'Inserir no Texto', 'wp-ai-publisher' ); ?>
+                    </button>
+                </div>
+            </div>
         </div>
         <?php
     }
