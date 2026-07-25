@@ -479,22 +479,19 @@
         });
     });
 
-    // ── Geradores Flutuantes (GPT ⚡ e Nano Banana 🍌) ────────────────────────
+    // ── Geradores Flutuantes para Sites Oficiais (GPT ⚡ e Nano Banana 🍌) ─────
     $(document).on('click', '.wpaip-popup-btn', function (e) {
         e.preventDefault();
         var provider = $(this).data('provider') || 'dalle3';
-        var style    = $('#wpaip-image-style').val() || 'photo';
-        var prompt   = $.trim($('#wpaip-image-prompt').val()) || $.trim($('#title').val()) || '';
-        var postId   = $('#post_ID').val() || cfg.post_id || 0;
 
-        var width  = 540;
-        var height = 720;
-        var left   = (screen.width ? (screen.width - width) / 2 : 100);
-        var top    = (screen.height ? (screen.height - height) / 2 : 100);
+        var targetUrl = (provider === 'gemini') ? 'https://gemini.google.com' : 'https://chatgpt.com';
 
-        var popupUrl = cfg.ajax_url + '?action=wpaip_image_popup_view&provider=' + encodeURIComponent(provider) + '&style=' + encodeURIComponent(style) + '&prompt=' + encodeURIComponent(prompt) + '&post_id=' + postId;
+        var width  = 650;
+        var height = 800;
+        var left   = screen.width ? (screen.width - width - 50) : 800;
+        var top    = 50;
 
-        window.open(popupUrl, 'wpaip_image_popup', 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
+        window.open(targetUrl, 'wpaip_external_' + provider, 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',resizable=yes,scrollbars=yes');
     });
 
     // Global Callbacks acessíveis pela janela popup (window.opener)
