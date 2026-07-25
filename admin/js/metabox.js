@@ -484,7 +484,10 @@
     // ── Geradores Flutuantes para Sites Oficiais (GPT ⚡ e Nano Banana 🍌) ─────
     $(document).on('click', '.wpaip-popup-btn', function (e) {
         e.preventDefault();
-        var provider = $(this).data('provider') || 'dalle3';
+        e.stopPropagation();
+
+        var $btn     = $(this).closest('.wpaip-popup-btn');
+        var provider = $btn.attr('data-provider') || 'dalle3';
         var prompt   = $.trim($('#wpaip-image-prompt').val()) || $.trim($('#title').val()) || 'imagem fotorrealista de alta qualidade';
         var style    = $('#wpaip-image-style').val() || 'photo';
 
