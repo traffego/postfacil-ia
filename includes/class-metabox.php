@@ -141,33 +141,32 @@ class WPAIP_Metabox {
                 <!-- CARD 1: GERADOR DE CONTEÚDO (ARTIGO) -->
                 <div class="wpaip-card-box">
                     <div class="wpaip-card-box-header">
-                        <span class="wpaip-card-icon">📝</span>
                         <strong class="wpaip-card-title"><?php _e( 'Gerar Artigo', 'wp-ai-publisher' ); ?></strong>
                     </div>
 
                     <div class="wpaip-field" style="margin-bottom:8px;">
                         <div class="wpaip-prompt-header">
-                            <label class="wpaip-label" for="wpaip-prompt"><?php _e( 'Tema ou Instruções', 'wp-ai-publisher' ); ?></label>
+                            <label class="wpaip-label" for="wpaip-prompt"><?php _e( 'Instruções', 'wp-ai-publisher' ); ?></label>
                             <div class="wpaip-para-btns">
                                 <span class="wpaip-para-label"><?php _e( 'Parágrafos', 'wp-ai-publisher' ); ?></span>
                                 <button type="button" class="wpaip-para-btn" data-val="1">1</button>
-                                <button type="button" class="wpaip-para-btn" data-val="2">2</button>
+                                <button type="button" class="wpaip-para-btn is-active" data-val="2">2</button>
                                 <button type="button" class="wpaip-para-btn" data-val="3">3</button>
                                 <button type="button" class="wpaip-para-btn" data-val="4">4</button>
-                                <button type="button" class="wpaip-para-btn is-active" data-val="5">5</button>
+                                <button type="button" class="wpaip-para-btn" data-val="5">5</button>
                                 <button type="button" id="wpaip-para-more" class="wpaip-para-btn wpaip-para-btn--more" title="<?php esc_attr_e( 'Mais parágrafos', 'wp-ai-publisher' ); ?>">+</button>
                             </div>
-                            <input type="hidden" id="wpaip-paragraphs" value="5">
+                            <input type="hidden" id="wpaip-paragraphs" value="2">
                         </div>
 
                         <div class="wpaip-prompt-wrap">
                             <textarea id="wpaip-prompt" class="wpaip-textarea" rows="3"
                                 placeholder="<?php esc_attr_e( 'Ex: 5 dicas essenciais de SEO para e-commerce', 'wp-ai-publisher' ); ?>"></textarea>
-                            <div class="wpaip-prompt-actions">
-                                <button type="button" id="wpaip-btn-draft" class="wpaip-btn wpaip-btn--primary" data-mode="draft">
-                                    <?php _e( '✦ Gerar Artigo', 'wp-ai-publisher' ); ?>
-                                </button>
-                            </div>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <button type="button" id="wpaip-btn-draft" class="wpaip-btn wpaip-btn--primary" data-mode="draft" style="width:100%; justify-content:center;">
+                                <?php _e( '✦ Gerar Artigo', 'wp-ai-publisher' ); ?>
+                            </button>
                         </div>
                     </div>
 
@@ -202,14 +201,14 @@ class WPAIP_Metabox {
                 <div class="wpaip-card-box" style="margin-top:14px;">
                     <div class="wpaip-card-box-header" style="justify-content:space-between;">
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <span class="wpaip-card-icon">🎨</span>
-                            <strong class="wpaip-card-title"><?php _e( 'Imagem & Capa', 'wp-ai-publisher' ); ?></strong>
+                            <strong class="wpaip-card-title"><?php _e( 'Imagem', 'wp-ai-publisher' ); ?></strong>
                         </div>
                         <div style="display:flex; gap:6px; align-items:center;">
+                            <span style="font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.03em;"><?php _e( 'Gerar com:', 'wp-ai-publisher' ); ?></span>
                             <button type="button" class="wpaip-popup-btn" data-provider="dalle3" title="<?php esc_attr_e( 'Abrir ChatGPT (GPT-4o)', 'wp-ai-publisher' ); ?>" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:5px; padding:3px 7px; font-size:10px; font-weight:700; color:#334155; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.15s;">
                                 <?php _e( 'Chat GPT', 'wp-ai-publisher' ); ?>
                             </button>
-                            <button type="button" class="wpaip-popup-btn" data-provider="gemini" title="<?php esc_attr_e( 'Abrir Google Gemini (Nano Banana)', 'wp-ai-publisher' ); ?>" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:5px; padding:3px 7px; font-size:10px; font-weight:700; color:#334155; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.15s;">
+                            <button type="button" class="wpaip-popup-btn" data-provider="gemini" title="<?php esc_attr_e( 'Abrir Google Gemini (Nano Banana)', 'wp-ai-publisher' ); ?>" style="background:#fde047; border:1px solid #eab308; border-radius:5px; padding:3px 7px; font-size:10px; font-weight:700; color:#713f12; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.15s;">
                                 <?php _e( 'Nano banana', 'wp-ai-publisher' ); ?>
                             </button>
                         </div>
@@ -242,12 +241,9 @@ class WPAIP_Metabox {
                         <img id="wpaip-featured-img" src="" alt="" style="width:100%; border-radius:6px; border:1px solid #475569;" />
                     </div>
 
-                    <div class="wpaip-btn-group" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                        <button type="button" id="wpaip-btn-featured" class="wpaip-btn wpaip-btn--primary" style="justify-content:center;">
+                    <div class="wpaip-btn-group">
+                        <button type="button" id="wpaip-btn-featured" class="wpaip-btn wpaip-btn--primary" style="width:100%; justify-content:center;">
                             <?php _e( '🖼 Gerar Capa', 'wp-ai-publisher' ); ?>
-                        </button>
-                        <button type="button" id="wpaip-btn-inline" class="wpaip-btn wpaip-btn--secondary" style="justify-content:center;">
-                            <?php _e( '+ Inserir no Texto', 'wp-ai-publisher' ); ?>
                         </button>
                     </div>
 
