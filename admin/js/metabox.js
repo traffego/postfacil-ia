@@ -731,9 +731,45 @@
         }
     });
 
+    function setUploadProgress(percent, title, sub) {
+        $('#wpaip-dropzone-icon').text('⏳');
+        $('#wpaip-dropzone-title').text(title || 'Enviando imagem...');
+        $('#wpaip-dropzone-sub').text(sub || 'Aguarde o processamento na biblioteca...');
+        $('#wpaip-upload-progress-wrap, #wpaip-upload-progress-text').show();
+        $('#wpaip-upload-progress-bar').css('width', Math.min(100, Math.max(0, percent)) + '%');
+        $('#wpaip-upload-progress-text').text(Math.round(percent) + '%');
+        $('#wpaip-fullscreen-dropzone').css('display', 'flex');
+    }
+
+    function resetDropzoneState() {
+        $('#wpaip-dropzone-icon').text('📥');
+        $('#wpaip-dropzone-title').text('Solte a imagem aqui');
+        $('#wpaip-dropzone-sub').text('Envie a imagem para usar como Capa do Post ou inserir no Texto');
+        $('#wpaip-upload-progress-wrap, #wpaip-upload-progress-text').hide();
+        $('#wpaip-upload-progress-bar').css('width', '0%');
+        $('#wpaip-upload-progress-text').text('0%');
+    }
+
+    $(document).on('click', '.wpaip-overlay-close-btn', function () {
+        $('#wpaip-fullscreen-dropzone').hide();
+        $('#wpaip-drop-choice-modal').fadeOut(150);
+        resetDropzoneState();
+        dragCounter = 0;
+    });
+
+    $(document).on('keydown', function (e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            $('#wpaip-fullscreen-dropzone').hide();
+            $('#wpaip-drop-choice-modal').fadeOut(150);
+            resetDropzoneState();
+            dragCounter = 0;
+        }
+    });
+
     function uploadPastedFile(file) {
         var $status = $('#wpaip-image-status');
         setStatus($status, 'loading', 'Enviando imagem...');
+        setUploadProgress(15, '⏳ Enviando arquivo...', 'Enviando imagem para a biblioteca de mídia...');
 
         var formData = new FormData();
         formData.append('action', 'wpaip_upload_pasted_image');
@@ -748,16 +784,35 @@
             data: formData,
             processData: false,
             contentType: false,
-        })
-        .done(function (res) {
-            if (res.success) {
-                showDropChoiceModal(res.data.attachment_id, res.data.thumb_url);
-                setStatus($status, 'success', 'Imagem processada com sucesso!');
-            } else {
-                setStatus($status, 'error', res.data.message || 'Falha ao enviar imagem.');
+            xhr: function () {
+                var myXhr = $.ajaxSettings.xhr();
+                if (myXhr.upload) {
+                    myXhr.upload.addEventListener('progress', function (e) {
+                        if (e.lengthComputable) {
+                            var pct = Math.round((e.loaded / e.total) * 85) + 10;
+                            setUploadProgress(pct, '⏳ Enviando arquivo...', 'Upload em andamento...');
+                        }
+                    }, false);
+                }
+                return myXhr;
             }
         })
+        .done(function (res) {
+            setUploadProgress(100, '✅ Envio concluído!', 'Abrindo opções...');
+            setTimeout(function () {
+                $('#wpaip-fullscreen-dropzone').hide();
+                resetDropzoneState();
+                if (res.success) {
+                    showDropChoiceModal(res.data.attachment_id, res.data.thumb_url);
+                    setStatus($status, 'success', 'Imagem enviada com sucesso!');
+                } else {
+                    setStatus($status, 'error', res.data.message || 'Falha ao enviar imagem.');
+                }
+            }, 300);
+        })
         .fail(function () {
+            $('#wpaip-fullscreen-dropzone').hide();
+            resetDropzoneState();
             setStatus($status, 'error', 'Erro de conexão ao enviar imagem.');
         });
     }
@@ -765,6 +820,15 @@
     function uploadPastedUrl(url) {
         var $status = $('#wpaip-image-status');
         setStatus($status, 'loading', 'Baixando imagem...');
+        setUploadProgress(20, '⏳ Baixando imagem externa...', 'Fazendo download da imagem...');
+
+        var pct = 20;
+        var progressTimer = setInterval(function () {
+            pct += 10;
+            if (pct <= 85) {
+                setUploadProgress(pct, '⏳ Processando imagem...', 'Aguarde o download e registro no WordPress...');
+            }
+        }, 250);
 
         $.post(cfg.ajax_url, {
             action: 'wpaip_upload_pasted_image',
@@ -774,14 +838,23 @@
             image_url: url
         })
         .done(function (res) {
-            if (res.success) {
-                showDropChoiceModal(res.data.attachment_id, res.data.thumb_url);
-                setStatus($status, 'success', 'Imagem processada com sucesso!');
-            } else {
-                setStatus($status, 'error', res.data.message || 'Falha ao capturar imagem.');
-            }
+            clearInterval(progressTimer);
+            setUploadProgress(100, '✅ Download concluído!', 'Abrindo opções...');
+            setTimeout(function () {
+                $('#wpaip-fullscreen-dropzone').hide();
+                resetDropzoneState();
+                if (res.success) {
+                    showDropChoiceModal(res.data.attachment_id, res.data.thumb_url);
+                    setStatus($status, 'success', 'Imagem capturada com sucesso!');
+                } else {
+                    setStatus($status, 'error', res.data.message || 'Falha ao capturar imagem.');
+                }
+            }, 300);
         })
         .fail(function () {
+            clearInterval(progressTimer);
+            $('#wpaip-fullscreen-dropzone').hide();
+            resetDropzoneState();
             setStatus($status, 'error', 'Erro de conexão ao baixar imagem.');
         });
     }
