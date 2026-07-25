@@ -25,7 +25,7 @@ class WPAIP_Security {
      * Verifica nonce AJAX e capability. Morre com erro JSON se falhar.
      */
     public static function check_ajax( string $capability = 'edit_posts', string $suffix = 'action' ): void {
-        $nonce = sanitize_text_field( $_POST['nonce'] ?? '' );
+        $nonce = sanitize_text_field( $_POST['nonce'] ?? $_POST['_ajax_nonce'] ?? $_REQUEST['_ajax_nonce'] ?? '' );
         if ( ! self::verify_nonce( $nonce, $suffix ) || ! current_user_can( $capability ) ) {
             wp_send_json_error( [ 'message' => __( 'Ação não autorizada.', 'wp-ai-publisher' ) ], 403 );
         }

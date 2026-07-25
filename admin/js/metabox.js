@@ -569,6 +569,7 @@
 
         var formData = new FormData();
         formData.append('action', 'wpaip_upload_pasted_image');
+        formData.append('nonce', cfg.nonce);
         formData.append('_ajax_nonce', cfg.nonce);
         formData.append('post_id', cfg.post_id || $('#post_ID').val() || 0);
         formData.append('image_file', file);
@@ -599,6 +600,7 @@
 
         $.post(cfg.ajax_url, {
             action: 'wpaip_upload_pasted_image',
+            nonce: cfg.nonce,
             _ajax_nonce: cfg.nonce,
             post_id: cfg.post_id || $('#post_ID').val() || 0,
             image_url: url
