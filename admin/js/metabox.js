@@ -396,6 +396,7 @@
     $('#wpaip-btn-featured').on('click', function () {
         const $status  = $('#wpaip-image-status');
         let prompt     = $.trim($('#wpaip-image-prompt').val());
+        const style    = $('#wpaip-image-style').val() || 'photo';
 
         // Fallback: usa título do post
         if (!prompt) {
@@ -412,6 +413,7 @@
             nonce:    cfg.nonce,
             post_id:  cfg.post_id,
             prompt:   prompt,
+            style:    style,
             provider: '',
         })
         .done(function (res) {
@@ -446,6 +448,7 @@
     $('#wpaip-btn-inline').on('click', function () {
         const $status = $('#wpaip-image-status');
         const prompt  = window.prompt(cfg.strings.image_prompt);
+        const style   = $('#wpaip-image-style').val() || 'photo';
 
         if (!prompt) return;
 
@@ -457,6 +460,7 @@
             nonce:    cfg.nonce,
             post_id:  cfg.post_id,
             prompt:   prompt,
+            style:    style,
             provider: '',
         })
         .done(function (res) {

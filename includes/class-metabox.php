@@ -180,6 +180,21 @@ class WPAIP_Metabox {
                 <div class="wpaip-section-title"><?php _e( 'Imagem de Capa', 'wp-ai-publisher' ); ?></div>
 
                 <div class="wpaip-field">
+                    <label class="wpaip-label" for="wpaip-image-style">
+                        <?php _e( 'Estilo da Imagem', 'wp-ai-publisher' ); ?>
+                    </label>
+                    <select id="wpaip-image-style" class="wpaip-select">
+                        <option value="photo" selected><?php _e( '📷 Fotojornalístico / Realista', 'wp-ai-publisher' ); ?></option>
+                        <option value="cinematic"><?php _e( '🎬 Cinematográfico', 'wp-ai-publisher' ); ?></option>
+                        <option value="illustration_3d"><?php _e( '🎨 Ilustração 3D', 'wp-ai-publisher' ); ?></option>
+                        <option value="digital_art"><?php _e( '🖌 Arte Digital / Conceitual', 'wp-ai-publisher' ); ?></option>
+                        <option value="vector"><?php _e( '✏️ Vetor / Minimalista', 'wp-ai-publisher' ); ?></option>
+                        <option value="anime"><?php _e( '⛩️ Anime / Manga', 'wp-ai-publisher' ); ?></option>
+                        <option value="vintage"><?php _e( '🎞️ Retrô / Vintage', 'wp-ai-publisher' ); ?></option>
+                    </select>
+                </div>
+
+                <div class="wpaip-field">
                     <label class="wpaip-label" for="wpaip-image-prompt">
                         <?php _e( 'Prompt visual', 'wp-ai-publisher' ); ?>
                     </label>

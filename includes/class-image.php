@@ -56,6 +56,19 @@ class WPAIP_Image {
 
         $prompt = WPAIP_Security::prepare_prompt( $prompt, 1000 );
 
+        // ── Mapeamento estrito de Estilos de Imagem ──────────────────────────────────
+        $image_style = $options['image_style'] ?? sanitize_text_field( $_POST['style'] ?? 'photo' );
+        $style_directives = [
+            'photo' => 'STYLE MANDATE: Fotojornalístico / Realista. Authentic real-world photograph, 35mm lens, natural lighting, sharp focus, true-to-life colors, fine textures. ABSOLUTELY NO 3D rendering, NO cartoon, NO CGI, NO digital painting, NO fantasy illustration, NO surreal elements.',
+            'cinematic' => 'STYLE MANDATE: Cinematográfico. Cinematic movie screenshot, dramatic volumetric lighting, 8k resolution, anamorphic lens flare, rich color grading, film grain, atmospheric depth.',
+            'illustration_3d' => 'STYLE MANDATE: Ilustração 3D. High-end 3D digital illustration, smooth Octane/Redshift render style, soft studio lighting, clean 3D digital model and environment.',
+            'digital_art' => 'STYLE MANDATE: Arte Digital / Conceitual. Rich digital concept art, artistic brush strokes, expressive digital painting style, creative composition, vibrant color palette.',
+            'vector' => 'STYLE MANDATE: Vetor / Minimalista. Flat vector illustration, clean lines, bold solid colors, modern corporate minimalist tech graphic, isolated background.',
+            'anime' => 'STYLE MANDATE: Anime / Manga. High quality Japanese anime manga art style, clean linework, vibrant cel-shading, anime aesthetic.',
+            'vintage' => 'STYLE MANDATE: Retrô / Vintage. Vintage retro analog photograph from 1970s/1980s, authentic film grain, warm faded Kodachrome/sepia tones, nostalgic aesthetic.',
+        ];
+        $selected_style_mandate = $style_directives[ $image_style ] ?? $style_directives['photo'];
+
         // ── Aprimoramento automático do prompt de imagem via LLM + Busca Web de Referências ──
         $llm_provider = WPAIP_Settings::get( 'default_llm', 'openai' );
         $llm_key      = WPAIP_Settings::get_api_key( $llm_provider );
@@ -64,13 +77,13 @@ class WPAIP_Image {
             // Passo 1: Se houver chave do Gemini configurada, realiza busca na web por referências visuais reais
             $web_reference = '';
             $gemini_key    = WPAIP_Settings::get_api_key( 'gemini' );
-            if ( ! empty( $gemini_key ) ) {
+            if ( ! empty( $gemini_key ) && ( $image_style === 'photo' || $image_style === 'cinematic' ) ) {
                 $search_query  = "fotografia real características visuais exatas aparência física de: {$prompt}";
                 $web_reference = WPAIP_LLM::fetch_web_context_via_gemini( $search_query );
             }
 
-            // Passo 2: Otimiza o prompt combinando as referências reais da web
-            $enhancer_system = 'You are an expert AI prompt engineer specialized in text-to-image models. Convert the user input into a highly detailed, photorealistic, descriptive prompt in ENGLISH. IMPORTANT: Maintain absolute subject accuracy. Use the provided real-world reference facts to describe exact physical features (fur, bill, body shape, natural environment) so the model generates a real-world realistic image, NEVER a cartoon or fantasy creature. Return ONLY the final raw prompt text in English, with no quotes, no markdown, and no explanations.';
+            // Passo 2: Otimiza o prompt combinando as referências reais da web e o estilo obrigatório
+            $enhancer_system = "You are an expert AI prompt engineer specialized in text-to-image models. Convert the user input into a highly detailed descriptive prompt in ENGLISH.\n\n{$selected_style_mandate}\n\nIMPORTANT: Maintain absolute subject accuracy and strictly follow the STYLE MANDATE. Return ONLY the final raw prompt text in English, with no quotes, no markdown, and no explanations.";
             
             $user_content = "Target Subject: {$prompt}";
             if ( ! empty( $web_reference ) ) {
@@ -85,6 +98,9 @@ class WPAIP_Image {
             if ( $llm_res['success'] && ! empty( $llm_res['text'] ) ) {
                 $prompt = trim( $llm_res['text'] );
             }
+        } else {
+            // Caso LLM não configurado, anexa a diretiva de estilo diretamente no prompt
+            $prompt .= ', ' . $selected_style_mandate;
         }
 
         // Injetar o modelo correto nos options se não vier preenchido ou for depreciado
@@ -167,13 +183,14 @@ class WPAIP_Image {
         $post_id  = (int) ( $_POST['post_id']  ?? 0 );
         $prompt   = sanitize_textarea_field( $_POST['prompt']   ?? '' );
         $provider = sanitize_text_field(     $_POST['provider'] ?? '' );
+        $style    = sanitize_text_field(     $_POST['style']    ?? 'photo' );
 
         if ( ! $post_id || empty( $prompt ) ) {
             wp_send_json_error( [ 'message' => 'post_id e prompt são obrigatórios.' ] );
         }
 
         // Gera imagem
-        $result = self::generate( $prompt, $provider );
+        $result = self::generate( $prompt, $provider, [ 'image_style' => $style ] );
         if ( ! $result['success'] ) {
             wp_send_json_error( [ 'message' => $result['message'] ] );
         }
@@ -204,12 +221,13 @@ class WPAIP_Image {
         $post_id  = (int) ( $_POST['post_id']  ?? 0 );
         $prompt   = sanitize_textarea_field( $_POST['prompt']   ?? '' );
         $provider = sanitize_text_field(     $_POST['provider'] ?? '' );
+        $style    = sanitize_text_field(     $_POST['style']    ?? 'photo' );
 
         if ( empty( $prompt ) ) {
             wp_send_json_error( [ 'message' => 'Prompt vazio.' ] );
         }
 
-        $result = self::generate( $prompt, $provider );
+        $result = self::generate( $prompt, $provider, [ 'image_style' => $style ] );
         if ( ! $result['success'] ) {
             wp_send_json_error( [ 'message' => $result['message'] ] );
         }
