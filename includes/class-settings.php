@@ -388,10 +388,7 @@ class WPAIP_Settings {
             ],
             'apiframe' => [
                 'url'     => 'https://api.apiframe.ai/v2/jobs',
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $api_key,
-                    'X-API-Key'     => $api_key,
-                ],
+                'headers' => [ 'X-API-Key' => $api_key ],
             ],
         ];
 
