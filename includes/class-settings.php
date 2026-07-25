@@ -31,7 +31,7 @@ class WPAIP_Settings {
     // ── Menu Admin ────────────────────────────────────────────────────────────
 
     public static function register_menu(): void {
-        $icon_url = WPAIP_PLUGIN_URL . 'admin/img/icon.png';
+        $sparkle_icon = 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#a78bfa"><path d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z"/></svg>');
 
         add_menu_page(
             __( 'POST FÁCIL', 'wp-ai-publisher' ),
@@ -39,7 +39,7 @@ class WPAIP_Settings {
             'manage_options',
             WPAIP_SLUG,
             [ __CLASS__, 'render_settings_page' ],
-            $icon_url,
+            $sparkle_icon,
             30
         );
 
