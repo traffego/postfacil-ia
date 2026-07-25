@@ -580,6 +580,33 @@
         }
     });
 
+    var pendingChoiceAttachId = 0;
+    var pendingChoiceUrl      = '';
+
+    function showDropChoiceModal(attachId, url) {
+        pendingChoiceAttachId = attachId;
+        pendingChoiceUrl      = url;
+        $('#wpaip-choice-img-preview').attr('src', url);
+        $('#wpaip-drop-choice-modal').css('display', 'flex').hide().fadeIn(200);
+    }
+
+    $(document).on('click', '#wpaip-choice-btn-featured', function () {
+        if (pendingChoiceAttachId && pendingChoiceUrl) {
+            window.wpaipSetFeaturedFromPopup(pendingChoiceAttachId, pendingChoiceUrl);
+            $('#wpaip-drop-choice-modal').fadeOut(200);
+            setStatus($('#wpaip-image-status'), 'success', 'Imagem definida como capa com sucesso!');
+        }
+    });
+
+    $(document).on('click', '#wpaip-choice-btn-inline', function () {
+        if (pendingChoiceUrl) {
+            var html = '<img src="' + pendingChoiceUrl + '" class="aligncenter size-large wp-image-' + pendingChoiceAttachId + '" />';
+            insertImageInEditor(html);
+            $('#wpaip-drop-choice-modal').fadeOut(200);
+            setStatus($('#wpaip-image-status'), 'success', 'Imagem inserida na posição do cursor!');
+        }
+    });
+
     function uploadPastedFile(file) {
         var $status = $('#wpaip-image-status');
         setStatus($status, 'loading', 'Enviando imagem...');
@@ -600,8 +627,8 @@
         })
         .done(function (res) {
             if (res.success) {
-                window.wpaipSetFeaturedFromPopup(res.data.attachment_id, res.data.thumb_url);
-                setStatus($status, 'success', 'Capa atualizada com sucesso!');
+                showDropChoiceModal(res.data.attachment_id, res.data.thumb_url);
+                setStatus($status, 'success', 'Imagem processada com sucesso!');
             } else {
                 setStatus($status, 'error', res.data.message || 'Falha ao enviar imagem.');
             }
@@ -624,8 +651,8 @@
         })
         .done(function (res) {
             if (res.success) {
-                window.wpaipSetFeaturedFromPopup(res.data.attachment_id, res.data.thumb_url);
-                setStatus($status, 'success', 'Capa atualizada com sucesso!');
+                showDropChoiceModal(res.data.attachment_id, res.data.thumb_url);
+                setStatus($status, 'success', 'Imagem processada com sucesso!');
             } else {
                 setStatus($status, 'error', res.data.message || 'Falha ao capturar imagem.');
             }
