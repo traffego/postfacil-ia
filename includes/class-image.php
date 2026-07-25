@@ -46,6 +46,8 @@ class WPAIP_Image {
             $api_key = WPAIP_Settings::get_api_key( 'poe' );
         } elseif ( $provider === 'apiframe' ) {
             $api_key = WPAIP_Settings::get_api_key( 'apiframe' );
+        } elseif ( $provider === 'pollinations' ) {
+            $api_key = WPAIP_Settings::get_api_key( 'pollinations' );
         }
 
         if ( empty( $api_key ) && $provider !== 'pollinations' ) {

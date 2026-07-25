@@ -199,6 +199,7 @@ foreach ( $all_providers_keys as $pk ) {
                         'huggingface' => [ 'label' => 'Hugging Face (Imagens)', 'placeholder' => 'hf_...', 'icon' => '🤗' ],
                         'poe'         => [ 'label' => 'Poe.com',    'placeholder' => 'pb-...',       'icon' => '🤖' ],
                         'apiframe'    => [ 'label' => 'APIFrame.ai (Midjourney / Grok)', 'placeholder' => 'afk_...', 'icon' => '🖼️' ],
+                        'pollinations'=> [ 'label' => 'Pollinations AI (Opcional - Prioridade)', 'placeholder' => 'sk_... (opcional)', 'icon' => '🌸' ],
                     ];
 
                     foreach ( $providers_meta as $key => $meta ) :

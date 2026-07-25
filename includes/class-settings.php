@@ -75,7 +75,7 @@ class WPAIP_Settings {
         $saved = self::get_options();
 
         // LLM providers
-        foreach ( [ 'openai', 'gemini', 'anthropic', 'deepseek', 'huggingface', 'poe', 'apiframe' ] as $provider ) {
+        foreach ( [ 'openai', 'gemini', 'anthropic', 'deepseek', 'huggingface', 'poe', 'apiframe', 'pollinations' ] as $provider ) {
             $key = $provider . '_api_key';
             if ( ! empty( $input[ $key ] ) ) {
                 $raw = sanitize_text_field( $input[ $key ] );
@@ -163,6 +163,7 @@ class WPAIP_Settings {
             'huggingface_api_key'     => '',
             'poe_api_key'             => '',
             'apiframe_api_key'        => '',
+            'pollinations_api_key'    => '',
             'default_llm'             => 'openai',
             'default_image'           => 'pollinations',
             'openai_model'            => 'gpt-4o',
@@ -389,6 +390,10 @@ class WPAIP_Settings {
             'apiframe' => [
                 'url'     => 'https://api.apiframe.ai/v2/jobs',
                 'headers' => [ 'X-API-Key' => $api_key ],
+            ],
+            'pollinations' => [
+                'url'     => 'https://gen.pollinations.ai/v1/models',
+                'headers' => [ 'Authorization' => 'Bearer ' . $api_key ],
             ],
         ];
 
