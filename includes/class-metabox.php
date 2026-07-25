@@ -193,11 +193,17 @@ class WPAIP_Metabox {
                             <strong class="wpaip-card-title"><?php _e( 'Imagem & Capa', 'wp-ai-publisher' ); ?></strong>
                         </div>
                         <div style="display:flex; gap:6px; align-items:center;">
-                            <button type="button" class="wpaip-popup-btn" data-provider="dalle3" title="<?php esc_attr_e( 'Abrir gerador flutuante ChatGPT', 'wp-ai-publisher' ); ?>" style="background:#10a37f; color:#fff; border:none; border-radius:6px; padding:3px 8px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:700; transition:transform 0.1s;">
-                                ⚡ <span style="font-size:10px;">GPT</span>
+                            <button type="button" class="wpaip-popup-btn" data-provider="dalle3" title="<?php esc_attr_e( 'Abrir gerador flutuante ChatGPT', 'wp-ai-publisher' ); ?>" style="background:#10a37f; color:#fff; border:none; border-radius:6px; padding:4px 9px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:700; transition:transform 0.1s; box-shadow:0 1px 3px rgba(0,0,0,0.15);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22.28 9.82a6 6 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.51-2.9 6.07 6.07 0 0 0-10.27 2.19 5.98 5.98 0 0 0-4 2.9 6.05 6.05 0 0 0 .74 7.1 5.98 5.98 0 0 0 .51 4.91 6.05 6.05 0 0 0 6.51 2.9 6.07 6.07 0 0 0 10.27-2.19 5.99 5.99 0 0 0 4-2.9 6.06 6.06 0 0 0-.74-7.1zM13.26 22.43a4.48 4.48 0 0 1-2.88-1.04l.14-.08 4.78-2.76a.79.79 0 0 0 .39-.68v-6.74l2.02 1.17a.07.07 0 0 1 .04.05v5.58a4.5 4.5 0 0 1-4.5 4.5zM3.6 18.3a4.47 4.47 0 0 1-.54-3.01l.14.08 4.78 2.76a.79.79 0 0 0 .79 0l5.83-3.37v2.34a.07.07 0 0 1-.03.06l-4.84 2.79a4.5 4.5 0 0 1-6.13-1.65zM2.34 8.59a4.47 4.47 0 0 1 2.34-1.97v5.58l-2.02-1.17a.07.07 0 0 1-.03-.06V8.59zm16.14-2.33a4.47 4.47 0 0 1 .54 3.01l-.14-.08-4.78-2.76a.79.79 0 0 0-.79 0L7.48 9.8v-2.34a.07.07 0 0 1 .03-.06l4.84-2.79a4.5 4.5 0 0 1 6.13 1.65zm2.18 6.15l-2.02-1.17v-5.58a4.5 4.5 0 0 1 2.02 6.75z"/>
+                                </svg>
+                                <span style="font-size:11px; letter-spacing:0.3px;">GPT</span>
                             </button>
-                            <button type="button" class="wpaip-popup-btn" data-provider="gemini" title="<?php esc_attr_e( 'Abrir gerador flutuante Nano Banana', 'wp-ai-publisher' ); ?>" style="background:#f59e0b; color:#fff; border:none; border-radius:6px; padding:3px 8px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:700; transition:transform 0.1s;">
-                                🍌 <span style="font-size:10px;">Nano Banana</span>
+                            <button type="button" class="wpaip-popup-btn" data-provider="gemini" title="<?php esc_attr_e( 'Abrir gerador flutuante Nano Banana', 'wp-ai-publisher' ); ?>" style="background:linear-gradient(135deg, #4285f4, #9b51e0); color:#fff; border:none; border-radius:6px; padding:4px 9px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:700; transition:transform 0.1s; box-shadow:0 1px 3px rgba(0,0,0,0.15);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z"/>
+                                </svg>
+                                🍌 <span style="font-size:11px; letter-spacing:0.3px;">Nano Banana</span>
                             </button>
                         </div>
                     </div>
