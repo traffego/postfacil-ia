@@ -544,21 +544,36 @@
     // ── Overlay de Drag & Drop na Tela Inteira ──────────────────────────────
     var $overlay = $('#wpaip-fullscreen-dropzone');
     var dragCounter = 0;
+    var isInternalDrag = false;
+
+    $(document).on('dragstart', function () {
+        isInternalDrag = true;
+    });
+
+    $(document).on('dragend mouseup', function () {
+        isInternalDrag = false;
+    });
 
     $(window).on('dragenter', function (e) {
-        e.preventDefault();
-        var types = e.originalEvent.dataTransfer ? e.originalEvent.dataTransfer.types : [];
-        if (types && (types.indexOf('Files') !== -1 || types.indexOf('text/html') !== -1 || types.indexOf('text/uri-list') !== -1)) {
+        if (isInternalDrag) return;
+
+        var dt = e.originalEvent.dataTransfer;
+        if (!dt || !dt.types) return;
+
+        var types = Array.from(dt.types);
+        if (types.indexOf('Files') !== -1) {
             dragCounter++;
             $overlay.css('display', 'flex');
         }
     });
 
     $(window).on('dragover', function (e) {
+        if (isInternalDrag) return;
         e.preventDefault();
     });
 
     $(window).on('dragleave', function (e) {
+        if (isInternalDrag) return;
         e.preventDefault();
         dragCounter--;
         if (dragCounter <= 0) {
@@ -568,6 +583,11 @@
     });
 
     $(window).on('drop', function (e) {
+        if (isInternalDrag) {
+            isInternalDrag = false;
+            return;
+        }
+
         e.preventDefault();
         dragCounter = 0;
         $overlay.hide();
