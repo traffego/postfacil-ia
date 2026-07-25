@@ -497,6 +497,50 @@
     border-color: #7c6fcd;
 }
 
+/* ── Cards do Metabox ── */
+.wpaip-card-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.wpaip-dark-theme .wpaip-card-box {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.wpaip-card-box-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.wpaip-dark-theme .wpaip-card-box-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.wpaip-card-icon {
+    font-size: 15px;
+}
+
+.wpaip-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wpaip-dark-theme .wpaip-card-title {
+    color: #f8fafc;
+}
+
 .wpaip-btn-toggle-refs.is-open {
     color: #7c6fcd;
     border-color: #7c6fcd;
