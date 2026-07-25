@@ -58,6 +58,20 @@ class WPAIP_LLM {
         $clean_domain = explode( '/', $clean_domain )[0];
         $clean_domain = explode( ':', $clean_domain )[0];
 
+        if ( empty( $options['model'] ) ) {
+            if ( $provider === 'openai' ) {
+                $options['model'] = WPAIP_Settings::get( 'openai_model', 'gpt-4o' );
+            } elseif ( $provider === 'gemini' ) {
+                $options['model'] = WPAIP_Settings::get( 'gemini_model', 'gemini-2.5-flash' );
+            } elseif ( $provider === 'anthropic' ) {
+                $options['model'] = WPAIP_Settings::get( 'anthropic_model', 'claude-sonnet-4-5' );
+            } elseif ( $provider === 'deepseek' ) {
+                $options['model'] = WPAIP_Settings::get( 'deepseek_model', 'deepseek-chat' );
+            } elseif ( $provider === 'cloudflare' ) {
+                $options['model'] = WPAIP_Settings::get( 'cloudflare_model', '@cf/meta/llama-3.3-70b-instruct-fp8' );
+            }
+        }
+
         $response = wp_remote_post( rtrim( $server_url, '/' ) . '/api/generate.php', [
             'body'    => [
                 'license_key' => $license_key,

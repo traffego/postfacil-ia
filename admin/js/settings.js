@@ -23,11 +23,17 @@
         $btn.prop('disabled', true).text(cfg.strings.testing);
         $result.attr('class', 'wpaip-test-result').text('');
 
+        let sendKey = api_key;
+        if (provider === 'cloudflare') {
+            const accId = $.trim($('#wpaip-cf-account-id').val());
+            sendKey = accId + ':' + api_key;
+        }
+
         $.post(cfg.ajax_url, {
             action:   'wpaip_test_api_key',
             nonce:    cfg.nonce,
             provider: provider,
-            api_key:  api_key,
+            api_key:  sendKey,
         })
         .done(function (res) {
             if (res.success) {
@@ -173,6 +179,7 @@
         $('#wpaip-poe-model-wrapper').hide();
         $('#wpaip-openai-image-model-wrapper').hide();
         $('#wpaip-apiframe-model-wrapper').hide();
+        $('#wpaip-cloudflare-image-model-wrapper').hide();
 
         if (provider === 'huggingface') {
             $('#wpaip-hf-model-wrapper').show();
@@ -182,6 +189,8 @@
             $('#wpaip-openai-image-model-wrapper').show();
         } else if (provider === 'apiframe') {
             $('#wpaip-apiframe-model-wrapper').show();
+        } else if (provider === 'cloudflare') {
+            $('#wpaip-cloudflare-image-model-wrapper').show();
         }
     }
 

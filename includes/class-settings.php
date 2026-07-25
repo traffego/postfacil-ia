@@ -98,20 +98,35 @@ class WPAIP_Settings {
         $clean['license_server_url'] = ! empty( $url_input ) ? $url_input : ( $saved['license_server_url'] ?? WPAIP_Paywall::DEFAULT_SERVER );
         $clean['license_cache_hours'] = max( 1, (int) ( $input['license_cache_hours'] ?? 24 ) );
 
+        // Cloudflare Workers AI (Account ID + API Token)
+        $clean['cloudflare_account_id'] = sanitize_text_field( $input['cloudflare_account_id'] ?? '' );
+        if ( ! empty( $input['cloudflare_api_token'] ) ) {
+            $raw_cf = sanitize_text_field( $input['cloudflare_api_token'] );
+            if ( $raw_cf !== str_repeat( '*', strlen( $raw_cf ) ) && $raw_cf !== '••••••••••••••••' ) {
+                $clean['cloudflare_api_token'] = WPAIP_Security::encrypt( $raw_cf );
+            } else {
+                $clean['cloudflare_api_token'] = $saved['cloudflare_api_token'] ?? '';
+            }
+        } else {
+            $clean['cloudflare_api_token'] = $saved['cloudflare_api_token'] ?? '';
+        }
+
         // Provider padrão para texto e imagem
         $clean['default_llm']   = sanitize_text_field( $input['default_llm']   ?? 'openai' );
         $clean['default_image'] = sanitize_text_field( $input['default_image'] ?? 'pollinations' );
 
         // Modelo padrão por provider
-        $clean['openai_model']          = sanitize_text_field( $input['openai_model']          ?? 'gpt-4o' );
-        $clean['gemini_model']          = sanitize_text_field( $input['gemini_model']          ?? 'gemini-2.5-flash' );
-        $clean['gemini_image_model']    = sanitize_text_field( $input['gemini_image_model']    ?? 'imagen-3.0-generate-002' );
-        $clean['anthropic_model']       = sanitize_text_field( $input['anthropic_model']       ?? 'claude-sonnet-4-5' );
-        $clean['deepseek_model']        = sanitize_text_field( $input['deepseek_model']        ?? 'deepseek-chat' );
+        $clean['openai_model']            = sanitize_text_field( $input['openai_model']            ?? 'gpt-4o' );
+        $clean['gemini_model']            = sanitize_text_field( $input['gemini_model']            ?? 'gemini-2.5-flash' );
+        $clean['gemini_image_model']      = sanitize_text_field( $input['gemini_image_model']      ?? 'imagen-3.0-generate-002' );
+        $clean['anthropic_model']         = sanitize_text_field( $input['anthropic_model']         ?? 'claude-sonnet-4-5' );
+        $clean['deepseek_model']          = sanitize_text_field( $input['deepseek_model']          ?? 'deepseek-chat' );
+        $clean['cloudflare_model']        = sanitize_text_field( $input['cloudflare_model']        ?? '@cf/meta/llama-3.3-70b-instruct-fp8' );
         $clean['openai_image_model']      = sanitize_text_field( $input['openai_image_model']      ?? 'dall-e-3' );
         $clean['huggingface_image_model'] = sanitize_text_field( $input['huggingface_image_model'] ?? 'black-forest-labs/FLUX.1-schnell' );
         $clean['poe_image_bot']           = sanitize_text_field( $input['poe_image_bot']           ?? 'FLUX-schnell' );
         $clean['apiframe_image_model']    = sanitize_text_field( $input['apiframe_image_model']    ?? 'midjourney' );
+        $clean['cloudflare_image_model']  = sanitize_text_field( $input['cloudflare_image_model']  ?? '@cf/black-forest-labs/flux-1-schnell' );
 
         // Prompt de sistema global
         $clean['system_prompt'] = sanitize_textarea_field( $input['system_prompt'] ?? '' );
@@ -150,6 +165,16 @@ class WPAIP_Settings {
      * Retorna API key descriptografada para uso interno.
      */
     public static function get_api_key( string $provider ): string {
+        if ( $provider === 'cloudflare' ) {
+            $account_id = self::get( 'cloudflare_account_id', '' );
+            $token_enc  = self::get( 'cloudflare_api_token', '' );
+            $api_token  = WPAIP_Security::decrypt( $token_enc );
+            if ( empty( $account_id ) || empty( $api_token ) ) {
+                return '';
+            }
+            return $account_id . ':' . $api_token;
+        }
+
         $encrypted = self::get( $provider . '_api_key', '' );
         return WPAIP_Security::decrypt( $encrypted );
     }
@@ -164,6 +189,8 @@ class WPAIP_Settings {
             'poe_api_key'             => '',
             'apiframe_api_key'        => '',
             'pollinations_api_key'    => '',
+            'cloudflare_account_id'   => '',
+            'cloudflare_api_token'    => '',
             'default_llm'             => 'openai',
             'default_image'           => 'pollinations',
             'openai_model'            => 'gpt-4o',
@@ -171,10 +198,12 @@ class WPAIP_Settings {
             'gemini_image_model'      => 'gemini-2.5-flash-image',
             'anthropic_model'         => 'claude-sonnet-4-5',
             'deepseek_model'          => 'deepseek-chat',
+            'cloudflare_model'        => '@cf/meta/llama-3.3-70b-instruct-fp8',
             'openai_image_model'      => 'dall-e-3',
             'huggingface_image_model' => 'black-forest-labs/FLUX.1-schnell',
             'poe_image_bot'           => 'FLUX-schnell',
             'apiframe_image_model'    => 'midjourney',
+            'cloudflare_image_model'  => '@cf/black-forest-labs/flux-1-schnell',
             'system_prompt'           => 'Você é um redator especialista em SEO e marketing de conteúdo. Escreva em português do Brasil com linguagem clara, objetiva e envolvente.',
             'default_journalistic_style' => 'default',
             'enable_gemini_search'       => '0',
@@ -394,6 +423,10 @@ class WPAIP_Settings {
             'pollinations' => [
                 'url'     => 'https://gen.pollinations.ai/v1/models',
                 'headers' => [ 'Authorization' => 'Bearer ' . $api_key ],
+            ],
+            'cloudflare' => [
+                'url'     => 'https://api.cloudflare.com/client/v4/accounts/' . ( explode( ':', $api_key )[0] ?? '' ) . '/ai/models/search',
+                'headers' => [ 'Authorization' => 'Bearer ' . ( explode( ':', $api_key )[1] ?? '' ) ],
             ],
         ];
 

@@ -48,6 +48,8 @@ class WPAIP_Image {
             $api_key = WPAIP_Settings::get_api_key( 'apiframe' );
         } elseif ( $provider === 'pollinations' ) {
             $api_key = WPAIP_Settings::get_api_key( 'pollinations' );
+        } elseif ( $provider === 'cloudflare' ) {
+            $api_key = WPAIP_Settings::get_api_key( 'cloudflare' );
         }
 
         if ( empty( $api_key ) && $provider !== 'pollinations' ) {
@@ -117,6 +119,8 @@ class WPAIP_Image {
                 $options['model'] = WPAIP_Settings::get( 'gemini_image_model', 'gemini-2.5-flash-image' );
             } elseif ( $provider === 'apiframe' ) {
                 $options['model'] = WPAIP_Settings::get( 'apiframe_image_model', 'midjourney' );
+            } elseif ( $provider === 'cloudflare' ) {
+                $options['model'] = WPAIP_Settings::get( 'cloudflare_image_model', '@cf/black-forest-labs/flux-1-schnell' );
             }
         }
 

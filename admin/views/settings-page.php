@@ -236,6 +236,50 @@ foreach ( $all_providers_keys as $pk ) {
                         <span class="wpaip-test-result" id="wpaip-result-<?php echo esc_attr( $key ); ?>" style="display:block; margin-top:6px; font-size:12px;"></span>
                     </div>
                     <?php endforeach; ?>
+
+                    <!-- Cloudflare Workers AI -->
+                    <?php $has_cf_key = ! empty( WPAIP_Settings::get_api_key( 'cloudflare' ) ); ?>
+                    <div class="wpaip-modal-row">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span>🟠</span>
+                                <strong style="color:#f8fafc; font-size:13px;"><?php _e( 'Cloudflare Workers AI (Texto e Imagens)', 'wp-ai-publisher' ); ?></strong>
+                            </div>
+                            <?php if ( $has_cf_key ) : ?>
+                                <span class="wpaip-badge-dark wpaip-badge-dark--ok"><?php _e( 'Configurada', 'wp-ai-publisher' ); ?></span>
+                            <?php else : ?>
+                                <span class="wpaip-badge-dark wpaip-badge-dark--empty"><?php _e( 'Pendente', 'wp-ai-publisher' ); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <input
+                                type="text"
+                                id="wpaip-cf-account-id"
+                                name="<?php echo esc_attr( WPAIP_Settings::OPTION_KEY ); ?>[cloudflare_account_id]"
+                                class="wpaip-dark-input"
+                                style="width:100%;"
+                                placeholder="<?php esc_attr_e( 'Account ID (Painel Cloudflare > Workers AI)', 'wp-ai-publisher' ); ?>"
+                                value="<?php echo esc_attr( $opts['cloudflare_account_id'] ?? '' ); ?>"
+                            >
+                            <div style="display:flex; gap:8px;">
+                                <input
+                                    type="password"
+                                    id="wpaip-cf-api-token"
+                                    name="<?php echo esc_attr( WPAIP_Settings::OPTION_KEY ); ?>[cloudflare_api_token]"
+                                    class="wpaip-dark-input"
+                                    style="flex:1;"
+                                    placeholder="<?php echo esc_attr( $has_cf_key ? '••••••••••••••••' : 'API Token (permissão Workers AI)' ); ?>"
+                                    autocomplete="new-password"
+                                >
+                                <button type="button"
+                                    class="wpaip-dark-btn wpaip-test-btn"
+                                    data-provider="cloudflare"
+                                    data-input="#wpaip-cf-api-token"
+                                ><?php _e( 'Testar', 'wp-ai-publisher' ); ?></button>
+                            </div>
+                        </div>
+                        <span class="wpaip-test-result" id="wpaip-result-cloudflare" style="display:block; margin-top:6px; font-size:12px;"></span>
+                    </div>
                 </div>
 
                 <div class="wpaip-modal-footer">
@@ -251,11 +295,11 @@ foreach ( $all_providers_keys as $pk ) {
                 <button type="button" class="wpaip-modal-close" onclick="wpaipCloseSettingsModal('modal-text-model')">×</button>
                 
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                    <span class="dashicons dashicons-editor-bold" style="font-size:22px; color:#60a5fa;"></span>
-                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#f8fafc;"><?php _e( 'Modelo de Texto', 'wp-ai-publisher' ); ?></h2>
+                    <span class="dashicons dashicons-text-page" style="font-size:22px; color:#c4b5fd;"></span>
+                    <h2 style="font-size:18px; font-weight:700; margin:0; color:#f8fafc;"><?php _e( 'Modelo de Texto (IA Principal)', 'wp-ai-publisher' ); ?></h2>
                 </div>
                 <p style="font-size:13px; color:#94a3b8; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
-                    <?php _e( 'Provider e versão usados para gerar textos no editor de posts.', 'wp-ai-publisher' ); ?>
+                    <?php _e( 'Escolha qual inteligência artificial gerará os artigos e matérias do seu blog.', 'wp-ai-publisher' ); ?>
                 </p>
 
                 <div class="wpaip-modal-scroll-area">
@@ -263,34 +307,36 @@ foreach ( $all_providers_keys as $pk ) {
                     <div style="margin-bottom:16px;">
                         <label for="wpaip-default-llm" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Provider Padrão', 'wp-ai-publisher' ); ?></label>
                         <select id="wpaip-default-llm" name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[default_llm]" class="wpaip-dark-input" style="width:100%;">
-                            <option value="openai"    <?php selected( $opts['default_llm'], 'openai'    ); ?>>GPT (OpenAI)</option>
-                            <option value="gemini"    <?php selected( $opts['default_llm'], 'gemini'    ); ?>>Gemini (Google)</option>
-                            <option value="anthropic" <?php selected( $opts['default_llm'], 'anthropic' ); ?>>Claude (Anthropic)</option>
-                            <option value="deepseek"  <?php selected( $opts['default_llm'], 'deepseek'  ); ?>>DeepSeek</option>
+                            <option value="openai"     <?php selected( $opts['default_llm'], 'openai'    ); ?>>GPT (OpenAI)</option>
+                            <option value="gemini"     <?php selected( $opts['default_llm'], 'gemini'    ); ?>>Gemini (Google)</option>
+                            <option value="anthropic"  <?php selected( $opts['default_llm'], 'anthropic' ); ?>>Claude (Anthropic)</option>
+                            <option value="deepseek"   <?php selected( $opts['default_llm'], 'deepseek'  ); ?>>DeepSeek</option>
+                            <option value="cloudflare" <?php selected( $opts['default_llm'], 'cloudflare'); ?>>Cloudflare Workers AI (Llama 3.3 / DeepSeek R1)</option>
                         </select>
                     </div>
 
                     <!-- Versão por provider -->
                     <?php
                     $model_opts = [
-                        'openai_model'    => [ 'label' => 'OpenAI',  'provider' => 'openai',    'opts' => [
-                            // GPT-5 (mais recentes)
+                        'openai_model'     => [ 'label' => 'OpenAI',    'provider' => 'openai',    'opts' => [
                             'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna',
                             'gpt-5.5-pro', 'gpt-5.5',
                             'gpt-5.4-pro', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.4-nano',
                             'gpt-5-pro', 'gpt-5', 'gpt-5-mini', 'gpt-5-nano',
-                            // GPT-4.1
                             'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
-                            // GPT-4o
                             'gpt-4o', 'gpt-4o-mini',
-                            // Raciocínio (Reasoning)
                             'o3', 'o3-mini', 'o4-mini', 'o1',
-                            // Legacy
                             'gpt-3.5-turbo',
                         ] ],
-                        'gemini_model'    => [ 'label' => 'Gemini',  'provider' => 'gemini',    'opts' => [ 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro' ] ],
-                        'anthropic_model' => [ 'label' => 'Claude',  'provider' => 'anthropic', 'opts' => [ 'claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-3-5' ] ],
-                        'deepseek_model'  => [ 'label' => 'DeepSeek','provider' => 'deepseek',  'opts' => [ 'deepseek-chat', 'deepseek-reasoner' ] ],
+                        'gemini_model'     => [ 'label' => 'Gemini',    'provider' => 'gemini',    'opts' => [ 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro' ] ],
+                        'anthropic_model'  => [ 'label' => 'Claude',    'provider' => 'anthropic', 'opts' => [ 'claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-3-5' ] ],
+                        'deepseek_model'   => [ 'label' => 'DeepSeek',  'provider' => 'deepseek',  'opts' => [ 'deepseek-chat', 'deepseek-reasoner' ] ],
+                        'cloudflare_model' => [ 'label' => 'Cloudflare Workers AI', 'provider' => 'cloudflare', 'opts' => [
+                            '@cf/meta/llama-3.3-70b-instruct-fp8',
+                            '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',
+                            '@cf/meta/llama-3.1-8b-instruct',
+                            '@cf/mistral/mistral-7b-instruct-v0.2',
+                        ] ],
                     ];
                     foreach ( $model_opts as $field => $meta ) :
                         $is_active = ( $opts['default_llm'] === $meta['provider'] );
@@ -356,6 +402,23 @@ foreach ( $all_providers_keys as $pk ) {
                             <option value="huggingface"  <?php selected( $opts['default_image'], 'huggingface'  ); ?>>Hugging Face (Grátis — Com Chave)</option>
                             <option value="poe"          <?php selected( $opts['default_image'], 'poe'          ); ?>>Poe.com (Com Chave)</option>
                             <option value="apiframe"     <?php selected( $opts['default_image'], 'apiframe'     ); ?>>APIFrame.ai (Midjourney v6 / Grok / FLUX 2)</option>
+                            <option value="cloudflare"   <?php selected( $opts['default_image'], 'cloudflare'   ); ?>>Cloudflare Workers AI (FLUX.1 schnell)</option>
+                        </select>
+                    </div>
+
+                    <!-- Modelo Cloudflare Workers AI -->
+                    <div id="wpaip-cloudflare-image-model-wrapper" style="<?php echo ( $opts['default_image'] === 'cloudflare' ) ? '' : 'display:none;'; ?> margin-bottom:16px;">
+                        <label for="wpaip-cloudflare-image-model" style="font-weight:700; color:#c4b5fd; margin-bottom:6px; display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;"><?php _e( 'Modelo Cloudflare Workers AI', 'wp-ai-publisher' ); ?></label>
+                        <select
+                            id="wpaip-cloudflare-image-model"
+                            name="<?php echo WPAIP_Settings::OPTION_KEY; ?>[cloudflare_image_model]"
+                            class="wpaip-dark-input"
+                            style="width:100%;"
+                        >
+                            <?php $saved_cf_img = $opts['cloudflare_image_model'] ?? '@cf/black-forest-labs/flux-1-schnell'; ?>
+                            <option value="@cf/black-forest-labs/flux-1-schnell" <?php selected( $saved_cf_img, '@cf/black-forest-labs/flux-1-schnell' ); ?>>FLUX.1 schnell (Qualidade máxima)</option>
+                            <option value="@cf/bytedance/stable-diffusion-xl-lightning" <?php selected( $saved_cf_img, '@cf/bytedance/stable-diffusion-xl-lightning' ); ?>>SDXL Lightning (Ultra Rápido)</option>
+                            <option value="@cf/stabilityai/stable-diffusion-xl-base-1.0" <?php selected( $saved_cf_img, '@cf/stabilityai/stable-diffusion-xl-base-1.0' ); ?>>Stable Diffusion XL Base 1.0</option>
                         </select>
                     </div>
 
