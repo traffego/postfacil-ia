@@ -177,6 +177,15 @@
     }
 
     function insertTextInEditor(text) {
+        if (!text) return;
+
+        // Sanitização no cliente: remove delimitadores de código markdown (```html, ```xml, ```)
+        text = text.replace(/^```[a-z]*\s*/i, '')
+                   .replace(/\s*```\s*$/i, '')
+                   .replace(/```(?:html|xml)?/gi, '')
+                   .replace(/```/g, '')
+                   .trim();
+
         if (isGuten) {
             // Gutenberg: insere um parágrafo via dispatch
             if (typeof wp !== 'undefined' && wp.data) {

@@ -381,6 +381,12 @@ class WPAIP_LLM {
         $title = '';
         $text  = $result['text'];
 
+        // Sanitização estrita: remove delimitadores de código Markdown (```html, ```xml, ```)
+        $text = preg_replace( '/^```[a-z]*\s*/i', '', $text );
+        $text = preg_replace( '/\s*```\s*$/i', '', $text );
+        $text = str_replace( [ '```html', '```xml', '```' ], '', $text );
+        $text = trim( $text );
+
         if ( $mode === 'draft' ) {
             // 1. Extração por <h1>...</h1>
             if ( preg_match( '/<h1[^>]*>(.*?)<\/h1>/is', $text, $m ) ) {
