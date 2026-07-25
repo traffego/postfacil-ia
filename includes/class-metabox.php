@@ -193,11 +193,24 @@ class WPAIP_Metabox {
                             <strong class="wpaip-card-title"><?php _e( 'Imagem & Capa', 'wp-ai-publisher' ); ?></strong>
                         </div>
                         <div style="display:flex; gap:8px; align-items:center;">
-                            <button type="button" class="wpaip-popup-btn" data-provider="dalle3" title="<?php esc_attr_e( 'Abrir ChatGPT (GPT-4o)', 'wp-ai-publisher' ); ?>" style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:8px; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.2); transition:transform 0.15s;">
-                                <img src="<?php echo esc_url( plugins_url( 'admin/img/chatgpt-icon.jpg', WPAIP_FILE ) ); ?>" alt="ChatGPT" style="width:100%; height:100%; object-fit:cover; border-radius:7px;" />
+                            <button type="button" class="wpaip-popup-btn" data-provider="dalle3" title="<?php esc_attr_e( 'Abrir ChatGPT (GPT-4o)', 'wp-ai-publisher' ); ?>" style="background:#10a37f; border:none; border-radius:8px; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2); transition:transform 0.15s;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    <path d="M12 7v6"/>
+                                    <path d="M9 10h6"/>
+                                </svg>
                             </button>
-                            <button type="button" class="wpaip-popup-btn" data-provider="gemini" title="<?php esc_attr_e( 'Abrir Google Gemini (Nano Banana)', 'wp-ai-publisher' ); ?>" style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:8px; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.2); transition:transform 0.15s;">
-                                <img src="<?php echo esc_url( plugins_url( 'admin/img/gemini-icon.jpg', WPAIP_FILE ) ); ?>" alt="Google Gemini" style="width:100%; height:100%; object-fit:cover; border-radius:7px;" />
+                            <button type="button" class="wpaip-popup-btn" data-provider="gemini" title="<?php esc_attr_e( 'Abrir Google Gemini (Nano Banana)', 'wp-ai-publisher' ); ?>" style="background:linear-gradient(135deg, #1e293b, #0f172a); border:1px solid rgba(255,255,255,0.2); border-radius:8px; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2); transition:transform 0.15s;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="wpaip-gemini-spark-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#4285F4"/>
+                                            <stop offset="50%" stop-color="#9B51E0"/>
+                                            <stop offset="100%" stop-color="#D946EF"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z" fill="url(#wpaip-gemini-spark-grad)"/>
+                                </svg>
                             </button>
                         </div>
                     </div>
