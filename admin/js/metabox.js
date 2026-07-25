@@ -642,21 +642,64 @@
         }
     });
 
-    // Suporte a Ctrl + V (Paste) em qualquer lugar da tela
-    $(document).on('paste', function (e) {
-        var items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData)).items;
-        if (!items) return;
+    // Suporte a Ctrl + V (Paste) em qualquer lugar da tela ou dentro de editores
+    function handlePasteEvent(e) {
+        var clipboardData = e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData);
+        if (!clipboardData) return;
 
-        for (var i = 0; i < items.length; i++) {
-            if (items[i].type.indexOf('image') !== -1) {
-                var file = items[i].getAsFile();
-                if (file) {
-                    uploadPastedFile(file);
-                    break;
+        var items = clipboardData.items;
+        if (items) {
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    var file = items[i].getAsFile();
+                    if (file) {
+                        e.preventDefault();
+                        uploadPastedFile(file);
+                        return;
+                    }
                 }
             }
         }
-    });
+
+        var text = clipboardData.getData('text/plain');
+        if (text && /^https?:\/\/.+\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test($.trim(text))) {
+            e.preventDefault();
+            uploadPastedUrl($.trim(text));
+        }
+    }
+
+    $(document).on('paste', handlePasteEvent);
+
+    // Conecta escuta no TinyMCE (Editor Clássico)
+    if (typeof tinymce !== 'undefined') {
+        tinymce.on('AddEditor', function (e) {
+            e.editor.on('init', function () {
+                var doc = e.editor.getDoc();
+                if (doc) {
+                    $(doc).on('paste', handlePasteEvent);
+                    $(doc).on('dragenter dragover', function (evt) {
+                        if (isInternalDrag) return;
+                        evt.preventDefault();
+                        var dt = evt.originalEvent ? evt.originalEvent.dataTransfer : null;
+                        if (dt && dt.types && Array.from(dt.types).indexOf('Files') !== -1) {
+                            $overlay.css('display', 'flex');
+                        }
+                    });
+                    $(doc).on('dragleave drop', function (evt) {
+                        if (isInternalDrag) return;
+                        evt.preventDefault();
+                        if (evt.type === 'drop') {
+                            $overlay.hide();
+                            var dt = evt.originalEvent ? evt.originalEvent.dataTransfer : null;
+                            if (dt && dt.files && dt.files.length) {
+                                uploadPastedFile(dt.files[0]);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    }
 
     var pendingChoiceAttachId = 0;
     var pendingChoiceUrl      = '';
