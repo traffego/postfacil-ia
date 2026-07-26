@@ -505,6 +505,12 @@ class WPAIP_Settings {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
         }
+
+        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+            WPAIP_Paywall::render_blocked_page();
+            return;
+        }
+
         require_once WPAIP_PLUGIN_DIR . 'admin/views/settings-page.php';
     }
 }

@@ -153,13 +153,12 @@ class WPAIP_Image {
         $code = wp_remote_retrieve_response_code( $response );
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        if ( $code !== 200 || empty( $body ) ) {
+        if ( $code !== 200 || empty( $body ) || empty( $body['success'] ) ) {
             $msg = $body['message'] ?? ( 'Erro HTTP ' . $code );
+            if ( $code === 403 || stripos( $msg, 'suspens' ) !== false || stripos( $msg, 'inativ' ) !== false || stripos( $msg, 'revogad' ) !== false || stripos( $msg, 'invalid' ) !== false ) {
+                WPAIP_Paywall::invalidate_cache();
+            }
             return [ 'success' => false, 'url' => '', 'message' => 'Gateway: ' . $msg ];
-        }
-
-        if ( empty( $body['success'] ) ) {
-            return [ 'success' => false, 'url' => '', 'message' => $body['message'] ?? 'Erro desconhecido no gateway.' ];
         }
 
         // Se o gateway retornou a imagem em base64 (como Gemini ou Hugging Face)
@@ -191,6 +190,10 @@ class WPAIP_Image {
      */
     public static function ajax_generate_featured(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
+
+        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+            wp_send_json_error( [ 'message' => 'Sua licença do POST FÁCIL está suspensa ou inativa.' ] );
+        }
 
         $post_id  = (int) ( $_POST['post_id']  ?? 0 );
         $prompt   = sanitize_textarea_field( $_POST['prompt']   ?? '' );
@@ -229,6 +232,10 @@ class WPAIP_Image {
      */
     public static function ajax_generate_inline(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
+
+        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+            wp_send_json_error( [ 'message' => 'Sua licença do POST FÁCIL está suspensa ou inativa.' ] );
+        }
 
         $post_id  = (int) ( $_POST['post_id']  ?? 0 );
         $prompt   = sanitize_textarea_field( $_POST['prompt']   ?? '' );

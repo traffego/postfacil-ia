@@ -97,13 +97,13 @@ class WPAIP_LLM {
         $code = wp_remote_retrieve_response_code( $response );
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        if ( $code !== 200 || empty( $body ) ) {
+        if ( $code !== 200 || empty( $body ) || empty( $body['success'] ) ) {
             $msg = $body['message'] ?? ( 'Erro HTTP ' . $code );
+            // Se o gateway acusar licença suspensa/inativa, invalida o cache do usuário imediatamente
+            if ( $code === 403 || stripos( $msg, 'suspens' ) !== false || stripos( $msg, 'inativ' ) !== false || stripos( $msg, 'revogad' ) !== false || stripos( $msg, 'invalid' ) !== false ) {
+                WPAIP_Paywall::invalidate_cache();
+            }
             return [ 'success' => false, 'text' => '', 'message' => 'Gateway: ' . $msg ];
-        }
-
-        if ( empty( $body['success'] ) ) {
-            return [ 'success' => false, 'text' => '', 'message' => $body['message'] ?? 'Erro desconhecido no gateway.' ];
         }
 
         return [
@@ -152,6 +152,10 @@ class WPAIP_LLM {
 
     public static function ajax_fetch_references(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
+
+        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+            wp_send_json_error( [ 'message' => 'Sua licença do POST FÁCIL está suspensa ou inativa.' ] );
+        }
 
         $urls = isset( $_POST['urls'] ) && is_array( $_POST['urls'] )
             ? array_map( 'esc_url_raw', $_POST['urls'] )
@@ -309,6 +313,10 @@ class WPAIP_LLM {
 
     public static function ajax_generate_text(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
+
+        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+            wp_send_json_error( [ 'message' => 'Sua licença do POST FÁCIL está suspensa ou inativa. Acesso negado.' ] );
+        }
 
         $prompt    = sanitize_textarea_field( $_POST['prompt']     ?? '' );
         $provider  = sanitize_text_field(     $_POST['provider']   ?? '' );

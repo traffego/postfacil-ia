@@ -68,8 +68,10 @@ class WPAIP_Paywall {
         if ( ! $force ) {
             $cache_ts  = (int) get_user_meta( $user_id, self::CACHE_TIME_KEY, true );
             $cache_val = get_user_meta( $user_id, self::CACHE_META_KEY, true );
-            $hours     = max( 1, (int) WPAIP_Settings::get( 'license_cache_hours', 24 ) );
-            $ttl       = $hours * HOUR_IN_SECONDS;
+
+            // TTL curto de 3 minutos (180s) se estiver ativo, ou 1 minuto (60s) se estiver bloqueado.
+            // Isso garante que suspensões feitas pelo painel sejam reconhecidas rapidamente!
+            $ttl = ( $cache_val === '0' || $cache_val === 0 ) ? 60 : 180;
 
             if ( $cache_ts && ( time() - $cache_ts ) < $ttl && $cache_val !== '' ) {
                 return (bool) $cache_val;
@@ -183,11 +185,20 @@ class WPAIP_Paywall {
     }
 
     /**
-     * Limpa o cache do usuário.
+     * Limpa o cache do usuário e força status bloqueado (0).
      */
-    public static function clear_cache( int $user_id ): void {
-        delete_user_meta( $user_id, self::CACHE_META_KEY );
-        delete_user_meta( $user_id, self::CACHE_TIME_KEY );
+    public static function clear_cache( int $user_id = 0 ): void {
+        if ( ! $user_id ) {
+            $user_id = get_current_user_id();
+        }
+        if ( $user_id ) {
+            update_user_meta( $user_id, self::CACHE_META_KEY, 0 );
+            update_user_meta( $user_id, self::CACHE_TIME_KEY, time() );
+        }
+    }
+
+    public static function invalidate_cache( int $user_id = 0 ): void {
+        self::clear_cache( $user_id );
     }
 
     // ── Página de bloqueio ────────────────────────────────────────────────────

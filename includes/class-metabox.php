@@ -20,6 +20,10 @@ class WPAIP_Metabox {
     // ── Registro do Metabox ───────────────────────────────────────────────────
 
     public static function register_metabox(): void {
+        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+            return;
+        }
+
         $post_types = apply_filters( 'wpaip_post_types', [ 'post', 'page' ] );
 
         foreach ( $post_types as $pt ) {
@@ -38,6 +42,10 @@ class WPAIP_Metabox {
 
     public static function enqueue_assets( string $hook ): void {
         if ( ! in_array( $hook, [ 'post.php', 'post-new.php' ], true ) ) {
+            return;
+        }
+
+        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
             return;
         }
 
@@ -96,6 +104,9 @@ class WPAIP_Metabox {
     }
 
     public static function render_modal_shell(): void {
+        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+            return;
+        }
         ?>
         <button type="button" id="wpaip-floating-trigger" title="<?php esc_attr_e( 'POST FÁCIL', 'wp-ai-publisher' ); ?>">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
