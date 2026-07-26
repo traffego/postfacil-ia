@@ -17,10 +17,13 @@ class WPAIP_Metabox {
         WPAIP_Image::register_ajax();
     }
 
-    // ── Registro do Metabox ───────────────────────────────────────────────────
+    public static function has_license_key(): bool {
+        $key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
+        return ! empty( $key );
+    }
 
     public static function register_metabox(): void {
-        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+        if ( ! self::has_license_key() ) {
             return;
         }
 
@@ -45,7 +48,7 @@ class WPAIP_Metabox {
             return;
         }
 
-        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+        if ( ! self::has_license_key() ) {
             return;
         }
 
@@ -104,7 +107,7 @@ class WPAIP_Metabox {
     }
 
     public static function render_modal_shell(): void {
-        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
+        if ( ! self::has_license_key() ) {
             return;
         }
         ?>

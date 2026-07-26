@@ -99,11 +99,17 @@ class WPAIP_LLM {
 
         if ( $code !== 200 || empty( $body ) || empty( $body['success'] ) ) {
             $msg = $body['message'] ?? ( 'Erro HTTP ' . $code );
-            // Se o gateway acusar licença suspensa/inativa, invalida o cache do usuário imediatamente
             if ( $code === 403 || stripos( $msg, 'suspens' ) !== false || stripos( $msg, 'inativ' ) !== false || stripos( $msg, 'revogad' ) !== false || stripos( $msg, 'invalid' ) !== false ) {
                 WPAIP_Paywall::invalidate_cache();
             }
-            return [ 'success' => false, 'text' => '', 'message' => 'Gateway: ' . $msg ];
+            return [ 'success' => false, 'text' => '', 'message' => $msg ];
+        }
+
+        // Se o gateway aprovou a requisição, a licença ESTÁ ATIVA no servidor! Atualiza cache local para 1 (Ativo).
+        $user_id = get_current_user_id();
+        if ( $user_id ) {
+            update_user_meta( $user_id, WPAIP_Paywall::CACHE_META_KEY, 1 );
+            update_user_meta( $user_id, WPAIP_Paywall::CACHE_TIME_KEY, time() );
         }
 
         return [
@@ -152,10 +158,6 @@ class WPAIP_LLM {
 
     public static function ajax_fetch_references(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
-
-        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
-            wp_send_json_error( [ 'message' => 'Sua licença do POST FÁCIL está suspensa ou inativa.' ] );
-        }
 
         $urls = isset( $_POST['urls'] ) && is_array( $_POST['urls'] )
             ? array_map( 'esc_url_raw', $_POST['urls'] )
@@ -313,10 +315,6 @@ class WPAIP_LLM {
 
     public static function ajax_generate_text(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
-
-        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
-            wp_send_json_error( [ 'message' => 'Sua licença do POST FÁCIL está suspensa ou inativa. Acesso negado.' ] );
-        }
 
         $prompt    = sanitize_textarea_field( $_POST['prompt']     ?? '' );
         $provider  = sanitize_text_field(     $_POST['provider']   ?? '' );

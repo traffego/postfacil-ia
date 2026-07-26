@@ -158,7 +158,14 @@ class WPAIP_Image {
             if ( $code === 403 || stripos( $msg, 'suspens' ) !== false || stripos( $msg, 'inativ' ) !== false || stripos( $msg, 'revogad' ) !== false || stripos( $msg, 'invalid' ) !== false ) {
                 WPAIP_Paywall::invalidate_cache();
             }
-            return [ 'success' => false, 'url' => '', 'message' => 'Gateway: ' . $msg ];
+            return [ 'success' => false, 'url' => '', 'message' => $msg ];
+        }
+
+        // Se o gateway aprovou a requisição, a licença ESTÁ ATIVA no servidor! Atualiza cache local para 1.
+        $user_id = get_current_user_id();
+        if ( $user_id ) {
+            update_user_meta( $user_id, WPAIP_Paywall::CACHE_META_KEY, 1 );
+            update_user_meta( $user_id, WPAIP_Paywall::CACHE_TIME_KEY, time() );
         }
 
         // Se o gateway retornou a imagem em base64 (como Gemini ou Hugging Face)
@@ -190,10 +197,6 @@ class WPAIP_Image {
      */
     public static function ajax_generate_featured(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
-
-        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
-            wp_send_json_error( [ 'message' => 'Sua licença do POST FÁCIL está suspensa ou inativa.' ] );
-        }
 
         $post_id  = (int) ( $_POST['post_id']  ?? 0 );
         $prompt   = sanitize_textarea_field( $_POST['prompt']   ?? '' );
@@ -232,10 +235,6 @@ class WPAIP_Image {
      */
     public static function ajax_generate_inline(): void {
         WPAIP_Security::check_ajax( 'edit_posts' );
-
-        if ( ! WPAIP_Paywall::is_license_active( get_current_user_id() ) ) {
-            wp_send_json_error( [ 'message' => 'Sua licença do POST FÁCIL está suspensa ou inativa.' ] );
-        }
 
         $post_id  = (int) ( $_POST['post_id']  ?? 0 );
         $prompt   = sanitize_textarea_field( $_POST['prompt']   ?? '' );
