@@ -22,7 +22,7 @@ class WPAIP_LLM {
             $provider = WPAIP_Settings::get( 'default_llm', 'openai' );
         }
 
-        $license_key = WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) );
+        $license_key = trim( WPAIP_Security::decrypt( WPAIP_Settings::get( 'license_key', '' ) ) );
         $server_url  = WPAIP_Settings::get( 'license_server_url', WPAIP_Paywall::DEFAULT_SERVER );
         if ( empty( $server_url ) ) {
             $server_url = WPAIP_Paywall::DEFAULT_SERVER;
