@@ -69,19 +69,16 @@ class WPAIP_Paywall {
             $cache_ts  = (int) get_user_meta( $user_id, self::CACHE_TIME_KEY, true );
             $cache_val = get_user_meta( $user_id, self::CACHE_META_KEY, true );
 
-            // TTL curto de 3 minutos (180s) se estiver ativo, ou 1 minuto (60s) se estiver bloqueado.
-            // Isso garante que suspensões feitas pelo painel sejam reconhecidas rapidamente!
-            $ttl = ( $cache_val === '0' || $cache_val === 0 ) ? 60 : 180;
-
-            if ( $cache_ts && ( time() - $cache_ts ) < $ttl && $cache_val !== '' ) {
-                return (bool) $cache_val;
+            // Se o cache for VÁLIDO e ATIVO (1) há menos de 5 minutos (300s), aprova direto
+            if ( $cache_ts && ( time() - $cache_ts ) < 300 && $cache_val === '1' ) {
+                return true;
             }
         }
 
-        // Consultar servidor de licenças
+        // Se o cache expirou, estava bloqueado ou force=1, consulta o servidor de licenças AO VIVO
         $result = self::verify_on_server( $license_key, $server_url );
 
-        // Gravar cache
+        // Gravar cache atualizado no banco
         update_user_meta( $user_id, self::CACHE_META_KEY, $result ? 1 : 0 );
         update_user_meta( $user_id, self::CACHE_TIME_KEY, time() );
 
@@ -100,14 +97,16 @@ class WPAIP_Paywall {
 
         $response = wp_remote_post( rtrim( $server_url, '/' ) . '/api/verify.php', [
             'body'    => [
-                'license_key' => $key,
+                'license_key' => trim( $key ),
                 'domain'      => $clean_domain,
             ],
             'timeout' => 15,
         ] );
 
         if ( is_wp_error( $response ) ) {
-            return false;
+            // Em caso de instabilidade temporária de rede, preserva o status do banco
+            $prev = get_user_meta( get_current_user_id(), self::CACHE_META_KEY, true );
+            return ( $prev === '1' || $prev === 1 );
         }
 
         $code = wp_remote_retrieve_response_code( $response );
@@ -192,8 +191,8 @@ class WPAIP_Paywall {
             $user_id = get_current_user_id();
         }
         if ( $user_id ) {
-            update_user_meta( $user_id, self::CACHE_META_KEY, 0 );
-            update_user_meta( $user_id, self::CACHE_TIME_KEY, time() );
+            delete_user_meta( $user_id, self::CACHE_META_KEY );
+            delete_user_meta( $user_id, self::CACHE_TIME_KEY );
         }
     }
 
