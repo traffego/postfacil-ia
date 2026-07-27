@@ -171,15 +171,25 @@ class WPAIP_Paywall {
      * Endpoint AJAX para ativar licença diretamente da página de paywall.
      */
     public static function ajax_activate_paywall_license(): void {
-        check_ajax_referer( 'wpaip_paywall_nonce', 'nonce' );
+        // Verificação de nonce com resposta JSON (não mata a requisição com -1)
+        $nonce = sanitize_text_field( $_POST['nonce'] ?? '' );
+        if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'wpaip_paywall_nonce' ) ) {
+            wp_send_json_error( [ 'message' => 'Sessão expirada. Recarregue a página e tente novamente.' ] );
+            return;
+        }
 
-        $key = sanitize_text_field( $_POST['license_key'] ?? '' );
+        $key = trim( sanitize_text_field( $_POST['license_key'] ?? '' ) );
         if ( empty( $key ) ) {
             wp_send_json_error( [ 'message' => 'Por favor, informe uma chave de licença válida.' ] );
+            return;
         }
 
         $server_url = WPAIP_Settings::get( 'license_server_url', self::DEFAULT_SERVER );
-        $result     = self::activate_license( $key, $server_url );
+        if ( empty( $server_url ) ) {
+            $server_url = self::DEFAULT_SERVER;
+        }
+
+        $result = self::activate_license( $key, $server_url );
 
         if ( $result['success'] ) {
             wp_send_json_success( $result );
