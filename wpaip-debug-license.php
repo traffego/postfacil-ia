@@ -7,8 +7,8 @@
  * https://olive-locust-173119.hostingersite.com/wp-content/plugins/postfacil-ia/wpaip-debug-license.php
  */
 
-// Carregar WordPress — sem redefinir ABSPATH
-require_once dirname( __FILE__, 4 ) . '/wp-load.php';
+// Carregar WordPress — wp-load.php está no mesmo diretório (raiz do site)
+require_once __DIR__ . '/wp-load.php';
 
 // Só admins podem acessar
 if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
