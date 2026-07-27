@@ -57,7 +57,7 @@ foreach ( $all_providers_keys as $pk ) {
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 16px;">
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
                     <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">Chave de Licença</div>
-                    <div style="font-family: monospace; font-size: 13px; font-weight: 700; color: #334155; word-break: break-all;"><?php echo esc_html( $masked_key ); ?></div>
+                    <div data-license-key-display style="font-family: monospace; font-size: 13px; font-weight: 700; color: #334155; word-break: break-all;"><?php echo esc_html( $masked_key ); ?></div>
                 </div>
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
                     <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">Domínio Autorizado</div>
@@ -136,8 +136,16 @@ foreach ( $all_providers_keys as $pk ) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Ativar nova chave';
                 if (data.success) {
-                    showMsg('✓ ' + (data.data.message || 'Chave ativada com sucesso! Recarregando...'), 'success');
-                    setTimeout(function() { window.location.reload(); }, 1200);
+                    // Atualizar display da chave no DOM imediatamente
+                    var keyDisplay = document.querySelector('[data-license-key-display]');
+                    if (keyDisplay) {
+                        var k = key;
+                        var masked = k.substring(0, 10) + '••••-••••-' + k.slice(-4);
+                        keyDisplay.textContent = masked;
+                    }
+                    showMsg('✓ Chave ativada! Atualizando...', 'success');
+                    // Reload imediato com cache-bust para garantir dados frescos
+                    window.location.replace(window.location.pathname + window.location.search + '&wpaip_refreshed=1');
                 } else {
                     showMsg('✗ ' + (data.data.message || 'Erro ao ativar chave.'), 'error');
                 }
