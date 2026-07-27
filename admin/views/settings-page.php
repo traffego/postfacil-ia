@@ -54,7 +54,7 @@ foreach ( $all_providers_keys as $pk ) {
             </div>
         </div>
         <div class="wpaip-card-body" style="padding: 20px 24px;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 16px;">
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;">
                     <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">Chave de Licença</div>
                     <div style="font-family: monospace; font-size: 13px; font-weight: 700; color: #334155; word-break: break-all;"><?php echo esc_html( $masked_key ); ?></div>
@@ -71,8 +71,104 @@ foreach ( $all_providers_keys as $pk ) {
                     </div>
                 </div>
             </div>
+
+            <!-- Trocar chave de licença -->
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                <button type="button" id="wpaip-toggle-change-key" style="background: none; border: 1px solid #cbd5e1; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                    <span class="dashicons dashicons-update" style="font-size:14px;width:14px;height:14px;"></span>
+                    Trocar chave de licença
+                </button>
+
+                <div id="wpaip-change-key-form" style="display: none; margin-top: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 8px; letter-spacing: 0.05em;">Nova Chave de Licença</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="text" id="wpaip-new-license-key-input"
+                               placeholder="WPAIP-XXXX-XXXX-XXXX"
+                               style="flex: 1; min-width: 240px; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-family: monospace; color: #0f172a; background: #fff; outline: none;"
+                               autocomplete="off" spellcheck="false">
+                        <button type="button" id="wpaip-submit-new-key-btn"
+                                style="background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+                            Ativar nova chave
+                        </button>
+                    </div>
+                    <div id="wpaip-change-key-msg" style="display: none; margin-top: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13px;"></div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script>
+    (function() {
+        var toggleBtn  = document.getElementById('wpaip-toggle-change-key');
+        var form       = document.getElementById('wpaip-change-key-form');
+        var input      = document.getElementById('wpaip-new-license-key-input');
+        var submitBtn  = document.getElementById('wpaip-submit-new-key-btn');
+        var msgBox     = document.getElementById('wpaip-change-key-msg');
+
+        if (!toggleBtn) return;
+
+        toggleBtn.addEventListener('click', function() {
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            if (form.style.display === 'block') input.focus();
+        });
+
+        submitBtn.addEventListener('click', function() {
+            var key = input.value.trim();
+            msgBox.style.display = 'none';
+
+            if (!key) {
+                showMsg('Digite a nova chave de licença.', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Ativando...';
+
+            var fd = new FormData();
+            fd.append('action', 'wpaip_activate_license');
+            fd.append('license_key', key);
+            fd.append('license_server_url', '<?php echo esc_js( WPAIP_Settings::get("license_server_url", WPAIP_Paywall::DEFAULT_SERVER) ); ?>');
+            fd.append('nonce', '<?php echo esc_js( WPAIP_Security::create_nonce("settings") ); ?>');
+
+            fetch('<?php echo esc_js( admin_url("admin-ajax.php") ); ?>', { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Ativar nova chave';
+                if (data.success) {
+                    showMsg('✓ ' + (data.data.message || 'Chave ativada com sucesso! Recarregando...'), 'success');
+                    setTimeout(function() { window.location.reload(); }, 1200);
+                } else {
+                    showMsg('✗ ' + (data.data.message || 'Erro ao ativar chave.'), 'error');
+                }
+            })
+            .catch(function() {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Ativar nova chave';
+                showMsg('Erro de comunicação com o servidor.', 'error');
+            });
+        });
+
+        function showMsg(txt, type) {
+            msgBox.textContent = txt;
+            msgBox.style.display = 'block';
+            if (type === 'success') {
+                msgBox.style.background = 'rgba(16,185,129,0.1)';
+                msgBox.style.border = '1px solid #10b981';
+                msgBox.style.color = '#047857';
+            } else {
+                msgBox.style.background = 'rgba(239,68,68,0.1)';
+                msgBox.style.border = '1px solid #ef4444';
+                msgBox.style.color = '#b91c1c';
+            }
+        }
+
+        // Ativar ao pressionar Enter no input
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') submitBtn.click();
+        });
+    })();
+    </script>
 
     <!-- ── GRID DE CARDS COMPACTOS INTERATIVOS ── -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px;">
