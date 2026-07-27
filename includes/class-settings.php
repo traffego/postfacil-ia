@@ -99,8 +99,12 @@ class WPAIP_Settings {
             $clean['gemini_api_key']  = '';
         }
 
-        // Chave de Licença — preserva sempre o que foi salvo pelo activate_license (nunca re-encripta via form)
-        $clean['license_key'] = $saved['license_key'] ?? '';
+        // Chave de Licença:
+        // - Se $input['license_key'] vier preenchida (via activate_license → update_option), usa ela.
+        // - Se vier vazia (formulário de settings nunca envia este campo), preserva a salva.
+        $clean['license_key'] = ! empty( $input['license_key'] )
+            ? $input['license_key']          // nova chave criptografada via activate_license()
+            : ( $saved['license_key'] ?? '' ); // formulário não envia este campo → preserva
 
         // URL do Servidor de Licenças — preserva URL existente, usa DEFAULT_SERVER se estiver vazia
         $url_input = esc_url_raw( $input['license_server_url'] ?? '' );
