@@ -119,12 +119,17 @@ class WPAIP_Paywall {
      * Ativa a licença no servidor externo (chamado via AJAX).
      */
     public static function activate_license( string $key, string $server_url ): array {
+        $key          = trim( $key );
         $clean_domain = strtolower( preg_replace( '/^https?:\/\//i', '', get_site_url() ) );
         $clean_domain = explode( '/', $clean_domain )[0];
         $clean_domain = explode( ':', $clean_domain )[0];
 
         if ( empty( $server_url ) ) {
             $server_url = self::DEFAULT_SERVER;
+        }
+
+        if ( empty( $key ) ) {
+            return [ 'success' => false, 'message' => 'Chave de licença não pode ser vazia.' ];
         }
 
         $response = wp_remote_post( rtrim( $server_url, '/' ) . '/api/activate.php', [
@@ -143,16 +148,16 @@ class WPAIP_Paywall {
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( $code === 200 && ! empty( $body['success'] ) ) {
-            // Salvar a chave ativada nas configurações do plugin
-            $opts = WPAIP_Settings::get_options();
+            // Salvar a nova chave ativada nas configurações do plugin (substitui qualquer chave anterior)
+            $opts                = WPAIP_Settings::get_options();
             $opts['license_key'] = WPAIP_Security::encrypt( $key );
             update_option( WPAIP_Settings::OPTION_KEY, $opts );
 
-            // Gravar o cache do usuário como ATIVO (1) imediatamente
-            $user_id = get_current_user_id();
-            if ( $user_id ) {
-                update_user_meta( $user_id, self::CACHE_META_KEY, 1 );
-                update_user_meta( $user_id, self::CACHE_TIME_KEY, time() );
+            // Limpar cache de TODOS os usuários admin para refletir nova chave imediatamente
+            $admin_users = get_users( [ 'role__in' => [ 'administrator', 'editor' ], 'fields' => 'ID' ] );
+            foreach ( $admin_users as $uid ) {
+                update_user_meta( (int) $uid, self::CACHE_META_KEY, 1 );
+                update_user_meta( (int) $uid, self::CACHE_TIME_KEY, time() );
             }
 
             return [ 'success' => true, 'message' => $body['message'] ?? 'Licença ativada com sucesso!' ];
