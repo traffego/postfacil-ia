@@ -10,8 +10,17 @@
  */
 
 // ── Carregar WordPress ────────────────────────────────────────────────────────
-define( 'ABSPATH', __DIR__ . '/' );
-require_once __DIR__ . '/wp-load.php';
+// O script está em: wp-content/plugins/postfacil-ia/ → sobe 4 níveis até a raiz
+$wp_root = dirname( __DIR__, 3 ); // postfacil-ia → plugins → wp-content → raiz WP
+$wp_load = $wp_root . '/wp-load.php';
+
+if ( ! file_exists( $wp_load ) ) {
+    http_response_code( 500 );
+    die( '<h1>Erro</h1><p>wp-load.php não encontrado em: ' . htmlspecialchars( $wp_load ) . '</p>' );
+}
+
+define( 'ABSPATH', $wp_root . '/' );
+require_once $wp_load;
 
 // ── Proteção mínima: só admins ─────────────────────────────────────────────────
 if ( ! current_user_can( 'manage_options' ) ) {
