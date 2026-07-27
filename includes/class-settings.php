@@ -371,11 +371,19 @@ class WPAIP_Settings {
     public static function ajax_activate_license(): void {
         WPAIP_Security::check_ajax( 'manage_options', 'settings' );
 
-        $license_key = sanitize_text_field( $_POST['license_key'] ?? '' );
-        $server_url  = esc_url_raw( $_POST['license_server_url'] ?? '' );
+        $license_key = trim( sanitize_text_field( $_POST['license_key'] ?? '' ) );
 
-        if ( empty( $license_key ) || empty( $server_url ) ) {
-            wp_send_json_error( [ 'message' => 'Chave de licença e URL do servidor são obrigatórios.' ] );
+        // Usa a URL salva no banco, depois o padrão — nunca falha por URL vazia
+        $server_url = esc_url_raw( $_POST['license_server_url'] ?? '' );
+        if ( empty( $server_url ) ) {
+            $server_url = WPAIP_Settings::get( 'license_server_url', WPAIP_Paywall::DEFAULT_SERVER );
+        }
+        if ( empty( $server_url ) ) {
+            $server_url = WPAIP_Paywall::DEFAULT_SERVER;
+        }
+
+        if ( empty( $license_key ) ) {
+            wp_send_json_error( [ 'message' => 'Informe a chave de licença.' ] );
         }
 
         $result = WPAIP_Paywall::activate_license( $license_key, $server_url );
