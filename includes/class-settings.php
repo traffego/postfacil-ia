@@ -110,6 +110,7 @@ class WPAIP_Settings {
         $url_input = esc_url_raw( $input['license_server_url'] ?? '' );
         $clean['license_server_url'] = ! empty( $url_input ) ? $url_input : ( $saved['license_server_url'] ?? WPAIP_Paywall::DEFAULT_SERVER );
         $clean['license_cache_hours'] = max( 1, (int) ( $input['license_cache_hours'] ?? 24 ) );
+        $clean['preferred_gateway']   = sanitize_text_field( $input['preferred_gateway'] ?? 'auto' );
 
         // Cloudflare Workers AI (Account ID + API Token)
         $clean['cloudflare_account_id'] = sanitize_text_field( $input['cloudflare_account_id'] ?? '' );
@@ -251,6 +252,7 @@ class WPAIP_Settings {
             'license_key'         => '',
             'license_server_url'  => 'https://olive-locust-173119.hostingersite.com/license-server-wp-post/',
             'license_cache_hours' => 24,
+            'preferred_gateway'   => 'auto',
         ];
     }
 

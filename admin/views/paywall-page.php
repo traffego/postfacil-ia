@@ -361,6 +361,9 @@ defined( 'ABSPATH' ) || exit;
             <a href="<?php echo $payment_link; ?>" class="cta-btn" target="_blank">
                 ⚡ Assinar agora e liberar acesso
             </a>
+            <div style="font-size: 11px; color: rgba(248, 250, 252, 0.5); margin-top: 8px;">
+                Pagamento seguro via <strong>Asaas</strong> ou <strong>Conta Azul</strong> (PIX, Cartão e Boleto)
+            </div>
         <?php else : ?>
             <a href="#" class="cta-btn" style="opacity:.5; cursor:not-allowed;" onclick="return false;">
                 🔒 Assinatura não disponível no momento
